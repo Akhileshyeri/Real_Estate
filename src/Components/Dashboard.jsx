@@ -669,11 +669,11 @@ const Dashboard = () => {
                                                                             <div className="listing-box">
                                                                                 <div className="images skeleton-box" style={{ width: "120px", height: "80px", borderRadius: "8px" }}></div>
                                                                                 <div>
-                                                                                  <div className="skeleton-box" style={{ width: "150px", height: "18px", marginBottom: "6px" }}></div>
-                                                                                  </div>
-                                                                            <div>
-                                                                                  <div className="skeleton-box" style={{ width: "150px", height: "18px", marginBottom: "6px" }}></div>
-                                                                                  </div>
+                                                                                    <div className="skeleton-box" style={{ width: "150px", height: "18px", marginBottom: "6px" }}></div>
+                                                                                </div>
+                                                                                <div>
+                                                                                    <div className="skeleton-box" style={{ width: "150px", height: "18px", marginBottom: "6px" }}></div>
+                                                                                </div>
                                                                                 <div className="content">
                                                                                     <div className="skeleton-line" style={{ width: "70%", height: "16px", marginBottom: "8px" }}></div>
                                                                                     <div className="skeleton-line" style={{ width: "50%", height: "14px", marginBottom: "8px" }}></div>
@@ -791,7 +791,7 @@ const Dashboard = () => {
                                                             <div className="avatar avt-40 round skeleton-box"></div>
                                                             <div style={{ flex: 1 }}>
                                                                 <div className="skeleton-line" style={{ width: "60%", height: "14px", marginBottom: "6px" }}></div>
-                                                                
+
                                                             </div>
                                                         </div>
 
@@ -830,10 +830,13 @@ const Dashboard = () => {
                                                             <div key={rev.id} className="box-tes-item">
                                                                 <div className="box-avt d-flex align-items-center gap-12">
                                                                     <div className="avatar avt-40 round">
+                                                                       
+
+
                                                                         <img
-                                                                            src={download}
+                                                                            src={rev?.profile ? `${api.imageUrl}${rev.profile}` : "images/avatar/avt-7.jpg"}
                                                                             alt="avatar"
-                                                                            onError={(e) => (e.target.src = "images/avatar/avt-7.jpg")}
+                                                                            onError={(e) => { e.currentTarget.src = {download} }}
                                                                         />
                                                                     </div>
                                                                     <p className="fw-6">{rev.user_name}</p>
