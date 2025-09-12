@@ -9,6 +9,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import "./HomePage.css"
 import { Modal, Slider } from "antd"; // ✅ Import Modal
+import nodata from "../assets/nodata.png"
 
 
 
@@ -41,11 +42,13 @@ const HomePage = () => {
 
     console.log("image ", api.imageUrl)
 
-    const [priceRange, setPriceRange] = useState([1000000, 10000000]); // Default price range
+    const [priceRange, setPriceRange] = useState([0, 10000000]); // Default price range
     const [selectedBHK, setSelectedBHK] = useState(''); // Default BHK selection
 
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [selectedBathroom, setSelectedBathroom] = useState("");
+    const [selectedBedrooms, setSelectedBedrooms] = useState("");
+
 
 
     const handleOpenAdvanced = () => setShowAdvanced(true);
@@ -97,7 +100,7 @@ const HomePage = () => {
     ];
 
 
-    const [rentRange, setRentRange] = useState([5000, 50000]); // ✅ separate rent range
+    const [rentRange, setRentRange] = useState([0, 200000]); // ✅ separate rent range
 
 
 
@@ -536,7 +539,29 @@ const HomePage = () => {
                                                                         </span>
                                                                     </div>
                                                                 </div>
-                                                                <button type="submit" className="tf-btn primary" href="#">Search</button>
+                                                                <button
+                                                                    type="button"
+                                                                    className="tf-btn primary"
+                                                                    onClick={() => {
+                                                                        // build query params
+                                                                        const queryParams = new URLSearchParams({
+                                                                            listingType: selectedListingType,
+                                                                            type: selectedType,
+                                                                            priceMin: priceRange[0],
+                                                                            priceMax: priceRange[1],
+                                                                            rentMin: rentRange[0],
+                                                                            rentMax: rentRange[1],
+                                                                            bhk: selectedBHK,
+                                                                            bedrooms: selectedBedrooms,
+                                                                            bathrooms: selectedBathroom,
+                                                                        });
+
+                                                                        navigate(`/listing?${queryParams.toString()}`);
+                                                                    }}
+                                                                >
+                                                                    Search
+                                                                </button>
+
                                                             </div>
                                                             {/* Advanced Filters Section */}
 
@@ -599,7 +624,16 @@ const HomePage = () => {
                                                                                         key={bhk}
                                                                                         type="button"
                                                                                         className={`bhk-pill ${selectedBHK === bhk ? "active" : ""}`}
-                                                                                        onClick={() => setSelectedBHK(bhk)}
+                                                                                        onClick={() => {
+                                                                                            setSelectedBHK(bhk);
+
+                                                                                            // Auto set bedrooms
+                                                                                            if (bhk === "1 BHK") setSelectedBedrooms("1");
+                                                                                            else if (bhk === "2 BHK") setSelectedBedrooms("2");
+                                                                                            else if (bhk === "3 BHK") setSelectedBedrooms("3");
+                                                                                            else if (bhk === "4 BHK") setSelectedBedrooms("4");
+                                                                                            else if (bhk === "4+ BHK") setSelectedBedrooms("4+");
+                                                                                        }}
                                                                                         style={{
                                                                                             padding: "8px 16px",
                                                                                             borderRadius: "20px",
@@ -612,8 +646,50 @@ const HomePage = () => {
                                                                                         {bhk}
                                                                                     </button>
                                                                                 ))}
+
                                                                             </div>
                                                                         </div>
+
+                                                                        <div className="filter-section" style={{ marginBottom: "25px" }}>
+                                                                            <h6 className="filter-title">Bedrooms</h6>
+                                                                            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                                                                                {["1", "2", "3", "4", "4+"].map((room) => (
+                                                                                    <button
+                                                                                        key={room}
+                                                                                        type="button"
+                                                                                        className={`bedroom-pill ${selectedBedrooms === room ? "active" : ""}`}
+                                                                                        onClick={() => setSelectedBedrooms(room)}
+                                                                                        disabled={
+                                                                                            // disable if linked to BHK
+                                                                                            (selectedBHK === "1 BHK" && room === "1") ||
+                                                                                            (selectedBHK === "2 BHK" && room === "2") ||
+                                                                                            (selectedBHK === "3 BHK" && room === "3") ||
+                                                                                            (selectedBHK === "4 BHK" && room === "4") ||
+                                                                                            (selectedBHK === "4+ BHK" && room === "4+")
+                                                                                        }
+                                                                                        style={{
+                                                                                            padding: "8px 16px",
+                                                                                            borderRadius: "20px",
+                                                                                            border: selectedBedrooms === room ? "2px solid #EC2126" : "1px solid #ccc",
+                                                                                            background: selectedBedrooms === room ? "#EC2126" : "#fff",
+                                                                                            color: selectedBedrooms === room ? "#fff" : "#333",
+                                                                                            cursor: "pointer",
+                                                                                            opacity:
+                                                                                                (selectedBHK === "1 BHK" && room === "1") ||
+                                                                                                    (selectedBHK === "2 BHK" && room === "2") ||
+                                                                                                    (selectedBHK === "3 BHK" && room === "3") ||
+                                                                                                    (selectedBHK === "4 BHK" && room === "4") ||
+                                                                                                    (selectedBHK === "4+ BHK" && room === "4+")
+                                                                                                    ? 0.6
+                                                                                                    : 1,
+                                                                                        }}
+                                                                                    >
+                                                                                        {room}
+                                                                                    </button>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+
 
                                                                         {/* ✅ Bathrooms */}
                                                                         <div className="filter-section">
@@ -769,7 +845,15 @@ const HomePage = () => {
                                             ) : properties.length === 0 ? (
                                                 // 👇 No properties case
                                                 <div className="col-12 text-center py-5">
-                                                    <h5 style={{ color: "#888" }}>No Properties found</h5>
+                                                    <div className="col-12 text-center py-5 mt-3">
+                                                        <img
+                                                            src={nodata} // 👈 replace with your own image path
+                                                            alt="No Property Found"
+                                                            style={{ maxWidth: "280px", marginBottom: "20px" }}
+                                                        />
+                                                        <h5>No Property Found</h5>
+                                                        <p>Try adjusting your filters or search criteria.</p>
+                                                    </div>
                                                 </div>
                                             ) : (
                                                 // 👇 Render property cards
@@ -912,7 +996,7 @@ const HomePage = () => {
                                 >
                                     {/* Card 1 */}
                                     <a
-                                        href=""
+                                        href="city-list"
                                         className="box-location"
                                         style={{
                                             display: "block",

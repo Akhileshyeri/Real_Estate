@@ -116,7 +116,7 @@ const Properties = () => {
 
         fd.append("authToken", localStorage.getItem("authToken"));
 
-           console.log("Submitting form data:");
+        console.log("Submitting form data:");
         for (let pair of fd.entries()) {
             console.log(pair[0], pair[1]); // Logs each key-value pair
         }
@@ -402,11 +402,14 @@ const Properties = () => {
     }
 
     // Extract property images for the slider
+    // Extract property images for the slider (excluding Plans)
     const propertyImages = propertyData.propertyImages || [];
-    const imageSources = propertyImages.map(img => img.image_path);
+    const sliderImages = propertyImages
+        .filter(img => img.image_type !== "Plan") // 👈 exclude Plan images
+        .map(img => img.image_path);
 
-    // Fallback images if no property images available
-    const images1 = imageSources.length > 0 ? imageSources : [
+    // Fallback images if no property images available (after filtering)
+    const images1 = sliderImages.length > 0 ? sliderImages : [
         "images/banner/banner-property-1.jpg",
         "images/banner/banner-property-3.jpg",
         "images/banner/banner-property-2.jpg",
@@ -588,6 +591,7 @@ const Properties = () => {
                     ))}
                 </Swiper>
 
+
                 {/* Navigation buttons */}
                 <div className="box-navigation">
                     <div className="navigation swiper-nav-next nav-next-location">
@@ -600,9 +604,7 @@ const Properties = () => {
 
                 {/* Icon box */}
                 <div className="icon-box">
-                    <Link to="#" className="item">
-                        <span className="icon icon-map-trifold"></span>
-                    </Link>
+
                     <Link
 
                         className="item active"
@@ -619,12 +621,12 @@ const Properties = () => {
                     <div className="header-property-detail">
                         <div className="content-top d-flex justify-content-between align-items-center">
                             <div className="box-name">
-                                <a href="#" className="flag-tag primary">
+                                {/* <a href="#" className="flag-tag primary">
                                     {propertyData.property.status === 1 ? "Active" : "Inactive"}
-                                </a>
+                                </a> */}
                                 <span
-                                    className="flag-tag text-white me-5 text-capitalize"
-                                    style={{ backgroundColor: "#378B4E", marginLeft: "5px" }}
+                                    className="flag-tag primary"
+                                    style={{ marginLeft: "5px" }}
                                 >
                                     {propertyData.property.listing_type}
                                 </span>
@@ -917,57 +919,85 @@ const Properties = () => {
                             </div>
 
                             {/* Floor Plans - Only show for buildings */}
-                            {!isPlot && (
-                                <div className="single-property-element single-property-floor">
-                                    <div className="h7 title fw-7">Floor plans</div>
-                                    <ul className="box-floor" id="parent-floor">
-                                        <li className="floor-item">
-                                            <div
-                                                className="floor-header"
-                                                onClick={() => handleToggleFloor(0)}
-                                                style={{ cursor: "pointer" }}
-                                            >
-                                                <div className="inner-left">
-                                                    <i className="icon icon-arr-r"></i>
-                                                    <span className="fw-7">First Floor</span>
-                                                </div>
-                                                <ul className="inner-right">
-                                                    <li className="d-flex align-items-center gap-8">
-                                                        <i className="icon icon-bed"></i> 3 Bedrooms
-                                                    </li>
-                                                    <li className="d-flex align-items-center gap-8">
-                                                        <i className="icon icon-bathtub"></i> 2 Bathrooms
-                                                    </li>
-                                                    <li className="d-flex align-items-center gap-8">
-                                                        <i className="icon icon-ruler"></i> 1200 Sq Ft
-                                                    </li>
+                            {propertyData.propertyImages
+                                .filter(img => img.image_type === "Plan") // only take floor plans
+                                .map((planImg, index) => (
+                                    <>
+                                        {!isPlot && propertyData.propertyImages?.length > 0 && (
+                                            <div className="single-property-element single-property-floor">
+                                                <div className="h7 title fw-7 pt-3">Floor Plans</div>
+
+                                                <ul className="box-floor" id="parent-floor">
+                                                    {propertyData.propertyImages
+                                                        .filter((img) => img.image_type === "Plan")
+                                                        .map((planImg, index) => (
+                                                            <li className="floor-item" key={index}>
+                                                                <div
+                                                                    className="floor-header"
+                                                                    onClick={() => handleToggleFloor(index)}
+                                                                    style={{ cursor: "pointer" }}
+                                                                >
+                                                                    <div className="inner-left">
+                                                                        {/* Toggle arrow based on activeFloor */}
+                                                                        {activeFloor === index ? (
+                                                                            <i className="fas fa-chevron-up me-2"></i> // Up arrow when expanded
+                                                                        ) : (
+                                                                            <i className="fas fa-chevron-down me-2"></i> // Down arrow when collapsed
+                                                                        )}
+                                                                        <span className="fw-7">
+                                                                            {planImg.image_label || `Plan ${index + 1}`}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <ul className="inner-right">
+                                                                        <li className="d-flex align-items-center gap-8">
+                                                                            <i className="fas fa-bed"></i>{" "}
+                                                                            {propertyData.details.bedrooms} Bedrooms
+                                                                        </li>
+                                                                        <li className="d-flex align-items-center gap-8">
+                                                                            <i className="fas fa-bath"></i>{" "}
+                                                                            {propertyData.details.bathrooms} Bathrooms
+                                                                        </li>
+                                                                        <li className="d-flex align-items-center gap-8">
+                                                                            <i className="fas fa-ruler-combined"></i>{" "}
+                                                                            {propertyData.area.carpet_area}{" "}
+                                                                            {propertyData.area.carpet_area_unit}
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+
+                                                                {activeFloor === index && (
+                                                                    <div className="faq-body">
+                                                                        <div className="box-img">
+                                                                            <img
+                                                                                src={`${api.imageUrl}${planImg.image_path}`}
+                                                                                alt={planImg.image_label || "Floor Plan"}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </li>
+                                                        ))}
                                                 </ul>
                                             </div>
+                                        )}
 
-                                            {activeFloor === 0 && (
-                                                <div className="faq-body">
-                                                    <div className="box-img">
-                                                        <img src="https://artsmidnorthcoast.com/wp-content/uploads/2014/05/no-image-available-icon-6-300x188.png" alt="img-floor" />
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </li>
-                                    </ul>
-                                </div>
-                            )}
+                                    </>
+                                ))}
+
 
                             {/* Plot Layout - Only show for plots */}
-                            {isPlot && propertyImages.some(img => img.image_type === 'floor_plan' || img.image_type === 'plot_layout') && (
+                            {isPlot && propertyImages.some(img => img.image_type === 'Plan' || img.image_type === 'plot_layout') && (
                                 <div className="single-property-element single-property-floor">
                                     <div className="h7 title fw-7">Plot Layout</div>
                                     <div className="box-img">
-                                        <img src={propertyImages.find(img => img.image_type === 'floor_plan' || img.image_type === 'plot_layout')?.image_path || "images/banner/banner-property-1.jpg"} alt="plot-layout" />
+                                        <img src={propertyImages.find(img => img.image_type === 'Plan' || img.image_type === 'plot_layout')?.image_path || "images/banner/banner-property-1.jpg"} alt="plot-layout" />
                                     </div>
                                 </div>
                             )}
 
                             {/* Attachments */}
-                            <div className="single-property-element single-property-attachments">
+                            {/* <div className="single-property-element single-property-attachments">
                                 <div className="h7 title fw-7">File Attachments</div>
                                 <div className="row">
                                     <div className="col-sm-6">
@@ -989,7 +1019,7 @@ const Properties = () => {
                                         </a>
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Explore - Only show for buildings */}
                             {/* {!isPlot && (
@@ -1037,7 +1067,7 @@ const Properties = () => {
                             </div> */}
 
                             {/* Nearby */}
-                            <div className="single-property-element single-property-nearby">
+                            {/* <div className="single-property-element single-property-nearby">
                                 <div className="h7 title fw-7">What's nearby?</div>
                                 <p className="body-2">This property is conveniently located near various amenities and facilities.</p>
                                 <div className="grid-2 box-nearby">
@@ -1070,7 +1100,7 @@ const Properties = () => {
                                         </li>
                                     </ul>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Reviews - Keeping this section as it was */}
                             <div className="single-property-element single-wrapper-review">

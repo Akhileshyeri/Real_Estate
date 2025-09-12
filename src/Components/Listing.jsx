@@ -1,26 +1,94 @@
 import React, { useEffect, useState } from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import { Modal, Slider } from 'antd'; // Import only for functionality, not styling!
 import "./Listing.css";
+import nodata from "../assets/nodata.png"
 
 const Listing = () => {
 
+    const { search } = useLocation();
 
 
-    // --- state ---
+
+
+
     const [properties, setProperties] = useState([]);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10); // ✅ make it state
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
+    // Advanced filter states (functionality only, NOT HomePage styling)
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [selectedListingType, setSelectedListingType] = useState("");
+    const [selectedType, setSelectedType] = useState("All");
+    const [priceRange, setPriceRange] = useState([0, 50000000]);
+    const [rentRange, setRentRange] = useState([0, 200000]);
+
+    const [selectedBHK, setSelectedBHK] = useState("");
+    const [selectedBathroom, setSelectedBathroom] = useState("");
+    const [selectedBedroom, setSelectedBedroom] = useState("");
+    const [selectedCity, setSelectedCity] = useState("");
+
 
 
     const navigate = useNavigate();
 
 
+
+    // 🔹 Track when initial filters are ready
+    const [filtersReady, setFiltersReady] = useState(false);
+
+    useEffect(() => {
+        const query = new URLSearchParams(search);
+
+        const listingType = query.get("listingType") || "";
+        const type = query.get("type") || "All";
+        const bhk = query.get("bhk") || "";
+        const bathrooms = query.get("bathrooms") || "";
+        const bedrooms = query.get("bedrooms") || "";
+        const city = query.get("city") || "";
+
+        const priceMin = query.get("priceMin");
+        const priceMax = query.get("priceMax");
+        const rentMin = query.get("rentMin");
+        const rentMax = query.get("rentMax");
+
+        setSelectedListingType(listingType);
+        setSelectedType(type);
+        setSelectedBHK(bhk);
+        setSelectedBathroom(bathrooms);
+        setSelectedBedroom(bedrooms);
+        setSelectedCity(city);
+
+        let filters = { listingType, type, bhk, bathrooms, bedrooms, city, priceRange, rentRange };
+
+        if (listingType === "rent" && rentMin && rentMax) {
+            const range = [+rentMin, +rentMax];
+            setRentRange(range);
+            filters.rentRange = range;
+        } else if (listingType === "sale" && priceMin && priceMax) {
+            const range = [+priceMin, +priceMax];
+            setPriceRange(range);
+            filters.priceRange = range;
+        }
+
+        // ✅ Mark filters ready and fetch page 1
+        setFiltersReady(true);
+        fetchList(1, filters);
+    }, [search]);
+
+    // 🔹 Handle pagination AFTER filters are ready
+    useEffect(() => {
+        if (!filtersReady) return;
+        fetchList(page);
+    }, [page, filtersReady]);
+
+
+
+    const fetchList = async (pageNumber = 1, filters = null) => {
 
 
     // --- effect ---
@@ -31,6 +99,7 @@ const Listing = () => {
 
     // --- API fetch function ---
     const fetchList = async (pageNumber, currentLimit) => {
+
         setLoading(true);
         const fd = new FormData();
         fd.append("programType", "getProperties");
@@ -38,8 +107,44 @@ const Listing = () => {
         fd.append("page", pageNumber);
         fd.append("limit", currentLimit);
 
+        const appliedFilters = filters || {
+            listingType: selectedListingType,
+            type: selectedType,
+            bhk: selectedBHK,
+            bathrooms: selectedBathroom,
+            bedrooms: selectedBedroom,
+            city: selectedCity,
+            priceRange,
+            rentRange
+        };
+
+        if (appliedFilters.listingType) fd.append("listing_type", appliedFilters.listingType);
+        if (appliedFilters.type && appliedFilters.type !== "All") fd.append("sub_property_type", appliedFilters.type);
+        if (appliedFilters.city) fd.append("city", appliedFilters.city);
+        if (appliedFilters.bathrooms) fd.append("bathrooms", appliedFilters.bathrooms);
+        if (appliedFilters.bhk) fd.append("apartment_bhk", appliedFilters.bhk);
+        if (appliedFilters.bedrooms) fd.append("bedrooms", appliedFilters.bedrooms);
+
+        if (appliedFilters.listingType === "rent" && appliedFilters.rentRange) {
+            fd.append("priceStart", appliedFilters.rentRange[0]);
+            fd.append("priceEnd", appliedFilters.rentRange[1]);
+        } else if (appliedFilters.listingType === "sale" && appliedFilters.priceRange) {
+            fd.append("priceStart", appliedFilters.priceRange[0]);
+            fd.append("priceEnd", appliedFilters.priceRange[1]);
+        }
+
+
+        console.log("Submitting form data:");
+        for (let pair of fd.entries()) {
+            console.log(pair[0], pair[1]); // Logs each key-value pair
+        }
+
+
+
         try {
             const response = await api.post("/properties/property", fd);
+
+            console.log(response)
             const { properties, page, limit } = response.data.data;
 
             const mapped = properties.map((item) => {
@@ -111,14 +216,9 @@ const Listing = () => {
         "Retail"
     ];
 
-    // Advanced filter states (functionality only, NOT HomePage styling)
-    const [selectedListingType, setSelectedListingType] = useState("rent");
-    const [selectedType, setSelectedType] = useState("All");
-    const [showAdvanced, setShowAdvanced] = useState(false);
-    const [priceRange, setPriceRange] = useState([1000000, 10000000]);
-    const [rentRange, setRentRange] = useState([5000, 50000]);
-    const [selectedBHK, setSelectedBHK] = useState('');
-    const [selectedBathroom, setSelectedBathroom] = useState("");
+
+
+
 
     const handleOpenAdvanced = () => setShowAdvanced(true);
     const handleCloseAdvanced = () => setShowAdvanced(false);
@@ -132,8 +232,11 @@ const Listing = () => {
                 </div>
                 <div className="content p-3">
                     <div className="skeleton mb-2" style={{ height: "20px", width: "60%" }}></div>
+                    <div>
                     <div className="skeleton mb-2" style={{ height: "15px", width: "40%" }}></div>
                     <div className="skeleton" style={{ height: "15px", width: "80%" }}></div>
+                    <div className="skeleton" style={{ height: "15px", width: "40%" }}></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -194,7 +297,7 @@ const Listing = () => {
                     <div className="row">
                         <div className="col-xl-4 col-lg-5">
                             <div className="widget-sidebar fixed-sidebar">
-                                <div className="flat-tab flat-tab-form widget-filter-search widget-box bg-surface mb-4" style={{ background: "#E8E8E8" }}>
+                                <div className="flat-tab flat-tab-form widget-filter-search widget-box bg-surface mb-4" style={{ background: "#f7f7f7" }}>
                                     <div className="h7 title fw-7">Search</div>
                                     <ul className="nav-tab-form" role="tablist">
                                         <li className="nav-tab-item">
@@ -257,15 +360,164 @@ const Listing = () => {
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            {/* REMOVE rooms, bathrooms, bedrooms dropdowns here */}
+                                                            {/* 👇 Advanced filters right below Type */}
+                                                            {showAdvanced && (
+                                                                <div className="advanced-filters mt-3 p-3" style={{ borderRadius: "8px", border: "1px solid #eee" }}>
+                                                                    {selectedListingType === "rent" ? (
+                                                                        <div style={{ marginBottom: "25px" }}>
+                                                                            <h6>Rent Range</h6>
+                                                                            <Slider
+                                                                                range
+                                                                                min={0}
+                                                                                max={200000}
+                                                                                step={1000}
+                                                                                value={rentRange}
+                                                                                onChange={setRentRange}
+                                                                            />
+                                                                            <div>
+                                                                                <span>₹{rentRange[0]}</span> - <span>₹{rentRange[1]}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div style={{ marginBottom: "25px" }}>
+                                                                            <h6>Price Range</h6>
+                                                                            <Slider
+                                                                                range
+                                                                                min={0}
+                                                                                max={50000000}
+                                                                                step={50000}
+                                                                                value={priceRange}
+                                                                                onChange={setPriceRange}
+                                                                            />
+                                                                            <div>
+                                                                                <span>₹{priceRange[0]}</span> - <span>₹{priceRange[1]}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+
+                                                                    {/* Property type conditionals */}
+                                                                    {["Flat / Apartment", "Independent House / Villa", "Farmhouse", "Serviced Apartment", "1 RK / Studio Apartment", "Independent Floor"].includes(selectedType) && (
+                                                                        <>
+                                                                            <div style={{ marginBottom: "20px", }}>
+                                                                                <h6 className='mb-3'>BHK Type</h6>
+                                                                                {["1 BHK", "2 BHK", "3 BHK", "4 BHK", "4+ BHK"].map(bhk => {
+                                                                                    const bhkNumber = bhk.split(" ")[0]; // "1", "2", "3", "4", "4+"
+                                                                                    return (
+                                                                                        <button
+                                                                                            key={bhk}
+                                                                                            type="button"
+                                                                                            style={{
+                                                                                                marginRight: "10px",
+                                                                                                marginBottom: "10px",
+                                                                                                background: selectedBHK === bhk ? "#EC2126" : "#fff",
+                                                                                                color: selectedBHK === bhk ? "#fff" : "#333",
+                                                                                                border: selectedBHK === bhk ? "2px solid #EC2126" : "1px solid #ccc",
+                                                                                                borderRadius: "20px",
+                                                                                                padding: "8px 16px",
+                                                                                                cursor: "pointer"
+                                                                                            }}
+                                                                                            onClick={() => {
+                                                                                                setSelectedBHK(bhk);
+                                                                                                setSelectedBedroom(bhkNumber); // 👈 auto-select bedroom
+                                                                                            }}
+                                                                                        >
+                                                                                            {bhk}
+                                                                                        </button>
+                                                                                    );
+                                                                                })}
+
+                                                                            </div>
+
+                                                                            <div style={{ marginBottom: "20px" }}>
+                                                                                <h6 className='mb-3'>Bedrooms</h6>
+                                                                                {["1", "2", "3", "4", "4+"].map(bed => (
+                                                                                    <button
+                                                                                        key={bed}
+                                                                                        type="button"
+                                                                                        disabled={selectedBedroom === bed} // 👈 disable if same as BHK
+                                                                                        style={{
+                                                                                            marginRight: "10px",
+                                                                                            marginBottom: "10px",
+                                                                                            background: selectedBedroom === bed ? "#EC2126" : "#fff",
+                                                                                            color: selectedBedroom === bed ? "#fff" : "#333",
+                                                                                            border: selectedBedroom === bed ? "2px solid #EC2126" : "1px solid #ccc",
+                                                                                            borderRadius: "20px",
+                                                                                            padding: "8px 16px",
+                                                                                            cursor: selectedBedroom === bed ? "not-allowed" : "pointer",
+                                                                                            opacity: selectedBedroom === bed ? 0.6 : 1
+                                                                                        }}
+                                                                                        onClick={() => setSelectedBedroom(bed)}
+                                                                                    >
+                                                                                        {bed}
+                                                                                    </button>
+                                                                                ))}
+                                                                            </div>
+
+                                                                            <div>
+                                                                                <h6 className='mb-3'>Bathrooms</h6>
+                                                                                {["1", "2", "3", "4", "4+"].map(bath => (
+                                                                                    <button
+                                                                                        key={bath}
+                                                                                        type="button"
+                                                                                        style={{
+                                                                                            marginRight: "10px",
+                                                                                            background: selectedBathroom === bath ? "#EC2126" : "#fff",
+                                                                                            color: selectedBathroom === bath ? "#fff" : "#333",
+                                                                                            border: selectedBathroom === bath ? "2px solid #EC2126" : "1px solid #ccc",
+                                                                                            borderRadius: "20px",
+                                                                                            padding: "8px 16px",
+                                                                                            cursor: "pointer"
+                                                                                        }}
+                                                                                        onClick={() => setSelectedBathroom(bath)}
+                                                                                    >
+                                                                                        {bath}
+                                                                                    </button>
+                                                                                ))}
+                                                                            </div>
+                                                                        </>
+                                                                    )}
+
+                                                                    {selectedType === "Plot / Land" && (
+                                                                        <div>
+                                                                            <h6>Plot Size</h6>
+                                                                            <Slider range min={500} max={10000} step={100} defaultValue={[1000, 5000]} />
+                                                                            <h6>Facing</h6>
+                                                                            {["East", "West", "North", "South"].map(dir => (
+                                                                                <button key={dir} type="button" style={{ marginRight: "10px" }}>{dir}</button>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+
+                                                                    {(selectedType === "Office" || selectedType === "Retail") && (
+                                                                        <div>
+                                                                            <h6>Carpet Area (sq.ft)</h6>
+                                                                            <Slider range min={200} max={10000} step={100} defaultValue={[500, 5000]} />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Toggle button */}
                                                             <div className="form-style btn-show-advanced">
-                                                                <a className="filter-advanced pull-right" onClick={handleOpenAdvanced} style={{ cursor: "pointer" }}>
+                                                                <a
+                                                                    className="filter-advanced pull-right"
+                                                                    onClick={() => setShowAdvanced(prev => !prev)}
+                                                                    style={{ cursor: "pointer" }}
+                                                                >
                                                                     <span className="icon icon-faders"></span>
-                                                                    <span className="text-advanced">Show Advanced</span>
+                                                                    <span className="text-advanced">{showAdvanced ? "Hide Advanced" : "Show Advanced"}</span>
                                                                 </a>
                                                             </div>
+
                                                         </div>
-                                                        <button type="submit" className="tf-btn primary" href="#">Find Properties</button>
+                                                        <button
+                                                            type="button"
+                                                            className="tf-btn primary"
+                                                            onClick={() => fetchList(1)}
+                                                        >
+                                                            Find Properties
+                                                        </button>
+
                                                     </div>
                                                 </form>
                                             </div>
@@ -273,174 +525,16 @@ const Listing = () => {
                                     </div>
                                 </div>
 
-                                {/* Advanced Filter Modal - functionality only! */}
-                                <Modal
-                                    title={<h5 style={{ margin: 0, fontWeight: 600, color: "#333" }}>Advanced Filters</h5>}
-                                    open={showAdvanced}
-                                    onCancel={handleCloseAdvanced}
-                                    footer={null}
-                                    centered
-                                    bodyStyle={{ padding: "20px 24px" }}
-                                    width="90%"
-                                    style={{ maxWidth: "600px" }}
-                                >
-                                    {selectedListingType === "rent" ? (
-                                        <div style={{ marginBottom: "25px" }}>
-                                            <h6>Rent Range</h6>
-                                            <Slider
-                                                range
-                                                min={0}
-                                                max={200000}
-                                                step={1000}
-                                                value={rentRange}
-                                                onChange={setRentRange}
-                                            />
-                                            <div>
-                                                <span>₹{rentRange[0]}</span> - <span>₹{rentRange[1]}</span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div style={{ marginBottom: "25px" }}>
-                                            <h6>Price Range</h6>
-                                            <Slider
-                                                range
-                                                min={0}
-                                                max={50000000}
-                                                step={50000}
-                                                value={priceRange}
-                                                onChange={setPriceRange}
-                                            />
-                                            <div>
-                                                <span>₹{priceRange[0]}</span> - <span>₹{priceRange[1]}</span>
-                                            </div>
-                                        </div>
-                                    )}
 
-                                    {/* Property type conditionals */}
-                                    {["Flat / Apartment", "Independent House / Villa", "Farmhouse", "Serviced Apartment", "1 RK / Studio Apartment", "Independent Floor"].includes(selectedType) && (
-                                        <>
-                                            <div style={{ marginBottom: "20px" }}>
-                                                <h6>BHK Type</h6>
-                                                {["1 BHK", "2 BHK", "3 BHK", "4 BHK", "4+ BHK"].map(bhk => (
-                                                    <button
-                                                        key={bhk}
-                                                        type="button"
-                                                        style={{
-                                                            marginRight: "10px",
-                                                            background: selectedBHK === bhk ? "#EC2126" : "#fff",
-                                                            color: selectedBHK === bhk ? "#fff" : "#333",
-                                                            border: selectedBHK === bhk ? "2px solid #EC2126" : "1px solid #ccc",
-                                                            borderRadius: "20px",
-                                                            padding: "8px 16px",
-                                                            cursor: "pointer"
-                                                        }}
-                                                        onClick={() => setSelectedBHK(bhk)}
-                                                    >{bhk}</button>
-                                                ))}
-                                            </div>
-                                            <div>
-                                                <h6>Bathrooms</h6>
-                                                {["1", "2", "3", "4", "4+"].map(bath => (
-                                                    <button
-                                                        key={bath}
-                                                        type="button"
-                                                        style={{
-                                                            marginRight: "10px",
-                                                            background: selectedBathroom === bath ? "#EC2126" : "#fff",
-                                                            color: selectedBathroom === bath ? "#fff" : "#333",
-                                                            border: selectedBathroom === bath ? "2px solid #EC2126" : "1px solid #ccc",
-                                                            borderRadius: "20px",
-                                                            padding: "8px 16px",
-                                                            cursor: "pointer"
-                                                        }}
-                                                        onClick={() => setSelectedBathroom(bath)}
-                                                    >{bath}</button>
-                                                ))}
-                                            </div>
-                                        </>
-                                    )}
-                                    {selectedType === "Plot / Land" && (
-                                        <div>
-                                            <h6>Plot Size</h6>
-                                            <Slider range min={500} max={10000} step={100} defaultValue={[1000, 5000]} />
-                                            <h6>Facing</h6>
-                                            {["East", "West", "North", "South"].map(dir => (
-                                                <button key={dir} type="button" style={{ marginRight: "10px" }}>{dir}</button>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {(selectedType === "Office" || selectedType === "Retail") && (
-                                        <div>
-                                            <h6>Carpet Area (sq.ft)</h6>
-                                            <Slider range min={200} max={10000} step={100} defaultValue={[500, 5000]} />
-                                        </div>
-                                    )}
-
-                                    {/* Apply Filters Button */}
-                                    <div style={{ textAlign: "right", marginTop: "25px" }}>
-                                        <button
-                                            type="button"
-                                            onClick={handleCloseAdvanced}
-                                            style={{
-                                                padding: "10px 24px",
-                                                borderRadius: "25px",
-                                                background: "#EC2126",
-                                                color: "#fff",
-                                                fontWeight: 600,
-                                                border: "none",
-                                                cursor: "pointer"
-                                            }}
-                                        >
-                                            Apply Filters
-                                        </button>
-                                    </div>
-                                </Modal>
-
-                                {/* Property Cards Section */}
-
-                                {/* <div className="widget-box bg-surface box-latest-property">
-                                    <div className="h7 fw-7 title">Latest Properties</div>
-                                    <ul>
-                                        {latest.map((property) => (
-                                            <li key={property.id} className="latest-property-item">
-                                                <Link to={`/property/${item.id}`} className="images-style">
-                                                    <img src={property.image} alt="img" />
-                                                </Link>
-
-                                                <div className="content">
-                                                    <div className="h7 text-capitalize fw-7">
-                                                        <a className="link">
-                                                            {property.name}
-                                                        </a>
-                                                    </div>
-                                                    <ul className="meta-list">
-                                                        <li className="item">
-                                                            <span>Bed:</span>
-                                                            <span className="fw-7">{property.beds}</span>
-                                                        </li>
-                                                        <li className="item">
-                                                            <span>Bath:</span>
-                                                            <span className="fw-7">{property.baths}</span>
-                                                        </li>
-                                                        <li className="item">
-                                                            <span className="fw-7">{property.size}</span>
-                                                        </li>
-                                                    </ul>
-                                                    <div className="d-flex align-items-center">
-                                                        <div className="h7 fw-7">${property.priceValue}</div>
-                                                        <span className="text-variant-1">{property.priceUnit}</span>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div> */}
 
                             </div>
 
                         </div>
                         <div className="col-xl-8 col-lg-7">
                             <div className="tab-content">
+
+
+
                                 <div className="tab-pane fade" id="gridLayout" role="tabpanel">
                                     <div className="row">
 
@@ -458,6 +552,7 @@ const Listing = () => {
                                         <li><a href="#" className="nav-item"><i className="icon icon-arr-r"></i></a></li>
                                     </ul> */}
                                 </div>
+
                                 <div
                                     className="tab-pane fade active show"
                                     id="listLayout"
@@ -466,80 +561,92 @@ const Listing = () => {
                                     <div className="row">
                                         {loading
                                             ? [...Array(limit)].map((_, i) => <SkeletonCard key={i} />)
-                                            : properties.map((property) => (
-                                                <div className="col-md-12" key={property.id}>
-                                                    <div className="homeya-box list-style-1 list-style-2">
-                                                        <Link to={`/property/${property.id}`} className="images-group">
-                                                            <div className="images-style">
-                                                                <img
-                                                                    src={
-                                                                        property.image
-                                                                            ? `${api.imageUrl}/${property.image}`
-                                                                            : "https://themesflat.co/html/homzen/images/home/house-2.jpg"
-                                                                    }
-                                                                    alt={property.name}
-                                                                    style={{
-                                                                        width: "100%",       // full width of container
-                                                                        height: "220px",     // fixed height
-                                                                        objectFit: "cover",  // crops instead of stretching
-                                                                        borderRadius: "8px", // optional rounded corners
-                                                                    }}
-                                                                />
+                                            : properties.length === 0 ? (
+                                                <div className="col-12 text-center py-5 mt-3">
+                                                    <img
+                                                        src={nodata} // 👈 replace with your own image path
+                                                        alt="No Property Found"
+                                                        style={{ maxWidth: "280px", marginBottom: "20px" }}
+                                                    />
+                                                    <h5>No Property Found</h5>
+                                                    <p>Try adjusting your filters or search criteria.</p>
+                                                </div>
+                                            ) : (
+                                                properties.map((property) => (
+                                                    <div className="col-md-12" key={property.id}>
+                                                        <div className="homeya-box list-style-1 list-style-2">
+                                                            <Link to={`/property/${property.id}`} className="images-group">
+                                                                <div className="images-style">
+                                                                    <img
+                                                                        src={
+                                                                            property.image
+                                                                                ? `${api.imageUrl}/${property.image}`
+                                                                                : "https://themesflat.co/html/homzen/images/home/house-2.jpg"
+                                                                        }
+                                                                        alt={property.name}
+                                                                        style={{
+                                                                            width: "100%",       // full width of container
+                                                                            height: "220px",     // fixed height
+                                                                            objectFit: "cover",  // crops instead of stretching
+                                                                            borderRadius: "8px", // optional rounded corners
+                                                                        }}
+                                                                    />
 
-                                                            </div>
-                                                            <div className="top">
-                                                                <ul className="d-flex gap-4 flex-wrap">
-                                                                    <li className="flag-tag style-1">{property.for}</li>
-                                                                </ul>
-                                                            </div>
-                                                            <div className="bottom">
-                                                                <span className="flag-tag style-2">
-                                                                    {property.type}
-                                                                </span>
-                                                            </div>
-                                                        </Link>
-                                                        <div className="content" onClick={() => navigate(`/property/${property.id}`)}>
-                                                            <div className="archive-top">
-                                                                <div className="h7 text-capitalize fw-7">
-                                                                    {property.name}
                                                                 </div>
-                                                                <div className="desc">
-                                                                    <i className="fs-16 icon icon-mapPin"></i>
-                                                                    <p>{property.location}</p>
+                                                                <div className="top">
+                                                                    <ul className="d-flex gap-4 flex-wrap">
+                                                                        <li className="flag-tag style-1">{property.for}</li>
+                                                                    </ul>
                                                                 </div>
-                                                                <ul className="meta-list">
-                                                                    {property.metaInfo.map((meta, i) => (
-                                                                        <li className="item" key={i}>
-                                                                            <i className={`icon ${meta.icon}`}></i>{" "}
-                                                                            <span>{meta.label}</span>
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-
-                                                            </div>
-                                                            <div className="d-flex justify-content-between align-items-center archive-bottom">
-                                                                <div className="d-flex gap-8 align-items-center">
-                                                                    <div className="avatar avt-40 round">
-                                                                        <img
-                                                                            src="https://themesflat.co/html/homzen/images/avatar/avt-9.jpg"
-                                                                            alt="avt"
-                                                                        />
-                                                                    </div>
-                                                                    <span>{property.agentName}</span>
-                                                                </div>
-                                                                <div className="d-flex align-items-center">
-                                                                    <div className="h7 fw-7">
-                                                                        ₹{property.priceValue}
-                                                                    </div>
-                                                                    <span className="text-variant-1">
-                                                                        {property.priceUnit}
+                                                                <div className="bottom">
+                                                                    <span className="flag-tag style-2">
+                                                                        {property.type}
                                                                     </span>
+                                                                </div>
+                                                            </Link>
+                                                            <div className="content" onClick={() => navigate(`/property/${property.id}`)}>
+                                                                <div className="archive-top">
+                                                                    <div className="h7 text-capitalize fw-7">
+                                                                        {property.name}
+                                                                    </div>
+                                                                    <div className="desc">
+                                                                        <i className="fs-16 icon icon-mapPin"></i>
+                                                                        <p>{property.location}</p>
+                                                                    </div>
+                                                                    <ul className="meta-list">
+                                                                        {property.metaInfo.map((meta, i) => (
+                                                                            <li className="item" key={i}>
+                                                                                <i className={`icon ${meta.icon}`}></i>{" "}
+                                                                                <span>{meta.label}</span>
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+
+                                                                </div>
+                                                                <div className="d-flex justify-content-between align-items-center archive-bottom">
+                                                                    <div className="d-flex gap-8 align-items-center">
+                                                                        <div className="avatar avt-40 round">
+                                                                            <img
+                                                                                src="https://themesflat.co/html/homzen/images/avatar/avt-9.jpg"
+                                                                                alt="avt"
+                                                                            />
+                                                                        </div>
+                                                                        <span>{property.agentName}</span>
+                                                                    </div>
+                                                                    <div className="d-flex align-items-center">
+                                                                        <div className="h7 fw-7">
+                                                                            ₹{property.priceValue}
+                                                                        </div>
+                                                                        <span className="text-variant-1">
+                                                                            {property.priceUnit}
+                                                                        </span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))
+                                            )}
                                     </div>
 
                                     {/* Pagination */}
