@@ -1105,7 +1105,7 @@ const Properties = () => {
                             {/* Reviews - Keeping this section as it was */}
                             <div className="single-property-element single-wrapper-review">
                                 <div className="box-title-review d-flex justify-content-between align-items-center flex-wrap gap-20">
-                                    <div className="h7 fw-7">Guest Reviews</div>
+                                    <div className="h7 fw-7">Reviews</div>
                                     {propertyData?.review?.length > 1 && (
                                         <button
                                             type="button"
