@@ -816,50 +816,7 @@ const handleToggle = () => {
               </div>
 
 
-              <div className="menu-outer">
-                <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                  <ul className="navigation clearfix">
-                    {menuItems.map((item, index) => (
-                      <li
-                        key={index}
-                        className={`${item.className || ''} ${activeDropdown === index ? 'open' : ''}`}
-                        onClick={() => {
-                          if (item.submenu) {
-                            handleDropdownClick(index);
-                          } else if (item.onClick) {
-                            item.onClick();
-                            toggleMobileMenu();
-                          }
-                        }}
-                      >
-                        <a href="#" onClick={(e) => e.preventDefault()}>
-                          {item.label}
-                        </a>
-                        {item.submenu && (
-                          <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
-                            {item.submenu.map((sub, i) => (
-                              <li key={i}>
-                                <a
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    if (sub.onClick) {
-                                      sub.onClick();
-                                      toggleMobileMenu();
-                                    }
-                                  }}
-                                >
-                                  {sub.text}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+             
               {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
                 <></>
 
