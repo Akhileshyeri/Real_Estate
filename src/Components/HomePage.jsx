@@ -1476,10 +1476,11 @@ const HomePage = () => {
                                                             {/* 👤 User info */}
                                                             <div className="box-avt d-flex align-items-center gap-12">
                                                                 <div className="avatar avt-60 round">
+                                                               
                                                                     <img
                                                                         src={rev?.profile ? `${api.imageUrl}${rev.profile}` : "images/avatar/avt-7.jpg"}
                                                                         alt="avatar"
-                                                                        onError={(e) => { e.currentTarget.src = "images/avatar/avt-7.jpg"; }}
+                                                                        onError={(e) => { e.currentTarget.src = { download } }}
                                                                     />
 
                                                                 </div>

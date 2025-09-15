@@ -897,6 +897,7 @@ const Header = () => {
                 )}
               </div>
 
+<<<<<<< HEAD
               <div className="menu-outer">
                 <ul className="navigation clearfix">
                   {menuItemsMobile.map((item, index) => (
@@ -922,6 +923,12 @@ const Header = () => {
                         }}
                       >
                         <span>{item.label}</span>
+=======
+
+             
+              {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
+                <></>
+>>>>>>> 421f0f970edd1cd93f638789207c9963898ae34f
 
                         {/* Dropdown arrow only if submenu exists */}
                         {item.submenu && (

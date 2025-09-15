@@ -253,6 +253,17 @@ const Listing = () => {
                                 </li>
                             </ul>
                             {/* <div className="nice-select list-page" tabindex="0"><span className="current">12 Per Page</span>
+<<<<<<< HEAD
+=======
+                                <ul className="list">
+                                    <li data-value="1" className="option">10 Per Page</li>
+                                    <li data-value="2" className="option">11 Per Page</li>
+                                    <li data-value="3" className="option selected">12 Per Page</li>
+                                </ul>
+                            </div> */}
+                            <div className="nice-select list-page" tabIndex="0">
+                                <span className="current">{limit} Per Page</span>
+>>>>>>> 421f0f970edd1cd93f638789207c9963898ae34f
                                 <ul className="list">
                                     <li data-value="1" className="option">10 Per Page</li>
                                     <li data-value="2" className="option">11 Per Page</li>
@@ -294,6 +305,19 @@ const Listing = () => {
                                 </div>
                             </div>
 
+<<<<<<< HEAD
+=======
+
+
+
+                            <div className="nice-select list-sort" tabindex="0"><span className="current">Sort by (Default)</span>
+                                <ul className="list">
+                                    <li data-value="default" className="option selected">Sort by (Default)</li>
+                                    <li data-value="new" className="option">Newest</li>
+                                    <li data-value="old" className="option">Oldest</li>
+                                </ul>
+                            </div>
+>>>>>>> 421f0f970edd1cd93f638789207c9963898ae34f
                         </div>
                     </div>
                     <div className="row">
