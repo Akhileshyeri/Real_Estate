@@ -28,3 +28,15 @@
     transform: translateX(100%);
   }
 }
+.list-controls {
+  display: flex;
+  gap: 12px;          /* space between dropdowns */
+  margin-bottom: 15px;
+  width: "50%";
+}
+
+.list-controls .nice-select {
+  flex: 1;            /* both take equal width */
+  min-width: 0;  
+  width:"50%"     /* prevents overflow on small screens */
+}

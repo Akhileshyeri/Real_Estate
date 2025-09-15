@@ -8,16 +8,12 @@ import "./Listing.css";
 import nodata from "../assets/nodata.png"
 
 const Listing = () => {
-
     const { search } = useLocation();
-
-
-
-
+    const [limit, setLimit] = useState(10);
 
     const [properties, setProperties] = useState([]);
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10); // ✅ make it state
+
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
     // Advanced filter states (functionality only, NOT HomePage styling)
@@ -33,9 +29,7 @@ const Listing = () => {
     const [selectedCity, setSelectedCity] = useState("");
 
 
-
     const navigate = useNavigate();
-
 
 
     // 🔹 Track when initial filters are ready
@@ -84,28 +78,20 @@ const Listing = () => {
     useEffect(() => {
         if (!filtersReady) return;
         fetchList(page);
-    }, [page, filtersReady]);
+    }, [page, filtersReady, limit]);
+
+
+
 
 
 
     const fetchList = async (pageNumber = 1, filters = null) => {
-
-
-    // --- effect ---
-    useEffect(() => {
-        fetchList(page, limit);
-    }, [page, limit]); // ✅ refetch when limit changes
-
-
-    // --- API fetch function ---
-    const fetchList = async (pageNumber, currentLimit) => {
-
         setLoading(true);
         const fd = new FormData();
         fd.append("programType", "getProperties");
         fd.append("authToken", localStorage.getItem("authToken"));
         fd.append("page", pageNumber);
-        fd.append("limit", currentLimit);
+        fd.append("limit", limit);
 
         const appliedFilters = filters || {
             listingType: selectedListingType,
@@ -146,7 +132,6 @@ const Listing = () => {
 
             console.log(response)
             const { properties, page, limit } = response.data.data;
-
             const mapped = properties.map((item) => {
                 let priceValue = "N/A";
                 let priceUnit = "";
@@ -162,9 +147,14 @@ const Listing = () => {
                         : "N/A";
                 }
 
+                // dynamically prepare meta info
                 const metaInfo = [];
-                if (item.bedrooms) metaInfo.push({ icon: "icon-bed", label: `${item.bedrooms} Beds` });
-                if (item.bathrooms) metaInfo.push({ icon: "icon-bathtub", label: `${item.bathrooms} Baths` });
+                if (item.bedrooms) {
+                    metaInfo.push({ icon: "icon-bed", label: `${item.bedrooms} Beds` });
+                }
+                if (item.bathrooms) {
+                    metaInfo.push({ icon: "icon-bathtub", label: `${item.bathrooms} Baths` });
+                }
                 if (item.carpet_area) {
                     metaInfo.push({
                         icon: "icon-ruler",
@@ -191,10 +181,12 @@ const Listing = () => {
 
             setProperties(mapped);
 
+            // if API provides total count, compute totalPages
             if (response.data.data.total) {
-                setTotalPages(Math.ceil(response.data.data.total / currentLimit));
+                setTotalPages(Math.ceil(response.data.data.total / limit));
             } else {
-                setTotalPages(mapped.length < currentLimit ? page : page + 1);
+                // fallback: stop if less results than limit
+                setTotalPages(mapped.length < limit ? page : page + 1);
             }
         } catch (error) {
             console.error("Error fetching properties:", error);
@@ -233,9 +225,9 @@ const Listing = () => {
                 <div className="content p-3">
                     <div className="skeleton mb-2" style={{ height: "20px", width: "60%" }}></div>
                     <div>
-                    <div className="skeleton mb-2" style={{ height: "15px", width: "40%" }}></div>
-                    <div className="skeleton" style={{ height: "15px", width: "80%" }}></div>
-                    <div className="skeleton" style={{ height: "15px", width: "40%" }}></div>
+                        <div className="skeleton mb-2" style={{ height: "15px", width: "40%" }}></div>
+                        <div className="skeleton" style={{ height: "15px", width: "80%" }}></div>
+                        <div className="skeleton" style={{ height: "15px", width: "40%" }}></div>
                     </div>
                 </div>
             </div>
@@ -260,38 +252,48 @@ const Listing = () => {
                                     <a href="#listLayout" className="nav-link-item active" data-bs-toggle="tab"><i className="icon icon-list"></i></a>
                                 </li>
                             </ul>
-                            {/* --- Per Page Dropdown --- */}
-                            <div className="nice-select list-page" tabIndex="0">
-                                <span className="current">{limit} Per Page</span>
+                            {/* <div className="nice-select list-page" tabindex="0"><span className="current">12 Per Page</span>
                                 <ul className="list">
-                                    <li
-                                        className={`option ${limit === 5 ? "selected" : ""}`}
-                                        onClick={() => { setPage(1); setLimit(5); }}
-                                    >
-                                        5 Per Page
-                                    </li>
-                                    <li
-                                        className={`option ${limit === 10 ? "selected" : ""}`}
-                                        onClick={() => { setPage(1); setLimit(10); }}
-                                    >
-                                        10 Per Page
-                                    </li>
-                                    <li
-                                        className={`option ${limit === 15 ? "selected" : ""}`}
-                                        onClick={() => { setPage(1); setLimit(15); }}
-                                    >
-                                        15 Per Page
-                                    </li>
+                                    <li data-value="1" className="option">10 Per Page</li>
+                                    <li data-value="2" className="option">11 Per Page</li>
+                                    <li data-value="3" className="option selected">12 Per Page</li>
                                 </ul>
+                            </div> */}
+                            <div className="list-controls">
+                                <div className="nice-select list-page" tabIndex="0">
+                                    <span className="current">{limit} Per Page</span>
+                                    <ul className="list">
+                                        <li
+                                            className={`option ${limit === 5 ? "selected" : ""}`}
+                                            onClick={() => { setPage(1); setLimit(5); }}
+                                        >
+                                            5 Per Page
+                                        </li>
+                                        <li
+                                            className={`option ${limit === 10 ? "selected" : ""}`}
+                                            onClick={() => { setPage(1); setLimit(10); }}
+                                        >
+                                            10 Per Page
+                                        </li>
+                                        <li
+                                            className={`option ${limit === 15 ? "selected" : ""}`}
+                                            onClick={() => { setPage(1); setLimit(15); }}
+                                        >
+                                            15 Per Page
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="nice-select list-sort" tabIndex="0">
+                                    <span className="current">Sort by (Default)</span>
+                                    <ul className="list">
+                                        <li data-value="default" className="option selected">Sort by (Default)</li>
+                                        <li data-value="new" className="option">Newest</li>
+                                        <li data-value="old" className="option">Oldest</li>
+                                    </ul>
+                                </div>
                             </div>
 
-                            <div className="nice-select list-sort" tabindex="0"><span className="current">Sort by (Default)</span>
-                                <ul className="list">
-                                    <li data-value="default" className="option selected">Sort by (Default)</li>
-                                    <li data-value="new" className="option">Newest</li>
-                                    <li data-value="old" className="option">Oldest</li>
-                                </ul>
-                            </div>
                         </div>
                     </div>
                     <div className="row">
@@ -533,26 +535,6 @@ const Listing = () => {
                         <div className="col-xl-8 col-lg-7">
                             <div className="tab-content">
 
-
-
-                                <div className="tab-pane fade" id="gridLayout" role="tabpanel">
-                                    <div className="row">
-
-
-
-
-
-
-
-                                    </div>
-                                    {/* <ul className="wd-navigation">
-                                        <li><a href="#" className="nav-item active">1</a></li>
-                                        <li><a href="#" className="nav-item">2</a></li>
-                                        <li><a href="#" className="nav-item">3</a></li>
-                                        <li><a href="#" className="nav-item"><i className="icon icon-arr-r"></i></a></li>
-                                    </ul> */}
-                                </div>
-
                                 <div
                                     className="tab-pane fade active show"
                                     id="listLayout"
@@ -655,7 +637,10 @@ const Listing = () => {
                                             <li key={i}>
                                                 <button
                                                     style={{ border: "none" }}
-                                                    onClick={() => setPage(i + 1)}
+                                                    onClick={() => {
+                                                        setPage(i + 1);
+                                                        window.scrollTo({ top: 0, left: 0, behavior: "instant" }); // ✅ scroll here
+                                                    }}
                                                     className={`nav-item ${page === i + 1 ? "active" : ""}`}
                                                 >
                                                     {i + 1}
@@ -665,13 +650,17 @@ const Listing = () => {
                                         <li>
                                             <button
                                                 style={{ border: "none" }}
-                                                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                                                onClick={() => {
+                                                    setPage((prev) => Math.min(prev + 1, totalPages));
+                                                    window.scrollTo({ top: 0, left: 0, behavior: "instant" }); // ✅ scroll here too
+                                                }}
                                                 className="nav-item"
                                             >
                                                 <i className="icon icon-arr-r"></i>
                                             </button>
                                         </li>
                                     </ul>
+
                                 </div>
                             </div>
                         </div>
