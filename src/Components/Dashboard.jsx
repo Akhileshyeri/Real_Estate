@@ -809,8 +809,8 @@ const Dashboard = () => {
                                                                     // Image handling
                                                                     const defaultImg =
                                                                         "https://themesflat.co/html/homzen/images/home/house-1.jpg";
-                                                                    const imageUrl = property.property_images
-                                                                        ? property.property_images
+                                                                    const imageUrl = property.propertyImage
+                                                                        ? `${api.imageUrl}${property.propertyImage}`
                                                                         : defaultImg;
 
                                                                     return (
@@ -822,7 +822,15 @@ const Dashboard = () => {
                                                                                     onClick={() => navigate(`/property/${property.id}`)}
                                                                                 >
                                                                                     <div className="images">
-                                                                                        <img src={imageUrl} alt={property.title} />
+                                                                                        <img
+                                                                                            src={imageUrl}
+                                                                                            alt={property.title}
+                                                                                            onError={(e) => {
+                                                                                                e.currentTarget.onerror = null; // prevents infinite loop
+                                                                                                e.currentTarget.src = defaultImg;
+                                                                                            }}
+                                                                                        />
+
                                                                                     </div>
                                                                                     <div className="content">
                                                                                         <div className="title">
@@ -839,7 +847,7 @@ const Dashboard = () => {
                                                                                                 <span className="fw-4 text-variant-1">
                                                                                                     Posting date:
                                                                                                 </span>{" "}
-                                                                                               
+
 
 
                                                                                                 {property.created_at
