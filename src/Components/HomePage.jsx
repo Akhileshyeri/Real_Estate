@@ -82,6 +82,16 @@ const HomePage = () => {
         }
     }, [stickyBanner]);
 
+      const words = ["Dream Home", "Perfect Home", "Real Estate"];
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % words.length);
+    }, 2000); // change every 2 seconds
+    return () => clearInterval(interval);
+  }, [words.length]);
+
 
     const [selectedListingType, setSelectedListingType] = useState("rent"); // rent | sale
     const [selectedType, setSelectedType] = useState("All");
@@ -928,9 +938,9 @@ const HomePage = () => {
                                         {/* 👇 Only show button if properties exist */}
                                         {!loading && properties.length > 0 && (
                                             <div className="text-center mt-4">
-                                                <a href="/listing" className="tf-btn primary size-1">
+                                                <Link to="/listing" className="tf-btn primary size-1">
                                                     View All Properties
-                                                </a>
+                                                </Link>
                                             </div>
                                         )}
                                     </div>
@@ -1538,14 +1548,19 @@ const HomePage = () => {
                     </section> */}
 
                     {footerBannerUrl && (
-                        <div className="footer-banner text-center ">
+                        <div className="footer-banner text-center">
                             <img
                                 src={`${api.imageUrl}${footerBannerUrl}`}
                                 alt="Footer Banner"
-                                style={{ maxWidth: "1000px", height: "400px", minWidth: "1520px" }}
+                                style={{
+                                    maxWidth: "100%",   // fills container width responsively
+                                    height: "auto",     // maintains aspect ratio
+                                }}
                             />
                         </div>
                     )}
+
+                 
 
 
                     {/* ✅ Popup Banner Modal */}

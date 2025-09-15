@@ -52,6 +52,7 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -85,19 +86,22 @@
 
 /* Edit button -> red */
 .edit-btn {
-  background: #ED2027;   /* solid red */
+  background: #ED2027;
+  /* solid red */
 }
 
 /* Inquiry button -> grey */
 .inquiry-btn {
-  background: #666EB2;   /* Bootstrap neutral grey */
+  background: #666EB2;
+  /* Bootstrap neutral grey */
 }
 
 /* Review button -> yellowish / amber */
 .review-btn {
-  background:#D7A342
-;   /* Bootstrap warning yellow */
-  color: #000;           /* dark text for readability */
+  background: #F59E0B;
+  /* Bootstrap warning yellow */
+  color: #000;
+  /* dark text for readability */
 }
 
 
@@ -170,16 +174,22 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 250px;       /* adjust as needed */
-  width: 100%;         /* full width inside modal */
+  height: 250px;
+  /* adjust as needed */
+  width: 100%;
+  /* full width inside modal */
   text-align: center;
 }
 
 .no-inquiries p {
-  font-size: 20px;     /* increase font size */
-  font-weight: bold;   /* bold text */
-  color: #333;         /* darker text */
-  width: 100%;         /* stretch across container */
+  font-size: 20px;
+  /* increase font size */
+  font-weight: bold;
+  /* bold text */
+  color: #333;
+  /* darker text */
+  width: 100%;
+  /* stretch across container */
 }
 
 
@@ -191,15 +201,19 @@
   background: #fff;
   padding: 20px;
   border-radius: 8px;
-  width: 800px;        /* same fixed width */
-  max-height: 80vh;    /* never exceed 80% of viewport */
+  width: 800px;
+  /* same fixed width */
+  max-height: 80vh;
+  /* never exceed 80% of viewport */
   display: flex;
   flex-direction: column;
 }
 
 .inquiry-table-wrapper {
-  flex: 1;                     /* take remaining space */
-  overflow-y: auto;            /* scroll if content is bigger than available */
+  flex: 1;
+  /* take remaining space */
+  overflow-y: auto;
+  /* scroll if content is bigger than available */
   margin-top: 10px;
 }
 
@@ -207,7 +221,8 @@
   margin-top: 15px;
   display: flex;
   justify-content: center;
-  flex-shrink: 0;              /* keep cancel button at bottom */
+  flex-shrink: 0;
+  /* keep cancel button at bottom */
 }
 
 
@@ -216,9 +231,11 @@
 
 .table-header-actions {
   display: flex;
-  justify-content: flex-end; /* push to right */
+  justify-content: flex-end;
+  /* push to right */
   margin-bottom: 10px;
 }
+
 .view-btn {
   background: #dc3545;
   color: #fff;
@@ -230,4 +247,35 @@
   transition: 0.3s;
   margin-right: 15px;
 }
+.wd-filter {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
+.wd-filter > div {
+  position: relative; /* for labels */
+}
+
+.wd-filter input[type="date"],
+.wd-filter button {
+  padding: 8px;
+  border-radius: 8px;
+  width: 175px;
+  height: 50px;
+}
+
+/* Mobile version */
+@media (max-width: 600px) {
+  .wd-filter {
+    flex-direction: column; /* stack items vertically */
+    gap: 10px; /* vertical spacing */
+  }
+
+  .wd-filter > div,
+  .wd-filter input[type="date"],
+  .wd-filter button {
+    width: 100%; /* full width on mobile */
+  }
+}

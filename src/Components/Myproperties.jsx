@@ -5,6 +5,7 @@ import api from '../api/api';
 import "./Myproperties.css"
 import easy from "../assets/easy.png"
 import toast from 'react-hot-toast';
+import Arrow from '../assets/Arrow.png'
 
 
 
@@ -86,19 +87,16 @@ const Myproperties = () => {
             ]
         },
         {
-            label: 'Options', className: 'dropdown3',
+            label: 'My Properties', className: 'dropdown3',
             submenu: [
+                { text: 'My Profile', onClick: () => navigate('/myprofile') },
                 { text: 'Dashboard', onClick: () => navigate('/dashboard') },
                 { text: 'My Favorites', onClick: () => navigate('/myfavorites') },
-                { text: 'My Properties', onClick: () => navigate('/myproperties') },
+
                 // { text: 'Reviews', onClick: () => navigate('/reviews') },
             ]
         },
-        {
-            label: 'My Profile',
-            className: 'myprofile',
-            onClick: () => navigate('/myprofile')
-        }
+
     ];
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -310,9 +308,9 @@ const Myproperties = () => {
                                                                     <li><a href="" onClick={(e) => { e.preventDefault(); navigate('/Privacy-Policy'); }}>Privacy Policy</a></li>
                                                                 </ul>
                                                             </li>
-                                                            <li className="myprofile">
+                                                            {/* <li className="myprofile">
                                                                 <a href="" onClick={(e) => { e.preventDefault(); navigate('/myprofile'); }}>My profile</a>
-                                                            </li>
+                                                            </li> */}
                                                         </ul>
                                                     </div>
                                                 </nav>
@@ -339,25 +337,45 @@ const Myproperties = () => {
                                                             marginTop: '0.5rem'
                                                         }}
                                                     >
-                                                        <a className="dropdown-item" onClick={() => navigate('/myproperties')}>My Properties</a>
+                                                        <a className="dropdown-item" onClick={() => navigate('/myprofile')}>My Profile</a>
+                                                        <a className="dropdown-item" onClick={() => navigate("/dashboard")}>
+                                                            Dashboard
+                                                        </a>
                                                         <a className="dropdown-item" onClick={() => navigate('/myfavorites')}>My Favorites</a>
                                                         {/* <a className="dropdown-item" onClick={() => navigate('/reviews')}>Reviews</a> */}
-                                                        <a className="dropdown-item" onClick={() => navigate('/myprofile')}>My Profile</a>
+
                                                         <a className="dropdown-item" onClick={(e) => {
                                                             e.preventDefault();
-                                                            localStorage.removeItem("authToken"); // clear token
+                                                            localStorage.removeItem("authToken");
+                                                            localStorage.removeItem("addPropertyForm"); // clear token
+                                                            localStorage.removeItem("email"); // clear token
+                                                            localStorage.removeItem("hasSeenPopup"); // clear token
+                                                            localStorage.removeItem("hasSeenSticky"); // clear token
+                                                            localStorage.removeItem("mobile"); // clear token
+                                                            localStorage.removeItem("name"); // clear token
+                                                            localStorage.removeItem("photo"); // clear token
+                                                            localStorage.removeItem("userEmail"); // clear token
+                                                            localStorage.removeItem("userMobile"); // clear token
+                                                            localStorage.removeItem("userName"); // clear token
+                                                            localStorage.removeItem("userProfile"); // clear token
+                                                            localStorage.removeItem("usertype");// clear token
                                                             navigate("/home"); // redirect after logout
                                                             window.location.reload(); // reload so header updates
                                                         }}>Logout</a>
 
                                                     </div>
                                                 </div>
-                                                <div className="flat-bt-top">
+                                                <div className="button-mobi-sell">
                                                     <a className="tf-btn primary" onClick={(e) => {
                                                         e.preventDefault();
                                                         // Navigate to add property if logged in
                                                         navigate("/addproperty");
-                                                    }}>Add Property</a>                                                </div>
+                                                    }}>Add Property</a>
+
+
+
+
+                                                </div>
                                             </div>
 
                                             <div className="mobile-nav-toggler mobile-button" onClick={toggleMobileMenu}><span></span></div>
@@ -393,16 +411,34 @@ const Myproperties = () => {
                                                                 }
                                                             }}
                                                         >
-                                                            <a href="" onClick={(e) => e.preventDefault()}>
+                                                            <a href="" onClick={(e) => e.preventDefault()}
+                                                                style={{
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "space-between", // 👈 pushes text left, icon right
+                                                                    width: "100%"
+                                                                }}>
                                                                 {item.label}
-                                                                {item.submenu && <span className=""></span>}
+                                                                {item.submenu && (
+                                                                    <img
+                                                                        src={Arrow}
+                                                                        alt="dropdown"
+                                                                        style={{
+                                                                            width: "14px",
+                                                                            height: "14px",
+                                                                            marginRight: "15px",
+                                                                            transition: "transform 0.3s",
+                                                                            transform: activeDropdown === index ? "rotate(180deg)" : "rotate(0deg)"
+                                                                        }}
+                                                                    />
+                                                                )}
                                                             </a>
                                                             {item.submenu && (
-                                                                <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
+                                                                <ul style={{ display: activeDropdown === index ? "block" : "none" }}>
                                                                     {item.submenu.map((sub, i) => (
                                                                         <li key={i}>
                                                                             <a
-                                                                                href="#"
+                                                                                href=""
                                                                                 onClick={(e) => {
                                                                                     e.preventDefault();
                                                                                     if (sub.onClick) {
@@ -420,14 +456,44 @@ const Myproperties = () => {
                                                         </li>
                                                     ))}
                                                 </ul>
+
                                             </div>
                                         </div>
                                         <div className="button-mobi-sell">
-                                            <a className="tf-btn primary" onClick={(e) => {
+                                            <a className="tf-btn primary" style={{ marginBottom: "1rem" }} onClick={(e) => {
                                                 e.preventDefault();
                                                 // Navigate to add property if logged in
                                                 navigate("/addproperty");
-                                            }}>Add Property</a>                                        </div>
+                                            }}>Add Property</a>
+
+
+                                            <a
+                                                className="tf-btn primary"
+                                                href=""
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    localStorage.removeItem("authToken");
+                                                    localStorage.removeItem("addPropertyForm"); // clear token
+                                                    localStorage.removeItem("email"); // clear token
+                                                    localStorage.removeItem("hasSeenPopup"); // clear token
+                                                    localStorage.removeItem("hasSeenSticky"); // clear token
+                                                    localStorage.removeItem("mobile"); // clear token
+                                                    localStorage.removeItem("name"); // clear token
+                                                    localStorage.removeItem("photo"); // clear token
+                                                    localStorage.removeItem("userEmail"); // clear token
+                                                    localStorage.removeItem("userMobile"); // clear token
+                                                    localStorage.removeItem("userName"); // clear token
+                                                    localStorage.removeItem("userProfile"); // clear token
+                                                    localStorage.removeItem("usertype");// clear token
+                                                    navigate("/home"); // redirect after logout
+                                                    window.location.reload(); // reload so header updates
+                                                }}
+                                            >
+                                                <span className="icon icon-sign-out"></span> Logout
+                                            </a>
+
+
+                                        </div>
                                         <div className="mobi-icon-box">
                                             <div className="box d-flex align-items-center">
                                                 <span className="icon icon-phone2"></span>
@@ -472,7 +538,19 @@ const Myproperties = () => {
                                         href=""
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            localStorage.removeItem("authToken"); // clear token
+                                            localStorage.removeItem("authToken");
+                                            localStorage.removeItem("addPropertyForm"); // clear token
+                                            localStorage.removeItem("email"); // clear token
+                                            localStorage.removeItem("hasSeenPopup"); // clear token
+                                            localStorage.removeItem("hasSeenSticky"); // clear token
+                                            localStorage.removeItem("mobile"); // clear token
+                                            localStorage.removeItem("name"); // clear token
+                                            localStorage.removeItem("photo"); // clear token
+                                            localStorage.removeItem("userEmail"); // clear token
+                                            localStorage.removeItem("userMobile"); // clear token
+                                            localStorage.removeItem("userName"); // clear token
+                                            localStorage.removeItem("userProfile"); // clear token
+                                            localStorage.removeItem("usertype");
                                             navigate("/home"); // redirect after logout
                                             window.location.reload(); // reload so header updates
                                         }}
@@ -494,31 +572,66 @@ const Myproperties = () => {
                                     <span className="body-1">Show Dashboard</span>
                                 </div> */}
                                 <div className="row">
-                                    <div className="wd-filter" style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                                        <input
-                                            type="date"
-                                            id="datepicker1"
-                                            className="ip-datepicker icon"
-                                            placeholder="From Date"
-                                            value={fromDate}
-                                            onChange={(e) => setFromDate(e.target.value)}
-                                            style={{ width: "200px", padding: "8px", borderRadius: "8px" }}
-                                        />
+                                    <div className="wd-filter">
 
-                                        <input
-                                            type="date"
-                                            id="datepicker2"
-                                            className="ip-datepicker icon"
-                                            placeholder="To Date"
-                                            value={toDate}
-                                            onChange={(e) => setToDate(e.target.value)}
-                                            style={{ width: "200px", padding: "8px", borderRadius: "8px" }}
-                                        />
+                                        {/* From Date */}
+                                        <div style={{ position: "relative" }}>
+                                            <label
+                                                htmlFor="datepicker1"
+                                                style={{
+                                                    position: "absolute",
+                                                    top: "-10px",
+                                                    left: "5px",
+                                                    fontSize: "12px",
+                                                    fontWeight: "500",
 
+                                                    background: "#fff",
+                                                    padding: "0 4px"
+                                                }}
+                                            >
+                                                From
+                                            </label>
+                                            <input
+                                                type="date"
+                                                id="datepicker1"
+                                                className="ip-datepicker icon"
+                                                placeholder="From Date"
+                                                value={fromDate}
+                                                onChange={(e) => setFromDate(e.target.value)}
+                                            />
+                                        </div>
+
+                                        {/* To Date */}
+                                        <div style={{ position: "relative" }}>
+                                            <label
+                                                htmlFor="datepicker2"
+                                                style={{
+                                                    position: "absolute",
+                                                    top: "-10px",
+                                                    left: "5px",
+                                                    fontSize: "12px",
+                                                    fontWeight: "500",
+
+                                                    background: "#fff",
+                                                    padding: "0 4px"
+                                                }}
+                                            >
+                                                To
+                                            </label>
+                                            <input
+                                                type="date"
+                                                id="datepicker2"
+                                                className="ip-datepicker icon"
+                                                placeholder="To Date"
+                                                value={toDate}
+                                                onChange={(e) => setToDate(e.target.value)}
+                                            />
+                                        </div>
+
+                                        {/* Filter Button */}
                                         <button
                                             type="button"
                                             className="tf-btn primary flex items-center gap-2"
-                                            style={{ padding: "8px 16px", borderRadius: "8px", whiteSpace: "nowrap" }}
                                             onClick={handleFilter}
                                         >
                                             <img
@@ -527,14 +640,10 @@ const Myproperties = () => {
                                                 style={{ width: "20px", height: "25px", marginRight: "10px" }}
                                             />
                                             Filter
-
                                         </button>
-
-
-
-
                                     </div>
                                 </div>
+
 
                                 <div className="widget-box-2 wd-listing mt-3">
                                     <h6 className="title">My Properties</h6>
@@ -560,7 +669,7 @@ const Myproperties = () => {
                                                                         <div className="content">
                                                                             <div className="skeleton-box" style={{ width: "150px", height: "18px", marginBottom: "6px" }}></div>
                                                                             <div className="skeleton-box" style={{ width: "100px", height: "14px", marginBottom: "6px" }}></div>
-                                                                           
+
                                                                         </div>
                                                                     </div>
                                                                 </td>
@@ -597,11 +706,22 @@ const Myproperties = () => {
                                                                     : "-----";
 
                                                             // Image handling
+                                                            // const defaultImg =
+                                                            //     "https://themesflat.co/html/homzen/images/home/house-1.jpg";
+                                                            // const imageUrl = property.property_images
+                                                            //     ? property.property_images
+                                                            //     : defaultImg;
+
+
                                                             const defaultImg =
                                                                 "https://themesflat.co/html/homzen/images/home/house-1.jpg";
-                                                            const imageUrl = property.property_images
-                                                                ? property.property_images
+                                                            const imageUrl = property.propertyImage
+                                                                ? `${api.imageUrl}${property.propertyImage}`
                                                                 : defaultImg;
+
+
+                                                         
+
 
                                                             return (
                                                                 <tr key={property.id} className="file-delete">
@@ -616,7 +736,29 @@ const Myproperties = () => {
                                                                             }
                                                                         >
                                                                             <div className="images">
-                                                                                <img src={imageUrl} alt={property.title} />
+                                                                                {/* <img src={imageUrl} alt={property.title} /> */}
+
+
+                                                                                {/* <img
+                                                                                    src={
+                                                                                        property.propertyImage
+                                                                                            ? `${api.imageUrl}${property.propertyImage}`
+                                                                                            : "https://themesflat.co/html/homzen/images/home/house-1.jpg"
+                                                                                    }
+                                                                                    alt={property.title}
+                                                                                /> */}
+
+
+                                                                                <img
+                                                                                    src={imageUrl}
+                                                                                    alt={property.title}
+                                                                                    onError={(e) => {
+                                                                                        e.currentTarget.onerror = null; // prevents infinite loop
+                                                                                        e.currentTarget.src = defaultImg;
+                                                                                    }}
+                                                                                />
+
+
                                                                             </div>
                                                                             <div className="content">
                                                                                 <div
@@ -637,10 +779,20 @@ const Myproperties = () => {
                                                                                 </div>
                                                                                 <div className="text-date">
                                                                                     <p className="fw-5">
-                                                                                        <span className="fw-4 text-variant-1">Posting date:</span>{" "}
-                                                                                        {property.created_at?.split(" ")[0]}
+                                                                                        <span className="fw-6 text-variant-1 " style={{ color: "#161E2D" }}>Posting date:</span>
+                                                                                        {" "}
+                                                                                        {property.created_at
+                                                                                            ? (() => {
+                                                                                                const d = new Date(property.created_at);
+                                                                                                const day = String(d.getDate()).padStart(2, "0");
+                                                                                                const month = String(d.getMonth() + 1).padStart(2, "0");
+                                                                                                const year = d.getFullYear();
+                                                                                                return `${day}-${month}-${year}`;
+                                                                                            })()
+                                                                                            : "-----"}
                                                                                     </p>
                                                                                 </div>
+
                                                                                 <div className="text-1 fw-7">{property.property_type}</div>
                                                                             </div>
                                                                         </div>

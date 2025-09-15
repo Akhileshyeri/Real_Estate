@@ -5,7 +5,7 @@ import easy from "../assets/easy.png"
 import Header from './Header';
 import toast from 'react-hot-toast';
 import './Myprofile.css';
-
+import Arrow from '../assets/Arrow.png'
 
 
 
@@ -23,7 +23,7 @@ const MyProfile = () => {
     const [showDashboard, setShowDashboard] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [loading, setLoading] = useState(true); // 👈 loader state
-    
+
 
 
 
@@ -124,7 +124,7 @@ const MyProfile = () => {
                 { text: 'Privacy Policy', onClick: () => navigate('/Privacy-Policy') },
             ]
         }, {
-            label: 'Options', className: 'dropdown3',
+            label: 'My profile', className: 'dropdown3',
             submenu: [
                 { text: 'Dashboard', onClick: () => navigate('/dashboard') },
                 { text: 'My Favorites', onClick: () => navigate('/myfavorites') },
@@ -172,6 +172,9 @@ const MyProfile = () => {
                         : `${api.imageUrl}/${user.profile}`
                     : "https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=";
 
+
+                localStorage.setItem("userProfile", profileUrl);
+                setAvatar(profileUrl);
                 setCustomer((prev) => ({
                     ...prev,
                     ...user,
@@ -304,7 +307,7 @@ const MyProfile = () => {
 
 
 
-                    
+
 
                 setCustomer({
                     firstName: agent.agentName || "",
@@ -319,15 +322,20 @@ const MyProfile = () => {
                     profile: profileUrl,
                     file: null,
                 });
-            }
+            // ✅ Update localStorage + avatar (for Header / UI display)
+      localStorage.setItem("userProfile", profileUrl);
+      localStorage.setItem("userName", agent.agentName || "Guest User");
+      localStorage.setItem("userEmail", agent.email || "");
+      localStorage.setItem("userMobile", agent.mobileNo || "");
 
-        } catch (error) {
-            console.error("agent error:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
+      setAvatar(profileUrl); // 👈 Immediate update (no refresh needed)
+    }
+  } catch (error) {
+    console.error("agent error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
 
 
@@ -399,6 +407,7 @@ const MyProfile = () => {
             getCustomerDetails();
         }
     }, []);
+
 
 
 
@@ -591,7 +600,7 @@ const MyProfile = () => {
                                                                     }
                                                                 }}
                                                             >
-                                                                <a href="#" onClick={(e) => e.preventDefault()}>Pages</a>
+                                                                <a href="" onClick={(e) => e.preventDefault()}>Pages</a>
                                                                 <ul style={{ display: activeDropdown === 3 ? 'block' : 'none' }}>
                                                                     <li><a href="aboutus" onClick={(e) => { e.preventDefault(); navigate('/aboutus'); }}>About Us</a></li>
                                                                     <li><a href="contactus" onClick={(e) => { e.preventDefault(); navigate('/contactus'); }}>Contact Us</a></li>
@@ -634,7 +643,7 @@ const MyProfile = () => {
 
 
 
-                                                        
+
 
                                                         {!isMobileView && (
                                                             <p
@@ -663,6 +672,9 @@ const MyProfile = () => {
                                                                 minWidth: "160px",
                                                             }}
                                                         >
+                                                            <a className="dropdown-item" onClick={() => navigate("/dashboard")}>
+                                                                Dashboard
+                                                            </a>
                                                             <a className="dropdown-item" onClick={() => navigate("/myproperties")}>
                                                                 My Properties
                                                             </a>
@@ -675,7 +687,19 @@ const MyProfile = () => {
 
                                                             <a className="dropdown-item" onClick={(e) => {
                                                                 e.preventDefault();
-                                                                localStorage.removeItem("authToken"); // clear token
+                                                                localStorage.removeItem("authToken");
+                                                                localStorage.removeItem("addPropertyForm"); // clear token
+                                                                localStorage.removeItem("email"); // clear token
+                                                                localStorage.removeItem("hasSeenPopup"); // clear token
+                                                                localStorage.removeItem("hasSeenSticky"); // clear token
+                                                                localStorage.removeItem("mobile"); // clear token
+                                                                localStorage.removeItem("name"); // clear token
+                                                                localStorage.removeItem("photo"); // clear token
+                                                                localStorage.removeItem("userEmail"); // clear token
+                                                                localStorage.removeItem("userMobile"); // clear token
+                                                                localStorage.removeItem("userName"); // clear token
+                                                                localStorage.removeItem("userProfile"); // clear token
+                                                                localStorage.removeItem("usertype"); // clear token
                                                                 navigate("/home"); // redirect after logout
                                                                 window.location.reload(); // reload so header updates
                                                             }}>
@@ -725,16 +749,34 @@ const MyProfile = () => {
                                                                 }
                                                             }}
                                                         >
-                                                            <a href="#" onClick={(e) => e.preventDefault()}>
+                                                            <a href="" onClick={(e) => e.preventDefault()}
+                                                                style={{
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "space-between", // 👈 pushes text left, icon right
+                                                                    width: "100%"
+                                                                }}>
                                                                 {item.label}
-                                                                {item.submenu && <span className=""></span>}
+                                                                {item.submenu && (
+                                                                    <img
+                                                                        src={Arrow}
+                                                                        alt="dropdown"
+                                                                        style={{
+                                                                            width: "14px",
+                                                                            height: "14px",
+                                                                            marginRight: "15px",
+                                                                            transition: "transform 0.3s",
+                                                                            transform: activeDropdown === index ? "rotate(180deg)" : "rotate(0deg)"
+                                                                        }}
+                                                                    />
+                                                                )}
                                                             </a>
                                                             {item.submenu && (
-                                                                <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
+                                                                <ul style={{ display: activeDropdown === index ? "block" : "none" }}>
                                                                     {item.submenu.map((sub, i) => (
                                                                         <li key={i}>
                                                                             <a
-                                                                                href="#"
+                                                                                href=""
                                                                                 onClick={(e) => {
                                                                                     e.preventDefault();
                                                                                     if (sub.onClick) {
@@ -752,14 +794,44 @@ const MyProfile = () => {
                                                         </li>
                                                     ))}
                                                 </ul>
+
                                             </div>
                                         </div>
                                         <div className="button-mobi-sell">
-                                            <a className="tf-btn primary" onClick={(e) => {
+                                            <a className="tf-btn primary" style={{ marginBottom: "1rem" }} onClick={(e) => {
                                                 e.preventDefault();
                                                 // Navigate to add property if logged in
                                                 navigate("/addproperty");
-                                            }}>Add Property</a>                                        </div>
+                                            }}>Add Property</a>
+
+
+                                            <a
+                                                className="tf-btn primary"
+                                                href=""
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    localStorage.removeItem("authToken");
+                                                    localStorage.removeItem("addPropertyForm"); // clear token
+                                                    localStorage.removeItem("email"); // clear token
+                                                    localStorage.removeItem("hasSeenPopup"); // clear token
+                                                    localStorage.removeItem("hasSeenSticky"); // clear token
+                                                    localStorage.removeItem("mobile"); // clear token
+                                                    localStorage.removeItem("name"); // clear token
+                                                    localStorage.removeItem("photo"); // clear token
+                                                    localStorage.removeItem("userEmail"); // clear token
+                                                    localStorage.removeItem("userMobile"); // clear token
+                                                    localStorage.removeItem("userName"); // clear token
+                                                    localStorage.removeItem("userProfile"); // clear token
+                                                    localStorage.removeItem("usertype");// clear token
+                                                    navigate("/home"); // redirect after logout
+                                                    window.location.reload(); // reload so header updates
+                                                }}
+                                            >
+                                                <span className="icon icon-sign-out"></span> Logout
+                                            </a>
+
+
+                                        </div>
                                         <div className="mobi-icon-box">
                                             <div className="box d-flex align-items-center">
                                                 <span className="icon icon-phone2"></span>
@@ -803,7 +875,19 @@ const MyProfile = () => {
                                         href=""
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            localStorage.removeItem("authToken"); // clear token
+                                            localStorage.removeItem("authToken");
+                                            localStorage.removeItem("addPropertyForm"); // clear token
+                                            localStorage.removeItem("email"); // clear token
+                                            localStorage.removeItem("hasSeenPopup"); // clear token
+                                            localStorage.removeItem("hasSeenSticky"); // clear token
+                                            localStorage.removeItem("mobile"); // clear token
+                                            localStorage.removeItem("name"); // clear token
+                                            localStorage.removeItem("photo"); // clear token
+                                            localStorage.removeItem("userEmail"); // clear token
+                                            localStorage.removeItem("userMobile"); // clear token
+                                            localStorage.removeItem("userName"); // clear token
+                                            localStorage.removeItem("userProfile"); // clear token
+                                            localStorage.removeItem("usertype");// clear token
                                             navigate("/home"); // redirect after logout
                                             window.location.reload(); // reload so header updates
                                         }}

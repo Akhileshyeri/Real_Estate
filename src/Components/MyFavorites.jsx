@@ -5,6 +5,8 @@ import api from '../api/api';
 import "./MyFavorites.css"
 import easy from "../assets/easy.png"
 import toast from 'react-hot-toast';
+import Arrow from '../assets/Arrow.png'
+import Trash from '../assets/delete.png'
 
 
 
@@ -87,19 +89,16 @@ const MyFavorites = () => {
             ]
         },
         {
-            label: 'Options', className: 'dropdown3',
+            label: 'My Favorites', className: 'dropdown3',
             submenu: [
+                { text: 'My Profile', onClick: () => navigate('/myprofile') },
                 { text: 'Dashboard', onClick: () => navigate('/dashboard') },
-                { text: 'My Favorites', onClick: () => navigate('/myfavorites') },
+
                 { text: 'My Properties', onClick: () => navigate('/myproperties') },
                 // { text: 'Reviews', onClick: () => navigate('/reviews') },
             ]
         },
-        {
-            label: 'My Profile',
-            className: 'myprofile',
-            onClick: () => navigate('/myprofile')
-        }
+
     ];
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -236,9 +235,9 @@ const MyFavorites = () => {
                                                                     <li><Link to="" onClick={(e) => { e.preventDefault(); navigate('/Privacy-Policy'); }}>Privacy Policy</Link> </li>
                                                                 </ul>
                                                             </li>
-                                                            <li className="myprofile">
+                                                            {/* <li className="myprofile">
                                                                 <Link to="" onClick={(e) => { e.preventDefault(); navigate('/myprofile'); }}>My profile</Link>
-                                                            </li>
+                                                            </li> */}
                                                         </ul>
                                                     </div>
                                                 </nav>
@@ -266,13 +265,29 @@ const MyFavorites = () => {
                                                             marginTop: '0.5rem'
                                                         }}
                                                     >
-                                                        <Link className="dropdown-item" to="/myproperties">My Properties</Link>
-                                                        <Link className="dropdown-item" to="/myfavorites">My Favorites</Link>
-                                                        {/* <Link className="dropdown-item" to="/reviews">Reviews</Link> */}
                                                         <Link className="dropdown-item" to="/myprofile">My Profile</Link>
+                                                        <a className="dropdown-item" onClick={() => navigate("/dashboard")}>
+                                                            Dashboard
+                                                        </a>
+                                                        <Link className="dropdown-item" to="/myproperties">My Properties</Link>
+
+                                                        {/* <Link className="dropdown-item" to="/reviews">Reviews</Link> */}
+
                                                         <Link className="dropdown-item" onClick={(e) => {
                                                             e.preventDefault();
-                                                            localStorage.removeItem("authToken"); // clear token
+                                                            localStorage.removeItem("authToken");
+                                                            localStorage.removeItem("addPropertyForm"); // clear token
+                                                            localStorage.removeItem("email"); // clear token
+                                                            localStorage.removeItem("hasSeenPopup"); // clear token
+                                                            localStorage.removeItem("hasSeenSticky"); // clear token
+                                                            localStorage.removeItem("mobile"); // clear token
+                                                            localStorage.removeItem("name"); // clear token
+                                                            localStorage.removeItem("photo"); // clear token
+                                                            localStorage.removeItem("userEmail"); // clear token
+                                                            localStorage.removeItem("userMobile"); // clear token
+                                                            localStorage.removeItem("userName"); // clear token
+                                                            localStorage.removeItem("userProfile"); // clear token
+                                                            localStorage.removeItem("usertype");
                                                             navigate("/home"); // redirect after logout
                                                             window.location.reload(); // reload so header updates
                                                         }}>Logout</Link>
@@ -321,16 +336,34 @@ const MyFavorites = () => {
                                                                 }
                                                             }}
                                                         >
-                                                            <Link to="" onClick={(e) => e.preventDefault()}>
+                                                            <a href="" onClick={(e) => e.preventDefault()}
+                                                                style={{
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "space-between", // 👈 pushes text left, icon right
+                                                                    width: "100%"
+                                                                }}>
                                                                 {item.label}
-                                                                {item.submenu && <span className=""></span>}
-                                                            </Link>
+                                                                {item.submenu && (
+                                                                    <img
+                                                                        src={Arrow}
+                                                                        alt="dropdown"
+                                                                        style={{
+                                                                            width: "14px",
+                                                                            height: "14px",
+                                                                            marginRight: "15px",
+                                                                            transition: "transform 0.3s",
+                                                                            transform: activeDropdown === index ? "rotate(180deg)" : "rotate(0deg)"
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                            </a>
                                                             {item.submenu && (
-                                                                <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
+                                                                <ul style={{ display: activeDropdown === index ? "block" : "none" }}>
                                                                     {item.submenu.map((sub, i) => (
                                                                         <li key={i}>
-                                                                            <Link
-
+                                                                            <a
+                                                                                href=""
                                                                                 onClick={(e) => {
                                                                                     e.preventDefault();
                                                                                     if (sub.onClick) {
@@ -340,7 +373,7 @@ const MyFavorites = () => {
                                                                                 }}
                                                                             >
                                                                                 {sub.text}
-                                                                            </Link>
+                                                                            </a>
                                                                         </li>
                                                                     ))}
                                                                 </ul>
@@ -348,14 +381,43 @@ const MyFavorites = () => {
                                                         </li>
                                                     ))}
                                                 </ul>
+
                                             </div>
                                         </div>
                                         <div className="button-mobi-sell">
-                                            <a className="tf-btn primary" onClick={(e) => {
+                                            <a className="tf-btn primary" style={{ marginBottom: "1rem" }} onClick={(e) => {
                                                 e.preventDefault();
                                                 // Navigate to add property if logged in
                                                 navigate("/addproperty");
                                             }}>Add Property</a>
+
+
+                                            <a
+                                                className="tf-btn primary"
+                                                href=""
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    localStorage.removeItem("authToken");
+                                                    localStorage.removeItem("addPropertyForm"); // clear token
+                                                    localStorage.removeItem("email"); // clear token
+                                                    localStorage.removeItem("hasSeenPopup"); // clear token
+                                                    localStorage.removeItem("hasSeenSticky"); // clear token
+                                                    localStorage.removeItem("mobile"); // clear token
+                                                    localStorage.removeItem("name"); // clear token
+                                                    localStorage.removeItem("photo"); // clear token
+                                                    localStorage.removeItem("userEmail"); // clear token
+                                                    localStorage.removeItem("userMobile"); // clear token
+                                                    localStorage.removeItem("userName"); // clear token
+                                                    localStorage.removeItem("userProfile"); // clear token
+                                                    localStorage.removeItem("usertype");// clear token
+                                                    navigate("/home"); // redirect after logout
+                                                    window.location.reload(); // reload so header updates
+                                                }}
+                                            >
+                                                <span className="icon icon-sign-out"></span> Logout
+                                            </a>
+
+
                                         </div>
                                         <div className="mobi-icon-box">
                                             <div className="box d-flex align-items-center">
@@ -401,7 +463,19 @@ const MyFavorites = () => {
                                         href=""
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            localStorage.removeItem("authToken"); // clear token
+                                            localStorage.removeItem("authToken");
+                                            localStorage.removeItem("addPropertyForm"); // clear token
+                                            localStorage.removeItem("email"); // clear token
+                                            localStorage.removeItem("hasSeenPopup"); // clear token
+                                            localStorage.removeItem("hasSeenSticky"); // clear token
+                                            localStorage.removeItem("mobile"); // clear token
+                                            localStorage.removeItem("name"); // clear token
+                                            localStorage.removeItem("photo"); // clear token
+                                            localStorage.removeItem("userEmail"); // clear token
+                                            localStorage.removeItem("userMobile"); // clear token
+                                            localStorage.removeItem("userName"); // clear token
+                                            localStorage.removeItem("userProfile"); // clear token
+                                            localStorage.removeItem("usertype");
                                             navigate("/home"); // redirect after logout
                                             window.location.reload(); // reload so header updates
                                         }}
@@ -435,37 +509,37 @@ const MyFavorites = () => {
                                                             <tr key={index}>
                                                                 <td colSpan="1">
                                                                     <div className="skeleton-row">
-                                                                        <div className="skeleton-img"style={{width:"150px"}}></div>
+                                                                        <div className="skeleton-img" style={{ width: "150px" }}></div>
                                                                         <div className="skeleton-row" >
-                                                                       <div className="skeleton-content">
-                                                                            <div className="skeleton-line short" style={{width:"300px"}}></div>
-                                                                            <div className="skeleton-line"style={{width:"200px"}}></div>
-                                                                            
+                                                                            <div className="skeleton-content">
+                                                                                <div className="skeleton-line short" style={{ width: "300px" }}></div>
+                                                                                <div className="skeleton-line" style={{ width: "200px" }}></div>
+
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                    </div>
                                                                 </td>
-                                                                 <td colSpan="1">
+                                                                <td colSpan="1">
                                                                     <div className="skeleton-row">
-                                                                       <div className="skeleton-content">
+                                                                        <div className="skeleton-content">
                                                                             <div className="skeleton-line short"></div>
                                                                             <div className="skeleton-line"></div>
-                                                                            
+
                                                                         </div>
                                                                     </div>
                                                                 </td>
 
-                                                                 <td colSpan="1">
+                                                                <td colSpan="1">
                                                                     <div className="skeleton-row">
-                                                                       <div className="skeleton-content">
+                                                                        <div className="skeleton-content">
                                                                             <div className="skeleton-line short"></div>
                                                                             <div className="skeleton-line"></div>
-                                                                            
+
                                                                         </div>
                                                                     </div>
                                                                 </td>
 
-                                                                
+
                                                             </tr>
                                                         ))
                                                     ) : favorites.length > 0 ? (
@@ -482,10 +556,19 @@ const MyFavorites = () => {
                                                                         }
                                                                     >
                                                                         <div className="images">
+
+
+
                                                                             <img
-                                                                                src="https://themesflat.co/html/homzen/images/home/house-1.jpg"
+                                                                                src={
+                                                                                    fav.image_path
+                                                                                        ? `${api.imageUrl}/${fav.image_path}`
+                                                                                        : "https://themesflat.co/html/homzen/images/home/house-1jpg"
+                                                                                }
                                                                                 alt={fav.title}
+
                                                                             />
+
                                                                         </div>
                                                                         <div className="content">
                                                                             <div
@@ -535,10 +618,34 @@ const MyFavorites = () => {
                                                                                 type="button"
                                                                                 className="remove-file item flex items-center gap-1"
                                                                                 onClick={() => remove(fav.favoriteId, fav.property_id)}
-                                                                                style={{ border: "none" }}
+                                                                                style={{
+                                                                                    display: "flex",
+                                                                                    alignItems: "center",
+                                                                                    justifyContent: "center", // keep them centered
+                                                                                    gap: "6px",
+                                                                                    padding: "6px 12px",
+                                                                                    backgroundColor: "rgb(245, 245, 245)",
+                                                                                    border: "1px solid rgb(221, 221, 221)",
+                                                                                    borderRadius: "6px",
+                                                                                    cursor: "pointer",
+                                                                                    fontSize: "14px",
+                                                                                    fontWeight: 500,
+                                                                                    color: "rgb(51, 51, 51)",
+                                                                                    transition: "0.2s ease-in-out",
+                                                                                    marginLeft: "35px",
+                                                                                    flexWrap: "nowrap",   // ✅ force content to stay in one row
+                                                                                    whiteSpace: "nowrap", // ✅ text won’t break to next line
+                                                                                    maxWidth: "100%",     // keep responsive
+                                                                                }}
                                                                             >
-                                                                                <i className="icon icon-trash"></i>
+                                                                                <img
+                                                                                    src={Trash}
+                                                                                    alt="Remove"
+                                                                                    style={{ width: "18px", height: "18px", filter: "invert(23%) sepia(92%) saturate(3135%) hue-rotate(345deg) brightness(91%) contrast(112%,)" }}
+                                                                                />
                                                                                 Remove
+
+
                                                                             </button>
                                                                         </li>
                                                                     </ul>

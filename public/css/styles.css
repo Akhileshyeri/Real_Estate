@@ -1747,11 +1747,11 @@ label {
   background-color: #ffffff;
 }
 
-.mobile-menu .login-box {
+/* .mobile-menu .login-box {
   border-bottom: 1px solid #e4e4e4;
   padding-bottom: 20px;
   margin-bottom: 20px;
-}
+} */
 .mobile-menu .login-box svg {
   margin-right: 5px;
 }

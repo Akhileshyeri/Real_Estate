@@ -12,6 +12,8 @@ import home from '/src/assets/home.png'
 import Message from '/src/assets/comment.png'
 import Save from '/src/assets/save.png'
 import Star from '/src/assets/star.png'
+import Arrow from '../assets/Arrow.png'
+import Edit from '../assets/edit.png'
 
 
 
@@ -98,20 +100,18 @@ const Dashboard = () => {
             ]
         },
         {
-            label: 'Options', className: 'dropdown3',
+            label: 'Dashboard', className: 'dropdown3',
             submenu: [
-                { text: 'Dashboard', onClick: () => navigate('/dashboard') },
+                { text: ' My Profile', onClick: () => navigate('/myprofile') },
                 { text: 'My Favorites', onClick: () => navigate('/myfavorites') },
                 { text: 'My Properties', onClick: () => navigate('/myproperties') },
                 // { text: 'Reviews', onClick: () => navigate('/reviews') },
             ]
         },
-        {
-            label: 'My Profile',
-            className: 'myprofile',
-            onClick: () => navigate('/myprofile')
-        }
+
     ];
+
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownOpen && !event.target.closest('.box-avatar')) {
@@ -319,9 +319,9 @@ const Dashboard = () => {
                                                                     <li><a href="" onClick={(e) => { e.preventDefault(); navigate('/blogs'); }}>Blogs</a></li>
                                                                 </ul>
                                                             </li>
-                                                            <li className="my profile">
+                                                            {/* <li className="my profile">
                                                                 <a href="" onClick={(e) => { e.preventDefault(); navigate('/myprofile'); }}>My profile</a>
-                                                            </li>
+                                                            </li> */}
                                                         </ul>
                                                     </div>
                                                 </nav>
@@ -349,13 +349,26 @@ const Dashboard = () => {
 
                                                         }}
                                                     >
+                                                        <a className="dropdown-item" onClick={() => navigate('/myprofile')}>My Profile</a>
                                                         <a className="dropdown-item" onClick={() => navigate('/myproperties')}>My Properties</a>
                                                         <a className="dropdown-item" onClick={() => navigate('/myfavorites')}>My Favorites</a>
                                                         {/* <a className="dropdown-item" onClick={() => navigate('/reviews')}>Reviews</a> */}
-                                                        <a className="dropdown-item" onClick={() => navigate('/myprofile')}>My Profile</a>
+
                                                         <a className="dropdown-item" onClick={(e) => {
                                                             e.preventDefault();
-                                                            localStorage.removeItem("authToken"); // clear token
+                                                            localStorage.removeItem("authToken");
+                                                            localStorage.removeItem("addPropertyForm"); // clear token
+                                                            localStorage.removeItem("email"); // clear token
+                                                            localStorage.removeItem("hasSeenPopup"); // clear token
+                                                            localStorage.removeItem("hasSeenSticky"); // clear token
+                                                            localStorage.removeItem("mobile"); // clear token
+                                                            localStorage.removeItem("name"); // clear token
+                                                            localStorage.removeItem("photo"); // clear token
+                                                            localStorage.removeItem("userEmail"); // clear token
+                                                            localStorage.removeItem("userMobile"); // clear token
+                                                            localStorage.removeItem("userName"); // clear token
+                                                            localStorage.removeItem("userProfile"); // clear token
+                                                            localStorage.removeItem("usertype");
                                                             navigate("/home"); // redirect after logout
                                                             window.location.reload(); // reload so header updates
                                                         }}>Logout</a>
@@ -390,6 +403,7 @@ const Dashboard = () => {
                                     <div className="bottom-canvas">
                                         <div className="menu-outer">
                                             <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
+
                                                 <ul className="navigation clearfix">
                                                     {menuItems.map((item, index) => (
                                                         <li
@@ -404,12 +418,30 @@ const Dashboard = () => {
                                                                 }
                                                             }}
                                                         >
-                                                            <a href="" onClick={(e) => e.preventDefault()}>
+                                                            <a href="" onClick={(e) => e.preventDefault()}
+                                                                style={{
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "space-between", // 👈 pushes text left, icon right
+                                                                    width: "100%"
+                                                                }}>
                                                                 {item.label}
-                                                                {item.submenu && <span className=""></span>}
+                                                                {item.submenu && (
+                                                                    <img
+                                                                        src={Arrow}
+                                                                        alt="dropdown"
+                                                                        style={{
+                                                                            width: "14px",
+                                                                            height: "14px",
+                                                                            marginRight: "15px",
+                                                                            transition: "transform 0.3s",
+                                                                            transform: activeDropdown === index ? "rotate(180deg)" : "rotate(0deg)"
+                                                                        }}
+                                                                    />
+                                                                )}
                                                             </a>
                                                             {item.submenu && (
-                                                                <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
+                                                                <ul style={{ display: activeDropdown === index ? "block" : "none" }}>
                                                                     {item.submenu.map((sub, i) => (
                                                                         <li key={i}>
                                                                             <a
@@ -431,14 +463,44 @@ const Dashboard = () => {
                                                         </li>
                                                     ))}
                                                 </ul>
+
                                             </div>
                                         </div>
                                         <div className="button-mobi-sell">
-                                            <a className="tf-btn primary" onClick={(e) => {
+                                            <a className="tf-btn primary" style={{ marginBottom: "1rem" }} onClick={(e) => {
                                                 e.preventDefault();
                                                 // Navigate to add property if logged in
                                                 navigate("/addproperty");
-                                            }}>Add Property</a>                                        </div>
+                                            }}>Add Property</a>
+
+
+                                            <a
+                                                className="tf-btn primary"
+                                                href=""
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    localStorage.removeItem("authToken");
+                                                    localStorage.removeItem("addPropertyForm"); // clear token
+                                                    localStorage.removeItem("email"); // clear token
+                                                    localStorage.removeItem("hasSeenPopup"); // clear token
+                                                    localStorage.removeItem("hasSeenSticky"); // clear token
+                                                    localStorage.removeItem("mobile"); // clear token
+                                                    localStorage.removeItem("name"); // clear token
+                                                    localStorage.removeItem("photo"); // clear token
+                                                    localStorage.removeItem("userEmail"); // clear token
+                                                    localStorage.removeItem("userMobile"); // clear token
+                                                    localStorage.removeItem("userName"); // clear token
+                                                    localStorage.removeItem("userProfile"); // clear token
+                                                    localStorage.removeItem("usertype");// clear token
+                                                    navigate("/home"); // redirect after logout
+                                                    window.location.reload(); // reload so header updates
+                                                }}
+                                            >
+                                                <span className="icon icon-sign-out"></span> Logout
+                                            </a>
+
+
+                                        </div>
                                         <div className="mobi-icon-box">
                                             <div className="box d-flex align-items-center">
                                                 <span className="icon icon-phone2"></span>
@@ -482,7 +544,19 @@ const Dashboard = () => {
                                         href=""
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            localStorage.removeItem("authToken"); // clear token
+                                            localStorage.removeItem("authToken");
+                                            localStorage.removeItem("addPropertyForm"); // clear token
+                                            localStorage.removeItem("email"); // clear token
+                                            localStorage.removeItem("hasSeenPopup"); // clear token
+                                            localStorage.removeItem("hasSeenSticky"); // clear token
+                                            localStorage.removeItem("mobile"); // clear token
+                                            localStorage.removeItem("name"); // clear token
+                                            localStorage.removeItem("photo"); // clear token
+                                            localStorage.removeItem("userEmail"); // clear token
+                                            localStorage.removeItem("userMobile"); // clear token
+                                            localStorage.removeItem("userName"); // clear token
+                                            localStorage.removeItem("userProfile"); // clear token
+                                            localStorage.removeItem("usertype");// clear token
                                             navigate("/home"); // redirect after logout
                                             window.location.reload(); // reload so header updates
                                         }}
@@ -605,9 +679,25 @@ const Dashboard = () => {
                                 <div className="wrapper-content row">
                                     <div className="col-xl-9">
                                         <div className="widget-box-2 wd-listing" style={{ marginBottom: "-50px" }}>
-
                                             <div className="wd-filter">
-                                                <div className="">
+
+                                                {/* From Date */}
+                                                <div style={{ position: "relative" }}>
+                                                    <label
+                                                        htmlFor="datepicker1"
+                                                        style={{
+                                                            position: "absolute",
+                                                            top: "-10px",
+                                                            left: "5px",
+                                                            fontSize: "12px",
+                                                            fontWeight: "500",
+
+                                                            background: "#fff",
+                                                            padding: "0 4px"
+                                                        }}
+                                                    >
+                                                        From
+                                                    </label>
                                                     <input
                                                         type="date"
                                                         id="datepicker1"
@@ -617,7 +707,24 @@ const Dashboard = () => {
                                                         onChange={(e) => setFromDate(e.target.value)}
                                                     />
                                                 </div>
-                                                <div className="">
+
+                                                {/* To Date */}
+                                                <div style={{ position: "relative" }}>
+                                                    <label
+                                                        htmlFor="datepicker2"
+                                                        style={{
+                                                            position: "absolute",
+                                                            top: "-10px",
+                                                            left: "5px",
+                                                            fontSize: "12px",
+                                                            fontWeight: "500",
+
+                                                            background: "#fff",
+                                                            padding: "0 4px"
+                                                        }}
+                                                    >
+                                                        To
+                                                    </label>
                                                     <input
                                                         type="date"
                                                         id="datepicker2"
@@ -627,25 +734,21 @@ const Dashboard = () => {
                                                         onChange={(e) => setToDate(e.target.value)}
                                                     />
                                                 </div>
-                                                <div className="ip-group">
 
-                                                    <button
-                                                        type="button"
-                                                        className="tf-btn primary flex items-center gap-2"
-                                                        style={{ padding: "8px 16px", borderRadius: "8px" }}
-                                                        onClick={handleFilter}
-                                                    >
-                                                        <img
-                                                            src="/edit.png"
-                                                            alt="Edit Icon"
-                                                            style={{ width: "20px", height: "25px", marginRight: "10px" }}
-                                                        />
-                                                        Filter
-                                                    </button>
-
-                                                </div>
+                                                {/* Filter Button */}
+                                                <button
+                                                    type="button"
+                                                    className="tf-btn primary flex items-center gap-2"
+                                                    onClick={handleFilter}
+                                                >
+                                                    <img
+                                                        src="/edit.png"
+                                                        alt="Edit Icon"
+                                                        style={{ width: "20px", height: "25px", marginRight: "10px" }}
+                                                    />
+                                                    Filter
+                                                </button>
                                             </div>
-
 
                                             <div className="wrap-table">
                                                 <div className="table-responsive">
@@ -669,11 +772,11 @@ const Dashboard = () => {
                                                                             <div className="listing-box">
                                                                                 <div className="images skeleton-box" style={{ width: "120px", height: "80px", borderRadius: "8px" }}></div>
                                                                                 <div>
-                                                                                  <div className="skeleton-box" style={{ width: "150px", height: "18px", marginBottom: "6px" }}></div>
-                                                                                  </div>
-                                                                            <div>
-                                                                                  <div className="skeleton-box" style={{ width: "150px", height: "18px", marginBottom: "6px" }}></div>
-                                                                                  </div>
+                                                                                    <div className="skeleton-box" style={{ width: "150px", height: "18px", marginBottom: "6px" }}></div>
+                                                                                </div>
+                                                                                <div>
+                                                                                    <div className="skeleton-box" style={{ width: "150px", height: "18px", marginBottom: "6px" }}></div>
+                                                                                </div>
                                                                                 <div className="content">
                                                                                     <div className="skeleton-line" style={{ width: "70%", height: "16px", marginBottom: "8px" }}></div>
                                                                                     <div className="skeleton-line" style={{ width: "50%", height: "14px", marginBottom: "8px" }}></div>
@@ -736,7 +839,18 @@ const Dashboard = () => {
                                                                                                 <span className="fw-4 text-variant-1">
                                                                                                     Posting date:
                                                                                                 </span>{" "}
-                                                                                                {property.created_at?.split(" ")[0]}
+                                                                                               
+
+
+                                                                                                {property.created_at
+                                                                                                    ? (() => {
+                                                                                                        const d = new Date(property.created_at);
+                                                                                                        const day = String(d.getDate()).padStart(2, "0");
+                                                                                                        const month = String(d.getMonth() + 1).padStart(2, "0");
+                                                                                                        const year = d.getFullYear();
+                                                                                                        return `${day}-${month}-${year}`;
+                                                                                                    })()
+                                                                                                    : "-----"}
                                                                                             </p>
                                                                                         </div>
                                                                                         <div className="text-1 fw-7">{property.property_type}</div>
@@ -754,7 +868,35 @@ const Dashboard = () => {
                                                                                 <ul className="list-action">
                                                                                     <li>
                                                                                         <a className="remove-file item">
-                                                                                            <p>Edit</p>
+                                                                                            <button
+                                                                                                style={{
+                                                                                                    display: "flex",
+                                                                                                    alignItems: "center",
+                                                                                                    gap: "6px",
+                                                                                                    padding: "6px 12px",
+                                                                                                    backgroundColor: "#f5f5f5",
+                                                                                                    border: "1px solid #ddd",
+                                                                                                    borderRadius: "6px",
+                                                                                                    cursor: "pointer",
+                                                                                                    fontSize: "14px",
+                                                                                                    fontWeight: "500",
+                                                                                                    color: "#333",
+                                                                                                    transition: "all 0.2s ease-in-out",
+                                                                                                    marginLeft: "20px"
+                                                                                                }}
+                                                                                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#e9e9e9"}
+                                                                                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#f5f5f5"}
+                                                                                            >
+                                                                                                <img
+                                                                                                    src={Edit}
+                                                                                                    alt="Edit"
+                                                                                                    style={{ width: "16px", height: "16px" }}
+                                                                                                />
+                                                                                                Edit
+                                                                                            </button>
+
+
+
                                                                                         </a>
                                                                                     </li>
                                                                                 </ul>
@@ -791,7 +933,7 @@ const Dashboard = () => {
                                                             <div className="avatar avt-40 round skeleton-box"></div>
                                                             <div style={{ flex: 1 }}>
                                                                 <div className="skeleton-line" style={{ width: "60%", height: "14px", marginBottom: "6px" }}></div>
-                                                                
+
                                                             </div>
                                                         </div>
 
@@ -830,10 +972,12 @@ const Dashboard = () => {
                                                             <div key={rev.id} className="box-tes-item">
                                                                 <div className="box-avt d-flex align-items-center gap-12">
                                                                     <div className="avatar avt-40 round">
+
+
                                                                         <img
-                                                                            src={download}
+                                                                            src={rev?.profile ? `${api.imageUrl}${rev.profile}` : "images/avatar/avt-7.jpg"}
                                                                             alt="avatar"
-                                                                            onError={(e) => (e.target.src = "images/avatar/avt-7.jpg")}
+                                                                            onError={(e) => { e.currentTarget.src = { download } }}
                                                                         />
                                                                     </div>
                                                                     <p className="fw-6">{rev.user_name}</p>

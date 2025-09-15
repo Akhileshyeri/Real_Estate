@@ -19,15 +19,12 @@
 
 .flat-counter-v2.tf-counter {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  /* 3 per row */
+  grid-template-columns: repeat(3, 1fr); /* Default: 3 per row */
   gap: 20px;
-  /* spacing between them */
 }
 
 .counter-box {
   text-align: center;
-  /* center everything */
   padding: 15px;
 }
 
@@ -35,14 +32,26 @@
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 8px;
-  /* space between title and number */
 }
 
 .counter-box .number {
   font-size: 20px;
   font-weight: bold;
   display: block;
-  /* ensures number is below */
+}
+
+/* Tablet (max 1024px) → 2 per row */
+@media (max-width: 1024px) {
+  .flat-counter-v2.tf-counter {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile (max 600px) → 1 per row */
+@media (max-width: 600px) {
+  .flat-counter-v2.tf-counter {
+    grid-template-columns: 1fr;
+  }
 }
 
 
@@ -66,7 +75,82 @@
 
 
 .widget-box-3.recent-box {
-  max-height: 500px;
+  max-height: 512px;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
   /* adjust this based on your layout */
   overflow-y: auto;
   padding-right: 8px;
@@ -81,4 +165,11 @@
 .widget-box-3.recent-box::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
+}
+
+/* Only for mobile */
+@media (max-width: 600px) {
+  .widget-box-3.recent-box {
+    margin-top: 100px; /* adjust the space as needed */
+  }
 }
