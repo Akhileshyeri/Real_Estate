@@ -11,7 +11,7 @@ const ContactUs = () => {
   return (
     <div>
         < Header />
-        <h1>hi</h1>
+  
       <section className="flat-title-page style-2">
                 <div className="container">
                     <ul className="breadcrumb">

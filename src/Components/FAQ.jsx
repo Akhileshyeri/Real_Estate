@@ -215,22 +215,8 @@ const FAQ = () => {
                   </li>
 
                   <li className="faq-item">
-                    <div 
-                      className={`faq-header ${activeAccordion['accordion2-faq-five'] ? '' : 'collapsed'}`}
-                      onClick={() => toggleAccordion('accordion2-faq-five')}
-                      aria-expanded={activeAccordion['accordion2-faq-five']}
-                    >
-                      What is the refund procedure?
-                      <span className="icon-toggle"></span>
-                    </div>
-                    <div 
-                      id="accordion2-faq-five" 
-                      className={`collapse ${activeAccordion['accordion2-faq-five'] ? 'show' : ''}`}
-                    >
-                      <p className="faq-body">
-                        We offer a 30-day money-back guarantee. Simply contact support to initiate a refund.
-                      </p>
-                    </div>
+                   
+                 
                   </li>
                 </ul>
               </div>

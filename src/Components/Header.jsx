@@ -5,11 +5,91 @@ import api from '../api/api';
 import easy from "../assets/easy.png"
 import toast from 'react-hot-toast';
 
+import Arrow from '../assets/Arrow.png'
+import Search from '../assets/Search.png'
 
 
 
 
-const Header = () => {
+const Header = ({ showSearch }) => {
+
+
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState("Rent");
+  const [showSearchAnimated, setShowSearchAnimated] = useState(false);
+
+
+  const dropdownRef = useRef(null);
+
+  const handleOptionSelect = (option) => {
+    setSelectedOption(option);
+    setDropdownOpen(false);
+
+    // Update the hidden select value
+    const select = document.querySelector('.hidden-select');
+    if (select) {
+      select.value = option;
+    }
+  };
+
+  // ✅ Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (toggleRef.current && !toggleRef.current.contains(event.target)) {
+        setIsMenuToggled(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  const searchRef = useRef(null);
+  const toggleRef = useRef(null);
+
+  useEffect(() => {
+  if (showSearch) {
+    const timeout = setTimeout(() => setShowSearchAnimated(true), 10); // trigger animation
+    return () => clearTimeout(timeout);
+  } else {
+    setShowSearchAnimated(false);
+  }
+}, [showSearch]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!searchRef.current) return;
+
+      if (window.scrollY > 100) { // adjust scroll threshold
+        searchRef.current.classList.add("sticky");
+      } else {
+        searchRef.current.classList.remove("sticky");
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
 
   const [otpSent, setOtpSent] = useState("");
@@ -222,6 +302,17 @@ const Header = () => {
       alert("Failed to resend OTP. Please try again.");
     }
   };
+
+  // Country toggle (India / Dubai)
+  const [isCountryToggled, setIsCountryToggled] = useState(false);
+
+  // Menu toggle (Dashboard / My Favorites / etc.)
+  const [isMenuToggled, setIsMenuToggled] = useState(false);
+
+  const handleCountryToggle = () => setIsCountryToggled(prev => !prev);
+  const handleMenuToggle = () => setIsMenuToggled(prev => !prev);
+
+
 
 
 
@@ -591,7 +682,7 @@ const handleToggle = () => {
     <>
       <header className="main-header fixed-header " style={{ height: "75px" }}>
         <div className="header-lower">
-          <div className="row">
+          <div className="row" style={{ marginRight: "-40px" }}>
             <div className="col-lg-12">
               <div className="inner-container d-flex justify-content-between align-items-center">
                 <div className="logo-box">
@@ -602,69 +693,139 @@ const handleToggle = () => {
                   </div>
                 </div>
 
-                <div className="nav-outer">
-                  <nav className="main-menu show navbar-expand-md">
-                    <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                      <ul className="navigation clearfix">
-                        {menuItems.map((item, index) => (
-                          <li
-                            key={index}
-                            className={`${item.className || ''} ${activeDropdown === index ? 'open' : ''}`}
-                            onClick={(e) => {
-                              if (item.submenu) {
-                                e.preventDefault();
-                                handleDropdownClick(index);
-                              } else if (item.onClick) {
-                                item.onClick();
-                              }
-                            }}
-                            onMouseEnter={() => {
-                              if (!isMobileView && item.submenu) {
-                                setActiveDropdown(index);
-                              }
-                            }}
-                            onMouseLeave={() => {
-                              if (!isMobileView && item.submenu) {
-                                setActiveDropdown(null);
-                              }
-                            }}
+
+
+                {showSearch && (
+                  <div className="header-search-wrapper" ref={searchRef}>
+                    <div className="header-search" style={{ marginTop: "5px" }}>
+                      <div className="search-wrapper">
+                        {/* Custom slider dropdown */}
+                        <div className="dropdown-slider-wrapper" ref={dropdownRef} style={{ width: "150px", margintop: "28px" }}>
+                          <div
+                            className="dropdown-slider-display"
+                            onClick={() => setDropdownOpen(!dropdownOpen)} style={{ height: "10px", }}
                           >
-                            <a href="#" onClick={(e) => e.preventDefault()}>
-                              {item.label}
-                            </a>
-                            {item.submenu && (
-                              <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
-                                {item.submenu.map((sub, i) => (
-                                  <li key={i}>
-                                    <a
-                                      href="#"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        if (sub.onClick) sub.onClick();
-                                      }}
-                                    >
-                                      {sub.text}
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+                            <span>{selectedOption}</span>
+                            <img
+                              src={Arrow}
+                              alt="dropdown icon"
+                              className="dropdown-icon"
+                              style={{
+                                height: "10px", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                              }}
+                            />
+                          </div>
+
+                          {/* Slider dropdown options */}
+                          <div
+                            className={`dropdown-slider-options ${dropdownOpen ? "open" : ""}`}
+                            style={{ width: "150px" }}
+                          >
+                            <div className="slider-option" onClick={() => handleOptionSelect("Rent")}>
+                              Rent
+                            </div>
+                            <div className="slider-option" onClick={() => handleOptionSelect("Sale")}>
+                              Sale
+                            </div>
+                            <div className="slider-option" onClick={() => handleOptionSelect("Joint Venture")}>
+                              Joint Venture
+                            </div>
+                          </div>
+
+                          {/* Hidden select for form submission if needed */}
+                          <select className="hidden-select" defaultValue="Rent">
+                            <option value="Rent">Rent</option>
+                            <option value="Sale">Sale</option>
+                            <option value="Joint Venture">Joint Venture</option>
+                          </select>
+                        </div>
+
+                        {/* Input field */}
+                        <input
+                          type="text"
+                          placeholder="Search properties..."
+                          style={{
+                            width: "100%",
+                            padding: "8px 40px 8px 180px", // ✅ right padding adjusted for icon
+                            border: "1px solid #ccc",
+                            borderRadius: "6px",
+                            outline: "none",
+                          }}
+                        />
+
+                        {/* ✅ Custom imported search icon */}
+                        <img src={Search} alt="search" className="search-icon" />
+                      </div>
                     </div>
-                  </nav>
-                </div>
+                  </div>
+                )}
+
+
+                {!showSearch && (
+                  <div className="nav-outer">
+                    <nav className="main-menu show navbar-expand-md">
+                      <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
+                        <ul className="navigation clearfix">
+                          {menuItems.map((item, index) => (
+                            <li
+                              key={index}
+                              className={`${item.className || ''} ${activeDropdown === index ? 'open' : ''}`}
+                              onClick={(e) => {
+                                if (item.submenu) {
+                                  e.preventDefault();
+                                  handleDropdownClick(index);
+                                } else if (item.onClick) {
+                                  item.onClick();
+                                }
+                              }}
+                              onMouseEnter={() => {
+                                if (!isMobileView && item.submenu) {
+                                  setActiveDropdown(index);
+                                }
+                              }}
+                              onMouseLeave={() => {
+                                if (!isMobileView && item.submenu) {
+                                  setActiveDropdown(null);
+                                }
+                              }}
+                            >
+                              <a href="#" onClick={(e) => e.preventDefault()}>
+                                {item.label}
+                              </a>
+                              {item.submenu && (
+                                <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
+                                  {item.submenu.map((sub, i) => (
+                                    <li key={i}>
+                                      <a
+                                        href="#"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          if (sub.onClick) sub.onClick();
+                                        }}
+                                      >
+                                        {sub.text}
+                                      </a>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </nav>
+                  </div>
+                )}
 
 
 
                 {/* login/register */}
-                <div className="header-account">
+                <div className="header-account d-flex align-items-center justify-content-end" style={{ gap: '20px' }}>
                   {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
                     <>
+                      {/* Login/Register */}
                       <div className="register">
                         <ul className="d-flex">
-
                           <li>
                             <a
                               href="#"
@@ -679,14 +840,14 @@ const handleToggle = () => {
                         </ul>
                       </div>
 
+                      {/* Add property button */}
                       <div className="flat-bt-top">
                         <a
                           className="tf-btn primary"
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            // Open login modal if not logged in
-                            setShowRegister(true);
+                            setShowRegister(true); // Open login modal if not logged in
                           }}
                         >
                           Add property
@@ -695,8 +856,10 @@ const handleToggle = () => {
                     </>
                   ) : (
                     <>
+                      {/* Country toggle + My Profile */}
                       <ul className="d-flex">
                         <li style={{ marginRight: "20px" }}>
+
     <div style={toggleStyle}>
       <div
         style={labelStyle}
@@ -732,6 +895,43 @@ const handleToggle = () => {
     </div>
   </li>
                         <li style={{display:"flex", alignItems:"center"}}>
+
+                          <div style={toggleStyle}>
+                            <div
+                              style={labelStyle}
+                              onClick={handleToggle}
+                              onKeyPress={(e) => e.key === "Enter" && handleToggle()}
+                              tabIndex={0}
+                              role="button"
+                              aria-label="Toggle between flags"
+                            >
+                              <div style={toggleHandleStyle}>
+                                {/* Background flag images */}
+                                <img
+                                  src="/images/logo/flag.png"
+                                  alt="flag1"
+                                  style={{
+                                    ...flagBackgroundStyles,
+                                    opacity: isToggled ? 0 : 1,
+                                  }}
+                                />
+                                <img
+                                  src="/images/logo/flag (1).png"
+                                  alt="flag2"
+                                  style={{
+                                    ...flagBackgroundStyle,
+                                    opacity: isToggled ? 1 : 0,
+                                  }}
+                                />
+
+                                {/* Knob */}
+                                <div style={handleKnobStyle(isToggled)}></div>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                        <li style={{ display: "flex", alignItems: "center" }}>
+
                           <a
                             href="#"
                             onClick={(e) => {
@@ -743,22 +943,50 @@ const handleToggle = () => {
                           </a>
                         </li>
                       </ul>
+                      {/* Add property button */}
                       <div className="flat-bt-top">
                         <a
                           className="tf-btn primary"
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            // Navigate to add property if logged in
-                            navigate("/addproperty");
+                            navigate("/addproperty"); // Navigate to add property
                           }}
                         >
                           Add property
                         </a>
                       </div>
+
+                      {/* Menu toggle */}
+                      {showSearch && (
+                        <div className="header-toggle" style={{ height: "57px", width: "47px", marginTop: "10px" }} ref={toggleRef}>
+                          <button
+                            className={`toggle-btn ${isMenuToggled ? "active" : ""}`}
+                            onClick={handleMenuToggle}
+                          >
+                            ☰
+                          </button>
+
+                          <div className={`toggle-menu ${isMenuToggled ? "open" : ""}`}>
+                            <ul>
+                              <li onClick={() => navigate("/dashboard")}>Dashboard</li>
+                              <li onClick={() => navigate("/myfavorites")}>
+                                My Favorites
+                              </li>
+                              <li onClick={() => navigate("/myproperties")}>
+                                My Properties
+                              </li>
+                              <li onClick={() => navigate("/aboutus")}>About Us</li>
+                              <li onClick={() => navigate("/contactus")}>Contact Us</li>
+                              <li onClick={() => navigate("/FAQ")}>FAQs</li>
+                            </ul>
+                          </div>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
+
 
 
 
@@ -865,7 +1093,33 @@ const handleToggle = () => {
 
               ) : (
                 <div className="button-mobi-sell">
+
                   <a className="tf-btn primary" onClick={() => navigate('/addproperty')}>Add Property</a>
+
+                  <a
+                    className="tf-btn primary"
+                    style={{ marginBottom: "1rem" }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/addproperty");
+                    }}
+                  >
+                    Add Property
+                  </a>
+                  <a
+                    className="tf-btn primary"
+                    href=""
+                    onClick={(e) => {
+                      e.preventDefault();
+                      localStorage.clear();
+                      navigate("/home");
+                      window.location.reload();
+                    }}
+                  >
+                    <span className="icon icon-sign-out"></span> Logout
+                  </a>
+
+
                 </div>
               )}
 
@@ -1033,9 +1287,6 @@ const handleToggle = () => {
       )}
 
 
-
-
-
       {/* OTP Modal */}
       {showOtpModal && (
         <div
@@ -1170,13 +1421,6 @@ const handleToggle = () => {
           </div>
         </div>
       )}
-
-
-
-
-
-
-
 
 
 
