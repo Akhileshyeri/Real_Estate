@@ -12,6 +12,7 @@ const AboutUs = () => {
     const [email, setEmail] = useState(localStorage.getItem("email"));
     return (
         <div>
+            
             <Header />
             <section className="flat-title-page style-2">
                 <div className="container">
@@ -30,7 +31,7 @@ const AboutUs = () => {
                 <div className="container">
                     <div className="row">
                         <div className="col-md-5">
-                            <h3>Welcome To The <br /> Eazy Acers</h3>
+                            <h3>Welcome To The <br /> Eazy Acres</h3>
                         </div>
                         <div className="col-md-7 hover-btn-view">
                             <p className="body-2 text-variant-1">Welcome to Eazy Acers, where we turn houses into homes and dreams into reality. At Eazy Acers, we understand that a home is more than just a physical space; it's a place where memories are created, families grow, and life unfolds. </p>
