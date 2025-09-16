@@ -34,3 +34,111 @@
     height: 40px;
   }
 }
+
+
+
+
+
+
+.header-search {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  margin-left: 20px;
+  margin-top: 15px;
+  max-width: 2500px;
+  align-self: flex-end;  
+  border-radius: 4px; /* ✅ force this one lower */
+}
+
+
+.header-search input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+}
+
+.header-search {
+  border: 2px solid red !important;  /* debug */
+}
+
+
+.header-toggle {
+  position: relative;
+}
+
+.toggle-btn {
+  background: #ed2027;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+gap: 20px;
+}
+
+.toggle-menu {
+ position: fixed;
+  top: 250px; /* just below button */
+  right: 0;
+  width: 220px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+  transform: translateX(110%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 9999;
+}
+
+.toggle-menu {
+ padding: 20px;
+  top: 0;
+  right: 0;
+  width: 250px;
+  
+  transform: translateX(100%); /* hidden offscreen */
+  transition: transform 0.3s ease;
+}
+.toggle-menu.open {
+  transform: translateX(0);
+}
+
+
+.toggle-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+}
+
+.toggle-menu ul li {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.toggle-menu ul li:hover {
+  background: #f5f5f5;
+}
+
+
+.header-search-wrapper {
+  position: relative; /* default */
+  flex: 1;
+  margin: 0 20px;
+}
+
+.header-search-wrapper.sticky {
+  position: sticky;
+  top: 0; /* stick to top */
+  z-index: 1000;
+  background: white; /* prevent overlap */
+
+  padding-bottom: 12px;
+}
+
+

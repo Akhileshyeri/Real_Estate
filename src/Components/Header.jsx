@@ -13,7 +13,40 @@ import Dubai from '../assets/dubai.png'
 
 
 
-const Header = () => {
+const Header = ({ showSearch}) => {
+
+
+
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (toggleRef.current && !toggleRef.current.contains(event.target)) {
+        setIsMenuToggled(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  const searchRef = useRef(null);
+    const toggleRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!searchRef.current) return;
+
+      if (window.scrollY > 100) { // adjust scroll threshold
+        searchRef.current.classList.add("sticky");
+      } else {
+        searchRef.current.classList.remove("sticky");
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
 
   const [otpSent, setOtpSent] = useState("");
@@ -255,6 +288,17 @@ const Header = () => {
       alert("Failed to resend OTP. Please try again.");
     }
   };
+
+  // Country toggle (India / Dubai)
+  const [isCountryToggled, setIsCountryToggled] = useState(false);
+
+  // Menu toggle (Dashboard / My Favorites / etc.)
+  const [isMenuToggled, setIsMenuToggled] = useState(false);
+
+  const handleCountryToggle = () => setIsCountryToggled(prev => !prev);
+  const handleMenuToggle = () => setIsMenuToggled(prev => !prev);
+
+
 
 
 
@@ -654,70 +698,94 @@ const Header = () => {
                     </a>
                   </div>
                 </div>
-
-                <div className="nav-outer">
-                  <nav className="main-menu show navbar-expand-md">
-                    <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                      <ul className="navigation clearfix">
-                        {menuItems.map((item, index) => (
-                          <li
-                            key={index}
-                            className={`${item.className || ''} ${activeDropdown === index ? 'open' : ''}`}
-                            onClick={(e) => {
-                              if (item.submenu) {
-                                e.preventDefault();
-                                handleDropdownClick(index);
-                              } else if (item.onClick) {
-                                item.onClick();
-                              }
-                            }}
-                            onMouseEnter={() => {
-                              if (!isMobileView && item.submenu) {
-                                setActiveDropdown(index);
-                              }
-                            }}
-                            onMouseLeave={() => {
-                              if (!isMobileView && item.submenu) {
-                                setActiveDropdown(null);
-                              }
-                            }}
-                          >
-                            <a href="#" onClick={(e) => e.preventDefault()}>
-                              {item.label}
-                            </a>
-                            {item.submenu && (
-                              <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
-                                {item.submenu.map((sub, i) => (
-                                  <li key={i}>
-                                    <a
-                                      href="#"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        if (sub.onClick) sub.onClick();
-                                      }}
-                                    >
-                                      {sub.text}
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+                {showSearch && (
+                  <div
+                    className={`header-search-wrapper`}
+                    ref={searchRef}
+                  >
+                    <div className="header-search">
+                      <input
+                        type="text"
+                        placeholder="Search properties..."
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          border: "1px solid #ccc",
+                          borderRadius: "6px",
+                          outline: "none",
+                        }}
+                      />
                     </div>
-                  </nav>
-                </div>
+                  </div>
+                )}
+
+
+
+                {!showSearch && (
+                  <div className="nav-outer">
+                    <nav className="main-menu show navbar-expand-md">
+                      <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
+                        <ul className="navigation clearfix">
+                          {menuItems.map((item, index) => (
+                            <li
+                              key={index}
+                              className={`${item.className || ''} ${activeDropdown === index ? 'open' : ''}`}
+                              onClick={(e) => {
+                                if (item.submenu) {
+                                  e.preventDefault();
+                                  handleDropdownClick(index);
+                                } else if (item.onClick) {
+                                  item.onClick();
+                                }
+                              }}
+                              onMouseEnter={() => {
+                                if (!isMobileView && item.submenu) {
+                                  setActiveDropdown(index);
+                                }
+                              }}
+                              onMouseLeave={() => {
+                                if (!isMobileView && item.submenu) {
+                                  setActiveDropdown(null);
+                                }
+                              }}
+                            >
+                              <a href="#" onClick={(e) => e.preventDefault()}>
+                                {item.label}
+                              </a>
+                              {item.submenu && (
+                                <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
+                                  {item.submenu.map((sub, i) => (
+                                    <li key={i}>
+                                      <a
+                                        href="#"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          if (sub.onClick) sub.onClick();
+                                        }}
+                                      >
+                                        {sub.text}
+                                      </a>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </nav>
+                  </div>
+                )}
 
 
 
                 {/* login/register */}
-                <div className="header-account">
+                <div className="header-account d-flex align-items-center justify-content-end" style={{ gap: '20px' }}>
                   {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
                     <>
+                      {/* Login/Register */}
                       <div className="register">
                         <ul className="d-flex">
-
                           <li>
                             <a
                               href="#"
@@ -732,14 +800,14 @@ const Header = () => {
                         </ul>
                       </div>
 
+                      {/* Add property button */}
                       <div className="flat-bt-top">
                         <a
                           className="tf-btn primary"
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            // Open login modal if not logged in
-                            setShowRegister(true);
+                            setShowRegister(true); // Open login modal if not logged in
                           }}
                         >
                           Add property
@@ -748,21 +816,12 @@ const Header = () => {
                     </>
                   ) : (
                     <>
-                      <ul className="d-flex">
-                        <li style={{ marginRight: "20px" }}>
+                      {/* Country toggle + My Profile */}
+                      <ul className="d-flex" style={{ gap: '20px', margin: 0, padding: 0, listStyle: 'none', alignItems: 'center' }}>
+                        <li>
                           <div style={toggleWrapperStyle}>
-                            {/* Left Label */}
-                            <span
-                              style={{
-                                fontSize: "16px",
-                                fontWeight: "600",
-                                color: !isToggled ? "#000" : "#aaa",
-                              }}
-                            >
-                              IN
-                            </span>
+                            <span style={{ color: !isCountryToggled ? "#000" : "#aaa" }}>IN</span>
 
-                            {/* Toggle Container */}
                             <div
                               style={{
                                 width: "80px",
@@ -771,54 +830,39 @@ const Header = () => {
                                 backgroundColor: "#f0f0f0",
                                 position: "relative",
                                 cursor: "pointer",
-                                boxShadow:
-                                  "inset 2px 2px 5px rgba(0,0,0,0.1), inset -2px -2px 5px rgba(255,255,255,0.8)",
                               }}
-                              onClick={handleToggle}
+                              onClick={handleCountryToggle}
                             >
-                              {/* Knob with Flag */}
                               <div
                                 style={{
                                   position: "absolute",
                                   top: "4px",
-                                  left: isToggled ? "calc(100% - 36px)" : "4px",
+                                  left: isCountryToggled ? "calc(100% - 36px)" : "4px",
                                   width: "32px",
                                   height: "32px",
                                   borderRadius: "50%",
                                   overflow: "hidden",
-                                  boxShadow: "2px 2px 6px rgba(0,0,0,0.25)",
                                   transition: "all 0.3s ease",
                                 }}
                               >
                                 <img
-                                  src={isToggled ? Dubai : India}
+                                  src={isCountryToggled ? Dubai : India}
                                   alt="flag"
                                   style={{
-                                    width: isToggled ? "120%" : "100%",   // zoom Dubai flag slightly
-                                    height: isToggled ? "120%" : "100%",  // same zoom for height
+                                    width: isCountryToggled ? "120%" : "100%",
+                                    height: isCountryToggled ? "120%" : "100%",
                                     objectFit: "cover",
-                                    display: "block",
-                                    transform: isToggled ? "translate(-8%, -8%)" : "none", // re-center Dubai flag
+                                    transform: isCountryToggled ? "translate(-8%, -8%)" : "none",
                                   }}
                                 />
-
                               </div>
                             </div>
 
-                            {/* Right Label */}
-                            <span
-                              style={{
-                                fontSize: "16px",
-                                fontWeight: "600",
-                                color: isToggled ? "#000" : "#aaa",
-                              }}
-                            >
-                              AE
-                            </span>
+                            <span style={{ color: isCountryToggled ? "#000" : "#aaa" }}>AE</span>
                           </div>
                         </li>
 
-                        <li style={{ display: "flex", alignItems: "center" }}>
+                        <li>
                           <a
                             href="#"
                             onClick={(e) => {
@@ -830,22 +874,51 @@ const Header = () => {
                           </a>
                         </li>
                       </ul>
+
+                      {/* Add property button */}
                       <div className="flat-bt-top">
                         <a
                           className="tf-btn primary"
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            // Navigate to add property if logged in
-                            navigate("/addproperty");
+                            navigate("/addproperty"); // Navigate to add property
                           }}
                         >
                           Add property
                         </a>
                       </div>
+
+                      {/* Menu toggle */}
+                      {showSearch && (
+                        <div className="header-toggle" ref={toggleRef}>
+                          <button
+                            className={`toggle-btn ${isMenuToggled ? "active" : ""}`}
+                            onClick={handleMenuToggle}
+                          >
+                            ☰
+                          </button>
+
+                          <div className={`toggle-menu ${isMenuToggled ? "open" : ""}`}>
+                            <ul>
+                              <li onClick={() => navigate("/dashboard")}>Dashboard</li>
+                              <li onClick={() => navigate("/myfavorites")}>
+                                My Favorites
+                              </li>
+                              <li onClick={() => navigate("/myproperties")}>
+                                My Properties
+                              </li>
+                              <li onClick={() => navigate("/aboutus")}>About Us</li>
+                              <li onClick={() => navigate("/contactus")}>Contact Us</li>
+                              <li onClick={() => navigate("/FAQ")}>FAQs</li>
+                            </ul>
+                          </div>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
+
 
 
 
@@ -993,6 +1066,7 @@ const Header = () => {
                   >
                     <span className="icon icon-sign-out"></span> Logout
                   </a>
+
                 </div>
               ) : null}
 

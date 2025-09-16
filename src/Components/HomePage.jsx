@@ -10,6 +10,7 @@ import api from '../api/api';
 import "./HomePage.css"
 import { Modal, Slider } from "antd"; // ✅ Import Modal
 import nodata from "../assets/nodata.png"
+import Dub from "../assets/du.jpg"
 
 
 
@@ -82,15 +83,15 @@ const HomePage = () => {
         }
     }, [stickyBanner]);
 
-      const words = ["Dream Home", "Perfect Home", "Real Estate"];
-  const [index, setIndex] = useState(0);
+    const words = ["Dream Home", "Perfect Home", "Real Estate"];
+    const [index, setIndex] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % words.length);
-    }, 2000); // change every 2 seconds
-    return () => clearInterval(interval);
-  }, [words.length]);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setIndex((prev) => (prev + 1) % words.length);
+        }, 2000); // change every 2 seconds
+        return () => clearInterval(interval);
+    }, [words.length]);
 
 
     const [selectedListingType, setSelectedListingType] = useState("rent"); // rent | sale
@@ -352,6 +353,21 @@ const HomePage = () => {
 
 
 
+    const [showSearch, setShowSearch] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 150) {
+                setShowSearch(true);
+            } else {
+                setShowSearch(false);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
 
 
 
@@ -362,7 +378,11 @@ const HomePage = () => {
     if (loading || bannersLoading) {
         return (
             <div>
-                <Header />
+                <Header showSearch={showSearch}  />
+             
+
+
+
                 <div
                     style={{
                         minHeight: "80vh",
@@ -411,7 +431,13 @@ const HomePage = () => {
         <div className='body bg-surface '>
             <div id="wrapper">
                 <div id="pagee" className="clearfix">
-                    <Header />
+                    <Header showSearch={showSearch}  />
+
+                    <p style={{ position: "fixed", top: "5px", right: "10px", zIndex: 99999 }}>
+                        ScrollY: {window.scrollY} | showSearch: {showSearch ? "YES" : "NO"}
+                    </p>
+                    {/* ✅ Floating search bar */}
+                   
                     {/* SLIDER & TABS */}
                     <section
                         className="flat-slider home-1"
@@ -1028,8 +1054,7 @@ const HomePage = () => {
                                             }}
                                         >
                                             <img
-                                                src="https://www.dubaiwikia.com/wp-content/uploads/2017/08/Burj-al-Arab.jpg"
-                                                alt="London, United Kingdom"
+                                                src={Dub}
                                                 style={{
                                                     position: "absolute",
                                                     top: 0,
@@ -1476,7 +1501,7 @@ const HomePage = () => {
                                                             {/* 👤 User info */}
                                                             <div className="box-avt d-flex align-items-center gap-12">
                                                                 <div className="avatar avt-60 round">
-                                                               
+
                                                                     <img
                                                                         src={rev?.profile ? `${api.imageUrl}${rev.profile}` : "images/avatar/avt-7.jpg"}
                                                                         alt="avatar"
@@ -1561,7 +1586,7 @@ const HomePage = () => {
                         </div>
                     )}
 
-                 
+
 
 
                     {/* ✅ Popup Banner Modal */}
