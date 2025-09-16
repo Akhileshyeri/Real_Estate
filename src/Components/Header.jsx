@@ -5,19 +5,51 @@ import api from '../api/api';
 import easy from "../assets/easy.png"
 import toast from 'react-hot-toast';
 import Arrow from '../assets/Arrow.png'
-import India from '../assets/india.png'
-import Dubai from '../assets/dubai.png'
+import Search from '../assets/Search.png'
 
 
 
+const Header = ({ showSearch }) => {
 
 
 
-const Header = ({ showSearch}) => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState("Rent");
+  const [showSearchAnimated, setShowSearchAnimated] = useState(false);
+
+
+  const dropdownRef = useRef(null);
+
+  const handleOptionSelect = (option) => {
+    setSelectedOption(option);
+    setDropdownOpen(false);
+
+    // Update the hidden select value
+    const select = document.querySelector('.hidden-select');
+    if (select) {
+      select.value = option;
+    }
+  };
+
+  // ✅ Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
 
 
-  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (toggleRef.current && !toggleRef.current.contains(event.target)) {
@@ -31,7 +63,16 @@ const Header = ({ showSearch}) => {
     };
   }, []);
   const searchRef = useRef(null);
-    const toggleRef = useRef(null);
+  const toggleRef = useRef(null);
+
+  useEffect(() => {
+  if (showSearch) {
+    const timeout = setTimeout(() => setShowSearchAnimated(true), 10); // trigger animation
+    return () => clearTimeout(timeout);
+  } else {
+    setShowSearchAnimated(false);
+  }
+}, [showSearch]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -688,7 +729,7 @@ const Header = ({ showSearch}) => {
     <>
       <header className="main-header fixed-header " style={{ height: "75px" }}>
         <div className="header-lower">
-          <div className="row">
+          <div className="row" style={{ marginRight: "-40px" }}>
             <div className="col-lg-12">
               <div className="inner-container d-flex justify-content-between align-items-center">
                 <div className="logo-box">
@@ -698,27 +739,73 @@ const Header = ({ showSearch}) => {
                     </a>
                   </div>
                 </div>
+
+
+
                 {showSearch && (
-                  <div
-                    className={`header-search-wrapper`}
-                    ref={searchRef}
-                  >
-                    <div className="header-search">
-                      <input
-                        type="text"
-                        placeholder="Search properties..."
-                        style={{
-                          width: "100%",
-                          padding: "8px 12px",
-                          border: "1px solid #ccc",
-                          borderRadius: "6px",
-                          outline: "none",
-                        }}
-                      />
+                  <div className="header-search-wrapper" ref={searchRef}>
+                    <div className="header-search" style={{ marginTop: "5px" }}>
+                      <div className="search-wrapper">
+                        {/* Custom slider dropdown */}
+                        <div className="dropdown-slider-wrapper" ref={dropdownRef} style={{ width: "150px", margintop: "28px" }}>
+                          <div
+                            className="dropdown-slider-display"
+                            onClick={() => setDropdownOpen(!dropdownOpen)} style={{ height: "10px", }}
+                          >
+                            <span>{selectedOption}</span>
+                            <img
+                              src={Arrow}
+                              alt="dropdown icon"
+                              className="dropdown-icon"
+                              style={{
+                                height: "10px", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                              }}
+                            />
+                          </div>
+
+                          {/* Slider dropdown options */}
+                          <div
+                            className={`dropdown-slider-options ${dropdownOpen ? "open" : ""}`}
+                            style={{ width: "150px" }}
+                          >
+                            <div className="slider-option" onClick={() => handleOptionSelect("Rent")}>
+                              Rent
+                            </div>
+                            <div className="slider-option" onClick={() => handleOptionSelect("Sale")}>
+                              Sale
+                            </div>
+                            <div className="slider-option" onClick={() => handleOptionSelect("Joint Venture")}>
+                              Joint Venture
+                            </div>
+                          </div>
+
+                          {/* Hidden select for form submission if needed */}
+                          <select className="hidden-select" defaultValue="Rent">
+                            <option value="Rent">Rent</option>
+                            <option value="Sale">Sale</option>
+                            <option value="Joint Venture">Joint Venture</option>
+                          </select>
+                        </div>
+
+                        {/* Input field */}
+                        <input
+                          type="text"
+                          placeholder="Search properties..."
+                          style={{
+                            width: "100%",
+                            padding: "8px 40px 8px 180px", // ✅ right padding adjusted for icon
+                            border: "1px solid #ccc",
+                            borderRadius: "6px",
+                            outline: "none",
+                          }}
+                        />
+
+                        {/* ✅ Custom imported search icon */}
+                        <img src={Search} alt="search" className="search-icon" />
+                      </div>
                     </div>
                   </div>
                 )}
-
 
 
                 {!showSearch && (
@@ -817,52 +904,43 @@ const Header = ({ showSearch}) => {
                   ) : (
                     <>
                       {/* Country toggle + My Profile */}
-                      <ul className="d-flex" style={{ gap: '20px', margin: 0, padding: 0, listStyle: 'none', alignItems: 'center' }}>
-                        <li>
-                          <div style={toggleWrapperStyle}>
-                            <span style={{ color: !isCountryToggled ? "#000" : "#aaa" }}>IN</span>
-
+                      <ul className="d-flex">
+                        <li style={{ marginRight: "20px" }}>
+                          <div style={toggleStyle}>
                             <div
-                              style={{
-                                width: "80px",
-                                height: "40px",
-                                borderRadius: "50px",
-                                backgroundColor: "#f0f0f0",
-                                position: "relative",
-                                cursor: "pointer",
-                              }}
-                              onClick={handleCountryToggle}
+                              style={labelStyle}
+                              onClick={handleToggle}
+                              onKeyPress={(e) => e.key === "Enter" && handleToggle()}
+                              tabIndex={0}
+                              role="button"
+                              aria-label="Toggle between flags"
                             >
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "4px",
-                                  left: isCountryToggled ? "calc(100% - 36px)" : "4px",
-                                  width: "32px",
-                                  height: "32px",
-                                  borderRadius: "50%",
-                                  overflow: "hidden",
-                                  transition: "all 0.3s ease",
-                                }}
-                              >
+                              <div style={toggleHandleStyle}>
+                                {/* Background flag images */}
                                 <img
-                                  src={isCountryToggled ? Dubai : India}
-                                  alt="flag"
+                                  src="/images/logo/flag.png"
+                                  alt="flag1"
                                   style={{
-                                    width: isCountryToggled ? "120%" : "100%",
-                                    height: isCountryToggled ? "120%" : "100%",
-                                    objectFit: "cover",
-                                    transform: isCountryToggled ? "translate(-8%, -8%)" : "none",
+                                    ...flagBackgroundStyles,
+                                    opacity: isToggled ? 0 : 1,
                                   }}
                                 />
+                                <img
+                                  src="/images/logo/flag (1).png"
+                                  alt="flag2"
+                                  style={{
+                                    ...flagBackgroundStyle,
+                                    opacity: isToggled ? 1 : 0,
+                                  }}
+                                />
+
+                                {/* Knob */}
+                                <div style={handleKnobStyle(isToggled)}></div>
                               </div>
                             </div>
-
-                            <span style={{ color: isCountryToggled ? "#000" : "#aaa" }}>AE</span>
                           </div>
                         </li>
-
-                        <li>
+                        <li style={{ display: "flex", alignItems: "center" }}>
                           <a
                             href="#"
                             onClick={(e) => {
@@ -874,7 +952,6 @@ const Header = ({ showSearch}) => {
                           </a>
                         </li>
                       </ul>
-
                       {/* Add property button */}
                       <div className="flat-bt-top">
                         <a
@@ -891,7 +968,7 @@ const Header = ({ showSearch}) => {
 
                       {/* Menu toggle */}
                       {showSearch && (
-                        <div className="header-toggle" ref={toggleRef}>
+                        <div className="header-toggle" style={{ height: "57px", width: "47px", marginTop: "10px" }} ref={toggleRef}>
                           <button
                             className={`toggle-btn ${isMenuToggled ? "active" : ""}`}
                             onClick={handleMenuToggle}
@@ -1235,9 +1312,6 @@ const Header = ({ showSearch}) => {
       )}
 
 
-
-
-
       {/* OTP Modal */}
       {showOtpModal && (
         <div
@@ -1372,13 +1446,6 @@ const Header = ({ showSearch}) => {
           </div>
         </div>
       )}
-
-
-
-
-
-
-
 
 
 

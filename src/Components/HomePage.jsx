@@ -357,7 +357,7 @@ const HomePage = () => {
 
     useEffect(() => {
         const handleScroll = () => {
-            if (window.scrollY > 150) {
+            if (window.scrollY > 580) {
                 setShowSearch(true);
             } else {
                 setShowSearch(false);
@@ -433,9 +433,7 @@ const HomePage = () => {
                 <div id="pagee" className="clearfix">
                     <Header showSearch={showSearch}  />
 
-                    <p style={{ position: "fixed", top: "5px", right: "10px", zIndex: 99999 }}>
-                        ScrollY: {window.scrollY} | showSearch: {showSearch ? "YES" : "NO"}
-                    </p>
+                   
                     {/* ✅ Floating search bar */}
                    
                     {/* SLIDER & TABS */}
