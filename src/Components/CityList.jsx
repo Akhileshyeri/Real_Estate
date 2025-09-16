@@ -1,31 +1,31 @@
 import React, { useEffect, useState } from "react";
 import Header from "./Header";
 import api from "../api/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-const CityList = () => {
-  const [cities, setCities] = useState([]);
-  const navigate = useNavigate()
+const StateList = () => {
+  const [states, setStates] = useState([]);
+  const navigate = useNavigate();
+  const {id} = useParams()
 
-  const fetchCity = async () => {
+  const fetchStates = async () => {
     const fd = new FormData();
-    fd.append("programType", "getCityDetails");
+    fd.append("programType", "getStateListOnChangeOfCountry");
     fd.append("authToken", localStorage.getItem("authToken"));
+    fd.append("country", id);
 
     try {
       const response = await api.post("properties/preRequirements", fd);
-      console.log(response);
-      
-      if (response?.data?.success) {
-        setCities(response.data.data || []);
+      if (response?.data?.success && response?.data?.data) {
+        setStates(response.data.data);
       }
     } catch (error) {
-      console.error("City fetch error:", error);
+      console.error("State fetch error:", error);
     }
   };
 
   useEffect(() => {
-    fetchCity();
+    fetchStates();
   }, []);
 
   return (
@@ -35,46 +35,71 @@ const CityList = () => {
       {/* Page Title */}
       <section className="flat-title-page">
         <div className="container">
-          <h2 className="text-center">Cities Covered</h2>
+          <h2 className="text-center">States Covered</h2>
           <ul className="breadcrumb">
             <li>
               <a href="/home">Home</a>
             </li>
-            <li>/ City</li>
+            <li>/ States</li>
           </ul>
         </div>
       </section>
 
-      {/* City Cards */}
+      {/* State List */}
       <section className="flat-section">
         <div className="container">
           <div className="row">
-            {cities.length > 0 ? (
-              cities.map((city) => (
-                <div key={city.id} className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
-                  <div className="card h-100 shadow-sm border-0">
-                    <img
-                      // src={`${api.imageUrl}${city.image_name}`}
-                      src="https://static.vecteezy.com/system/resources/previews/026/314/060/non_2x/of-a-city-skyline-with-tall-buildings-and-trees-in-a-flat-icon-style-vector.jpg"
-                      alt={city.name}
-                      className="card-img-top"
-                      style={{ height: "180px", objectFit: "cover" }}
-                      onClick={() =>navigate("/listing")}
-                    />
-                    <div className="card-body text-center">
-                      <h5 className="card-title mb-0">{city.name}</h5>
-                    </div>
-                  </div>
+            {states.length > 0 ? (
+              states.map((state) => (
+                <div
+                  key={state.id}
+                  className="col-12 col-sm-6 col-md-4 col-lg-3 mb-3"
+                >
+                  <div
+  className="state-card"
+  onClick={() => navigate("/listing", { state: { selectedState: state.name } })}
+>
+  <h5 className="mb-0 text-center" style={{ fontSize: "15px" }}>
+    {state.name}
+  </h5>
+</div>
+
                 </div>
               ))
             ) : (
-              <p className="text-center text-muted">No cities found.</p>
+              <p className="text-center text-muted">No states found.</p>
             )}
           </div>
         </div>
       </section>
+
+      {/* Hover Styles */}
+      <style jsx="true">{`
+  .state-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 500;
+    color: #000; /* default */
+  }
+  .state-card:hover {
+    transform: translateY(-6px);
+    background: #ED2027;
+    color: #fff; /* text inside will turn white */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+  .state-card:hover h5 {
+    color: #fff; /* force h5 text to become white */
+  }
+`}</style>
+
+
     </div>
   );
 };
 
-export default CityList;
+export default StateList;

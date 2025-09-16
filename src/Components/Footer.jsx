@@ -69,7 +69,7 @@ const Footer = () => {
                                     </li>
                                     <li className="mt-12 d-flex align-items-center gap-8">
                                         <i className="icon icon-mail fs-20 text-variant-2"></i>
-                                        <p className="text-white">info@eazy_acers.com</p>
+                                        <p className="text-white">info@eazy_acres.com</p>
                                     </li>
                                 </ul>
 
@@ -200,7 +200,7 @@ const Footer = () => {
             <div className="bottom-footer">
                 <div className="container">
                     <div className="content-footer-bottom">
-                        <div className="copyright">©2025 Eazy Acers. All Rights Reserved.</div>
+                        <div className="copyright">©2025 Eazy Acres. All Rights Reserved.</div>
 
                         <ul className="menu-bottom">
                             <li><a href="">Terms Of Services</a> </li>

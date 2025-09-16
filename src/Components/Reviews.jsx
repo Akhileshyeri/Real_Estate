@@ -368,7 +368,7 @@ const Reviews = () => {
 
                             </div>
                             <div className="footer-dashboard">
-                                <p className="text-variant-2">©2025 Eazy Acers. All Rights Reserved.</p>
+                                <p className="text-variant-2">©2025 Eazy Acres. All Rights Reserved.</p>
                             </div>
 
                             <div className="overlay-dashboard"></div>

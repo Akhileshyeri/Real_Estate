@@ -813,7 +813,7 @@ const Myproperties = () => {
                                                                         <ul className="list-action">
                                                                             <li>
                                                                                 <div className="remove-file item btn-wrapper">
-                                                                                    <button className="btn edit-btn">Edit</button>
+                                                                                    <button className="btn edit-btn" onClick={() => navigate(`/edit-property/${property.id}`)}>Edit</button>
                                                                                     <button
                                                                                         className="btn inquiry-btn"
                                                                                         onClick={() =>

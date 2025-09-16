@@ -21,7 +21,7 @@ const AboutUs = () => {
                         <li>/ Pages</li>
                         <li>/ About Us</li>
                     </ul>
-                    <h2 className="text-center">About The Eazy Acers</h2>
+                    <h2 className="text-center">About The Eazy Acres</h2>
                 </div>
             </section>
             {/* <!-- End Page Title --> */}
@@ -34,7 +34,7 @@ const AboutUs = () => {
                             <h3>Welcome To The <br /> Eazy Acres</h3>
                         </div>
                         <div className="col-md-7 hover-btn-view">
-                            <p className="body-2 text-variant-1">Welcome to Eazy Acers, where we turn houses into homes and dreams into reality. At Eazy Acers, we understand that a home is more than just a physical space; it's a place where memories are created, families grow, and life unfolds. </p>
+                            <p className="body-2 text-variant-1">Welcome to Eazy Acres, where we turn houses into homes and dreams into reality. At Eazy Acres, we understand that a home is more than just a physical space; it's a place where memories are created, families grow, and life unfolds. </p>
 
                         </div>
 
@@ -56,7 +56,7 @@ const AboutUs = () => {
                                     <div className="text-subtitle text-primary">Why Choose Us</div>
                                     <h4 className="mt-4">Discover What Sets Our Real Estate Expertise Apart</h4>
                                 </div>
-                                <p>At Eazy Acers, our unwavering commitment lies in crafting unparalleled real estate journeys. Our seasoned professionals, armed with extensive market knowledge, walk alongside you through every phase of your property endeavor. We prioritize understanding your unique aspirations, tailoring our expertise to match your vision.</p>
+                                <p>At Eazy Acres, our unwavering commitment lies in crafting unparalleled real estate journeys. Our seasoned professionals, armed with extensive market knowledge, walk alongside you through every phase of your property endeavor. We prioritize understanding your unique aspirations, tailoring our expertise to match your vision.</p>
                                 <ul className="list-view">
                                     <li>
                                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -364,7 +364,7 @@ const AboutUs = () => {
                         <div className="box-left">
                             <div className="box-title">
                                 <div className="text-subtitle text-primary">Become Partners</div>
-                                <h4 className="mt-4">List your Properties on Eazy Acers, join Us Now!</h4>
+                                <h4 className="mt-4">List your Properties on Eazy Acres, join Us Now!</h4>
                             </div>
                             <a href="#" className="tf-btn primary size-1">Become A Hosting</a>
                         </div>

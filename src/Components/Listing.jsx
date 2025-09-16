@@ -11,8 +11,9 @@ const { Option } = Select;
 
 
 const Listing = () => {
-    const { search } = useLocation();
+    const { search, state: navState } = useLocation(); // 👈 navState comes from navigate
     const [limit, setLimit] = useState(10);
+
 
     const [properties, setProperties] = useState([]);
     const [page, setPage] = useState(1);
@@ -45,7 +46,7 @@ const Listing = () => {
     useEffect(() => {
         const query = new URLSearchParams(search);
 
-        const listingType = query.get("listingType") || "";
+        const listingType = query.get("listingType") || "sale";
         const type = query.get("type") || "All";
         const bhk = query.get("bhk") || "";
         const bathrooms = query.get("bathrooms") || "";
@@ -86,7 +87,11 @@ const Listing = () => {
         if (!filtersReady) return;
         fetchList(page);
     }, [page, filtersReady, limit]);
-
+    useEffect(() => {
+        if (navState?.selectedState) {
+            setSelectedState(navState.selectedState);
+        }
+    }, [navState]);
 
 
 
@@ -333,17 +338,19 @@ const Listing = () => {
                                     <ul className="nav-tab-form" role="tablist">
                                         <li className="nav-tab-item">
                                             <a
-                                                href="#forRent"
-                                                className={`nav-link-item ${selectedListingType === "rent" ? "active" : ""}`}
-                                                onClick={e => { e.preventDefault(); setSelectedListingType("rent"); setSelectedType("All"); }}
-                                            >For Rent</a>
-                                        </li>
-                                        <li className="nav-tab-item">
-                                            <a
                                                 href="#forSale"
                                                 className={`nav-link-item ${selectedListingType === "sale" ? "active" : ""}`}
                                                 onClick={e => { e.preventDefault(); setSelectedListingType("sale"); setSelectedType("All"); }}
                                             >For Sale</a>
+                                        </li>
+                                        <li className="nav-tab-item">
+
+                                              <a
+                                                href="#forRent"
+                                                className={`nav-link-item ${selectedListingType === "rent" ? "active" : ""}`}
+                                                onClick={e => { e.preventDefault(); setSelectedListingType("rent"); setSelectedType("All"); }}
+                                            >For Rent</a>
+                                          
                                         </li>
                                     </ul>
                                     <div className="tab-content">
@@ -380,7 +387,7 @@ const Listing = () => {
                                                                     filterOption={(input, option) =>
                                                                         (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
                                                                     }
-                                                                    style={{ width: "100%", height:"45px" }}
+                                                                    style={{ width: "100%", height: "45px" }}
                                                                 >
                                                                     {states.map((s) => (
                                                                         <Option key={s.id} value={s.name}>
@@ -388,6 +395,7 @@ const Listing = () => {
                                                                         </Option>
                                                                     ))}
                                                                 </Select>
+
                                                             </div>
 
 
@@ -417,7 +425,7 @@ const Listing = () => {
                                                                 <div className="advanced-filters mt-3 p-3" style={{ borderRadius: "8px", border: "1px solid #eee" }}>
                                                                     {selectedListingType === "rent" ? (
                                                                         <div style={{ marginBottom: "25px" }}>
-                                                                            <h6>Rent Range</h6>
+                                                                            <label className="title-select">Rent Range</label>
                                                                             <Slider
                                                                                 range
                                                                                 min={0}
@@ -432,7 +440,7 @@ const Listing = () => {
                                                                         </div>
                                                                     ) : (
                                                                         <div style={{ marginBottom: "25px" }}>
-                                                                            <h6>Price Range</h6>
+                                                                            <label className="title-select">Price Range</label>
                                                                             <Slider
                                                                                 range
                                                                                 min={0}
@@ -451,7 +459,8 @@ const Listing = () => {
                                                                     {["Flat / Apartment", "Independent House / Villa", "Farmhouse", "Serviced Apartment", "1 RK / Studio Apartment", "Independent Floor"].includes(selectedType) && (
                                                                         <>
                                                                             <div style={{ marginBottom: "20px", }}>
-                                                                                <h6 className='mb-3'>BHK Type</h6>
+                                                                               <label className="title-select mb-3">BHK Type</label>
+                                                                               <br />
                                                                                 {["1 BHK", "2 BHK", "3 BHK", "4 BHK", "4+ BHK"].map(bhk => {
                                                                                     const bhkNumber = bhk.split(" ")[0]; // "1", "2", "3", "4", "4+"
                                                                                     return (
@@ -481,7 +490,8 @@ const Listing = () => {
                                                                             </div>
 
                                                                             <div style={{ marginBottom: "20px" }}>
-                                                                                <h6 className='mb-3'>Bedrooms</h6>
+                                                                                <label className="title-select mb-3">Bedrooms</label>
+                                                                                   <br />
                                                                                 {["1", "2", "3", "4", "4+"].map(bed => (
                                                                                     <button
                                                                                         key={bed}
@@ -506,7 +516,8 @@ const Listing = () => {
                                                                             </div>
 
                                                                             <div>
-                                                                                <h6 className='mb-3'>Bathrooms</h6>
+                                                                                <label className="title-select mb-3">Bathrooms</label>
+                                                                                   <br />
                                                                                 {["1", "2", "3", "4", "4+"].map(bath => (
                                                                                     <button
                                                                                         key={bath}
@@ -531,7 +542,8 @@ const Listing = () => {
 
                                                                     {selectedType === "Plot / Land" && (
                                                                         <div>
-                                                                            <h6>Plot Size</h6>
+                                                                            <label className="title-select">Plot Size</label>
+                                                                               <br />
                                                                             <Slider range min={500} max={10000} step={100} defaultValue={[1000, 5000]} />
                                                                             <h6>Facing</h6>
                                                                             {["East", "West", "North", "South"].map(dir => (
@@ -542,7 +554,8 @@ const Listing = () => {
 
                                                                     {(selectedType === "Office" || selectedType === "Retail") && (
                                                                         <div>
-                                                                            <h6>Carpet Area (sq.ft)</h6>
+                                                                            <label className="title-select">Carpet Area (sq.ft)</label>
+                                                                               <br />
                                                                             <Slider range min={200} max={10000} step={100} defaultValue={[500, 5000]} />
                                                                         </div>
                                                                     )}

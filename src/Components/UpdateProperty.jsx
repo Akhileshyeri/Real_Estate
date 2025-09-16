@@ -5,22 +5,55 @@ import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import api from "../api/api";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
-const AddProperty = () => {
-const navigate = useNavigate()
+const UpdateProperty = () => {
+  const { id } = useParams()
   const [percentage, setPercentage] = useState(0);
   const [listingType, setListingType] = useState("Sell");
   const [ownerPercentage, setOwnerPercentage] = useState("");
+  const [ownerType, setOwnerType] = useState("");
+
   const [developerPercentage, setDeveloperPercentage] = useState("");
 
   const [sections, setSections] = useState([{ type: "Plan", files: [] }]);
 
-    const authToken = localStorage.getItem("authToken") || "Guest";
-
 
   const [isOpen, setIsOpen] = useState(false);
   const [brokerageAmount, setBrokerageAmount] = useState("");
+
+
+  const [currentStep, setCurrentStep] = useState(1);
+  const [propertyType, setPropertyType] = useState("");
+  const [subPropertyType, setSubPropertyType] = useState("");
+  const [subPropertyQuestionOption, setSubPropertyQuestionOption] = useState("");
+  const [subPropertyQuestionOptionLvl2, setSubPropertyQuestionOptionLvl2] = useState("");
+  // 🟡 RENT DETAILS STATES
+  const [availableFrom, setAvailableFrom] = useState("");
+  const [willingTo, setWillingTo] = useState("");            // Family / Single men / Single women
+  const [expectedRent, setExpectedRent] = useState("");
+  const [elecWaterExcluded, setElecWaterExcluded] = useState(false);
+  const [agreementType, setAgreementType] = useState("");    // Company lease agreement / Any
+  const [allowBroker, setAllowBroker] = useState("");        // Yes / No
+  const [membershipCharge, setMembershipCharge] = useState("");
+  const [apartmentBhk, setApartmentBhk] = useState("");
+  const [retailWashroom, setRetailWashroom] = useState([]);
+  const [files, setFiles] = useState([]);
+
+
+
+  const [previewList, setPreviewList] = useState([]);
+  const fileInputRef = useRef(null);
+
+  const [address, setAddress] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+
+  const [parkingFacility, setParkingFacility] = useState("");
+
+  // inside AddProperty.js
+
+  const [allAmenities, setAllAmenities] = useState([]);   // API amenities
+  const [selectedAmenities, setSelectedAmenities] = useState([]); // Chosen amenity IDs
   const [amenities, setAmenities] = useState({
     // Amenities
     maintenanceStaff: false,
@@ -71,35 +104,6 @@ const navigate = useNavigate()
     overlookingMainRoad: false
   });
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const [propertyType, setPropertyType] = useState("");
-  const [subPropertyType, setSubPropertyType] = useState("");
-  const [subPropertyQuestionOption, setSubPropertyQuestionOption] = useState("");
-  const [subPropertyQuestionOptionLvl2, setSubPropertyQuestionOptionLvl2] = useState("");
-  // 🟡 RENT DETAILS STATES
-  const [availableFrom, setAvailableFrom] = useState("");
-  const [willingTo, setWillingTo] = useState("");            // Family / Single men / Single women
-  const [expectedRent, setExpectedRent] = useState("");
-  const [elecWaterExcluded, setElecWaterExcluded] = useState(false);
-  const [agreementType, setAgreementType] = useState("");    // Company lease agreement / Any
-  const [allowBroker, setAllowBroker] = useState("");        // Yes / No
-  const [membershipCharge, setMembershipCharge] = useState("");
-  const [apartmentBhk, setApartmentBhk] = useState("");
-  const [retailWashroom, setRetailWashroom] = useState([]);
-  const [files, setFiles] = useState([]);
-
-  const [previewList, setPreviewList] = useState([]);
-  const fileInputRef = useRef(null);
-
-  const [address, setAddress] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-
-  const [parkingFacility, setParkingFacility] = useState("");
-
-  // inside AddProperty.js
-
-  const [allAmenities, setAllAmenities] = useState([]);   // API amenities
-  const [selectedAmenities, setSelectedAmenities] = useState([]); // Chosen amenity IDs
 
   // Fetch amenities on mount
   useEffect(() => {
@@ -131,6 +135,182 @@ const navigate = useNavigate()
     );
   };
 
+  const fetchProperty = async () => {
+    const fd = new FormData();
+    fd.append("programType", "propertyOverView");
+    fd.append("id", id);
+    fd.append("authToken", localStorage.getItem("authToken"));
+
+    try {
+      const response = await api.post("/properties/property", fd);
+      console.log("edit", response);
+
+      if (response.data.success && response.data.data.length > 0) {
+        const property = response.data.data[0]; // your full object
+
+        // 🔹 Map Basic Details
+        setTitle(property.property.title || "");
+        setDescription(property.property.description || "");
+        // 🔹 Listing Type
+        if (
+          property.property.listing_type?.toLowerCase() === "sale" ||
+          property.property.listing_type?.toLowerCase() === "sell"
+        ) {
+          setListingType("Sell");
+        } else if (property.property.listing_type?.toLowerCase() === "rent") {
+          setListingType("Rent");
+        } else {
+          setListingType(property.property.listing_type || "");
+        }
+
+        setPropertyType(property.property.property_type_id || "");
+        setSubPropertyType(property.property.sub_property_type_id || "");
+        setSelectedOwnership(property.property.ownership_type_id || "");
+        setUniqueProperty(property.property.unique_property || "");
+
+        // 🔹 Location
+        setCity(property.location.city_id || "");
+        setLocation(property.location.location || "");
+        setSubLocality(property.location.sub_locality || "");
+        setApartment(property.location.apartment || "");
+        setHouseNo(property.location.house_no || "");
+        setPostalCode(property.location.postal_code || "");
+        // 🔹 Property Facing
+        if (property.location.property_facing) {
+          // Capitalize first letter of each word to match button labels
+          const facing = property.location.property_facing
+            .toLowerCase()
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+
+          setPropertyFacing(facing);
+        }
+
+
+        // 🔹 Area
+        setCarpetArea(property.area.carpet_area || "");
+        setCarpetUnit(property.area.carpet_area_unit || "");
+        setBuiltUpArea(property.area.built_up_area || "");
+        setBuiltUpUnit(property.area.built_up_area_unit || "");
+        setPlotArea(property.area.plot_area || "");
+        setPlotAreaUnit(property.area.plot_area_unit || "");
+
+        // 🔹 Air Conditioning
+        if (property.features.air_conditioning) {
+          const ac = property.features.air_conditioning.toLowerCase();
+          if (ac === "central") {
+            setAirConditioning("Central");
+            console.log("central")
+          }
+          else if (ac === "individual") setAirConditioning("Individual");
+          else if (ac === "none") setAirConditioning("None");
+          else setAirConditioning("");
+        }
+
+
+        // 🔹 Availability
+        // 🔹 Availability
+        if (property.availability.availability_status) {
+          const avail = property.availability.availability_status.toLowerCase();
+          if (avail === "ready-to-move") setAvailabilityStatus("Ready to Move");
+          else if (avail === "under-construction") setAvailabilityStatus("Under Construction");
+          else setAvailabilityStatus("");
+        }
+
+        setAvailableFrom(property.availability.available_from || "");
+        setPossessionBy(property.availability.possession_by || "");
+
+        // 🔹 Details
+        setApartmentBhk(property.details.apartment_bhk)
+        setBedrooms(property.details.bedrooms || 0);
+        setBathrooms(property.details.bathrooms || 0);
+        setBalconies(property.details.balconies || 0);
+        setTotalRooms(property.details.total_rooms || 0);
+        // 🔹 Furnishing details checkboxes
+        if (property.features.furnishing_details && property.features.furnishing_details.length > 0) {
+          setFurnishingCheckboxes((prev) => {
+            const updated = { ...prev };
+            property.features.furnishing_details.forEach((item) => {
+              if (updated.hasOwnProperty(item)) {
+                updated[item] = true;
+              }
+            });
+            return updated;
+          });
+        }
+        setTotalFloors(property.details.total_floors || "")
+        setPropertyOnFloor(property.details.property_on_floor || "")
+
+
+        // 🔹 Pricing
+        setExpectedPrice(property.pricing.expected_price || "");
+        setPricePerSqYards(property.pricing.price_per_sq_yards || "");
+        setCheckboxes({
+          allInclusive: property.pricing.all_inclusive === 1,
+          taxExcluded: property.pricing.govt_taxes === 1,
+          negotiable: property.pricing.negotiable === 1,
+        });
+
+        // 🔹 Parking
+        setCoveredParking(property.parking.covered_parking || 0);
+        setOpenParking(property.parking.open_parking || 0);
+        setParking(property.parking.parking_type || "");
+
+        // 🔹 Features
+        setFurnishing(property.features.furnishing || "");
+
+        setOxygen(property.features.oxygen || 0);
+        setUps(property.features.ups || 0);
+
+        // 🔹 Commercial
+        setMinSeats(property.commercial.min_seats || "");
+        setMaxSeats(property.commercial.max_seats || "");
+        setNoOfCabins(property.commercial.no_of_cabins || "");
+        setNoOfMeetingRooms(property.commercial.no_of_meeting_rooms || "");
+
+        // 🔹 Construction
+        setWallStatus(property.construction.wall_status || "");
+        setDoorsConstructed(property.construction.doors_constructed || 0);
+        setWashroomBare(property.construction.washroom_bare || 0);
+        setFlooringType(property.construction.flooring_type || "");
+        setEntranceWidth(property.construction.entrance_width || "");
+        setCeilingHeight(property.construction.ceiling_height || "");
+
+        if (property.features.amenities && property.features.amenities.length > 0) {
+          setSelectedAmenities(property.features.amenities);
+        }
+
+
+        // 🔹 Customer Details (if you show them in form)
+        // you can also store in state if needed
+        // setCustomerName(property.customerDetails.firstName);
+
+        // 🔹 Property Images
+        if (property.propertyImages && property.propertyImages.length > 0) {
+          const apiSections = property.propertyImages.map(img => ({
+            type: img.image_type || "Other",
+            files: [{
+              file: null,
+              preview: `${api.imageUrl}${img.image_path}`,
+              name: img.image_path.split("/").pop()
+            }]
+          }));
+          setSections(apiSections);
+        }
+
+
+
+      }
+    } catch (error) {
+      console.error("Error fetching property:", error);
+      toast.error("Error fetching property details");
+    }
+  };
+
+
+
+  useEffect(() => {
+    fetchProperty();
+  }, []);
 
 
 
@@ -180,7 +360,7 @@ const navigate = useNavigate()
 
   // Location step states
   const [title, setTitle] = useState("");
-  // const [keyword, setKeyword] = useState("");
+  const [keyword, setKeyword] = useState("");
 
   const [city, setCity] = useState("");
   const [location, setLocation] = useState("");
@@ -455,6 +635,7 @@ const navigate = useNavigate()
 
   const handleLocationContinue = () => {
     setCurrentStep(3); // Move to Property Profile
+    handleUpdate2()
   };
 
   const handleFileUpdate = (fileItems) => {
@@ -485,6 +666,7 @@ const navigate = useNavigate()
     setCheckboxes((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const handleStep5Continue = () => {
+    handleUpdate5()
     setCurrentStep(6); // Go directly to Amenities step
   };
 
@@ -504,7 +686,7 @@ const navigate = useNavigate()
       subPropertyType,
       subPropertyQuestionOption,
       title,
-      // keyword,
+      keyword,
       city,
       selectedOwnership,
       location,
@@ -562,7 +744,7 @@ const navigate = useNavigate()
     subPropertyQuestionOption,
     city,
     title,
-    // keyword,
+    keyword,
     selectedOwnership,
     location,
     subLocality,
@@ -607,7 +789,7 @@ const navigate = useNavigate()
     amenities,
     address,
     postalCode,
-
+    ownerType,
     locatedNear
   ]);
   useEffect(() => {
@@ -622,13 +804,13 @@ const navigate = useNavigate()
       setSubPropertyQuestionOption(parsed.subPropertyQuestionOption || "");
       setCity(parsed.city || "");
       setTitle(parsed.title || "");
-      // setKeyword(parsed.keyword || "");
+      setKeyword(parsed.keyword || "");
 
       setAddress(parsed.address || "");
       setPostalCode(parsed.postalCode || "");
       setLocatedNear(parsed.locatedNear || "");
 
-
+      setOwnerType(parsed.ownerType || "")
       setSelectedOwnership(parsed.selectedOwnership || "");
       setLocation(parsed.location || "");
       setSubLocality(parsed.subLocality || "");
@@ -673,6 +855,341 @@ const navigate = useNavigate()
       setAmenities(parsed.amenities || {});
     }
   }, []);
+
+  const handleUpdate1 = async () => {
+    const fd = new FormData();
+    fd.append("programType", "updateProperty");
+    fd.append("propertyId", id);
+    fd.append("updateType", "property");
+    fd.append("authToken", localStorage.getItem("authToken"));
+    //step1
+
+    fd.append('title', title);
+    fd.append('listing_type', listingType);
+    fd.append('property_type_id', propertyType);
+    fd.append('sub_property_type_id', subPropertyType);
+
+    fd.forEach((value, key) => {
+      console.log(key, value);
+    });
+
+
+    try {
+      const response = await api.post("properties/property", fd);
+      console.log("step 1 response", response)
+
+    } catch (error) {
+      console.error("Error fetching amenities:", error);
+      toast.error("Error fetching amenities");
+    }
+  };
+
+  const handleUpdate2 = async () => {
+    const fd = new FormData();
+    fd.append("programType", "updateProperty");
+    fd.append("propertyId", id);
+    fd.append("updateType", "property");
+    fd.append("authToken", localStorage.getItem("authToken"));
+    //step2
+
+    fd.append('city', city);
+    fd.append('location', location);
+    fd.append('subLocality', subLocality);
+    fd.append('apartment', apartment);
+    fd.append('houseNo', houseNo);
+    fd.append('selectedOwnership', selectedOwnership);
+
+    fd.append('address', address);
+    fd.append('postal_code', postalCode);
+    fd.append('sub_locality', subLocality);
+    fd.append('located_near', locatedNear);
+    fd.append('houseNo', houseNo);
+
+    fd.forEach((value, key) => {
+      console.log(key, value);
+    });
+
+
+    try {
+      const response = await api.post("properties/property", fd);
+      console.log("step 2 response", response)
+
+    } catch (error) {
+      console.error("Error fetching amenities:", error);
+      toast.error("Error fetching amenities");
+    }
+  };
+
+  const handleUpdate3 = async () => {
+
+    const facingMap = {
+      "North": "north",
+      "South": "south",
+      "East": "east",
+      "West": "west",
+      "North-East": "north-east",
+      "North-West": "north-west",
+      "South-East": "south-east",
+      "South-West": "south-west",
+    };
+
+
+    const willingMap = {
+      "Family": "family",
+      "Bachelors": "bachelors",
+      "Single women": "single_women",
+      "Company": "company",
+      "Anyone": "anyone",
+    };
+
+
+    const unitMap = {
+      "Sq.ft": "sqft",
+      "Sq.m": "sqm",
+      "Sq.yards": "sqyards",
+      "Acres": "acres",
+    };
+
+    const availabilityMap = {
+      "Ready to Move": "ready-to-move",
+      "Under Construction": "under-construction",
+      "Upcoming": "upcoming",
+    };
+
+    const parkingMap = {
+      "Covered": "covered",
+      "Open": "open",
+      "Both": "both",
+      "None": "none",
+    };
+    const acMap = {
+      "Central": "central",
+      "Individual": "individual",
+      "None": "none",
+    };
+    // inside handleSubmitPropperty before sending
+    let furnishingMapped = "";
+    if (furnishingType === "Furnished") furnishingMapped = "fully-furnished";
+    else if (furnishingType === "Semi-furnished") furnishingMapped = "semi-furnished";
+    else if (furnishingType === "Un-furnished") furnishingMapped = "unfurnished";
+
+
+
+    const fd = new FormData();
+    fd.append("programType", "updateProperty");
+    fd.append("propertyId", id);
+    fd.append("updateType", "details_features");
+    fd.append("authToken", localStorage.getItem("authToken"));
+    //step3
+
+    fd.append('apartment_bhk', apartmentBhk);
+    fd.append('bedrooms', bedrooms);
+    fd.append('bathrooms', bathrooms);
+    fd.append('balconies', balconies);
+    fd.append('totalRooms', totalRooms);
+    fd.append('ageOfProperty', ageOfProperty);
+    fd.append('totalFloors', totalFloors);
+    fd.append('propertyOnFloor', propertyOnFloor);
+    fd.append('floorsAllowed', floorsAllowed);
+    fd.append('apartmentType', apartmentType);
+
+    fd.append("parking_type", parkingMap[parkingFacility] || "");
+    fd.append("possessionBy", possessionBy);
+
+    fd.append('parking', parking);
+    fd.append('parkingTypeRetail', parkingTypeRetail);
+    fd.append('coveredParking', coveredParking);
+    fd.append('openParking', openParking);
+
+    fd.append("carpetUnit", unitMap[carpetUnit] || carpetUnit);
+    fd.append("builtUpUnit", unitMap[builtUpUnit] || builtUpUnit);
+    fd.append("plotAreaUnit", unitMap[plotAreaUnit] || plotAreaUnit);
+    fd.append("areaUnit", unitMap[areaUnit] || areaUnit);
+
+
+    fd.append('carpetArea', carpetArea);
+
+    fd.append('builtUpArea', builtUpArea);
+
+    fd.append('plotArea', plotArea);
+
+    fd.append('plotLength', plotLength);
+    fd.append('plotBreadth', plotBreadth);
+    fd.append("availabilityStatus", availabilityMap[availabilityStatus]);
+    fd.append('availableFrom', availableFrom);
+    fd.append("willingTo", willingMap[willingTo]);
+
+    fd.append('areaType', areaType);
+    fd.append('minSeats', minSeats);
+    fd.append('maxSeats', maxSeats);
+    fd.append('noOfCabins', noOfCabins);
+    fd.append('noOfMeetingRooms', noOfMeetingRooms);
+    fd.append('washroom', washroom);
+    fd.append('conferenceRoom', conferenceRoom);
+    fd.append('receptionArea', receptionArea);
+    fd.append('pantryType', pantryType);
+    // fd.append('furnishing', furnishing);
+
+    fd.append('furnishing', furnishingMapped);
+    fd.append('wallStatus', wallStatus);
+    fd.append('doorsConstructed', doorsConstructed);
+    fd.append('washroomBare', washroomBare);
+    fd.append('flooringType', flooringType);
+    fd.append('entranceWidth', entranceWidth);
+    fd.append('entranceUnit', entranceUnit);
+    fd.append('ceilingHeight', ceilingHeight);
+    fd.append('ceilingUnit', ceilingUnit);
+    fd.append('retailWashroom', retailWashroom);
+
+    fd.append('hasBoundaryWall', hasBoundaryWall);
+
+
+
+
+    fd.append('openSides', openSides);
+    fd.append('hasConstruction', hasConstruction);
+
+
+    fd.append('elecWaterExcluded', elecWaterExcluded);
+    fd.append('agreementType', agreementType);
+    fd.append('allowBroker', allowBroker);
+
+    // Fire Safety (array of selected options)
+    fireSafety.forEach((fs, index) => {
+      fd.append(`fire_safety_features[]`, fs);
+    });
+
+    // Business Types (array of selected)
+    businessTypes.forEach((b, index) => {
+      fd.append(`business_types[]`, b);
+    });
+
+    // Furnishing Checkboxes
+    Object.keys(furnishingCheckboxes).forEach((key) => {
+      if (furnishingCheckboxes[key]) {
+        fd.append("furnishing_details[]", key);
+      }
+    });
+
+
+
+
+
+
+    fd.forEach((value, key) => {
+      console.log(key, value);
+    });
+
+
+    try {
+      const response = await api.post("properties/property", fd);
+      console.log("step 3 response", response)
+
+    } catch (error) {
+      console.error("Error fetching amenities:", error);
+      toast.error("Error fetching amenities");
+    }
+  };
+
+  const handleUpdate4 = async () => {
+    const fd = new FormData();
+    fd.append("programType", "updateProperty");
+    fd.append("propertyId", id);
+    fd.append("updateType", "propertyImages");
+    fd.append("authToken", localStorage.getItem("authToken"));
+    //step4
+
+    // Images/files
+    sections.forEach((section) => {
+      fd.append("imageType[]", section.type);
+      section.files.forEach((file) => {
+        fd.append("files[]", file);
+      });
+    });
+
+
+    fd.forEach((value, key) => {
+      console.log(key, value);
+    });
+
+
+    try {
+      const response = await api.post("properties/property", fd);
+      console.log("step 4 response", response)
+
+    } catch (error) {
+      console.error("Error fetching amenities:", error);
+      toast.error("Error fetching amenities");
+    }
+  };
+
+  const handleUpdate5 = async () => {
+    const fd = new FormData();
+    fd.append("programType", "updateProperty");
+    fd.append("propertyId", id);
+    fd.append("updateType", "pricing");
+    fd.append("authToken", localStorage.getItem("authToken"));
+    //step5
+    fd.append('expectedPrice', expectedPrice);
+    fd.append('pricePerSqYards', pricePerSqYards);
+    fd.append('bookingAmount', bookingAmount);
+    fd.append('annualDues', annualDues);
+    fd.append('brokerage', brokerage);
+    fd.append('expectedRental', expectedRental);
+    fd.append('expectedRent', expectedRent);
+    fd.append('membershipCharge', membershipCharge);
+    fd.append('brokerageAmount', brokerageAmount);
+    fd.append('maintenance', maintenance);
+    fd.append('maintenanceFreq', maintenanceFreq);
+
+    // Additional pricing checkboxes
+    fd.append("allInclusive", allInclusive);
+    fd.append("taxGovt", taxGovt);
+    fd.append("priceNegotiable", priceNegotiable);
+
+
+
+
+
+    fd.forEach((value, key) => {
+      console.log(key, value);
+    });
+
+
+    try {
+      const response = await api.post("properties/property", fd);
+      console.log("step 5 response", response)
+
+    } catch (error) {
+      console.error("Error fetching amenities:", error);
+      toast.error("Error fetching amenities");
+    }
+  };
+
+  const handleUpdate6 = async () => {
+    const fd = new FormData();
+    fd.append("programType", "updateProperty");
+    fd.append("propertyId", id);
+    fd.append("updateType", "pricing");
+    fd.append("authToken", localStorage.getItem("authToken"));
+    //step6
+
+
+
+    fd.forEach((value, key) => {
+      console.log(key, value);
+    });
+
+
+    try {
+      const response = await api.post("properties/property", fd);
+      console.log("step 6 response", response)
+
+    } catch (error) {
+      console.error("Error fetching amenities:", error);
+      toast.error("Error fetching amenities");
+    }
+  };
 
   async function handleSubmitPropperty() {
 
@@ -740,7 +1257,7 @@ const navigate = useNavigate()
     fd.append('located_near', locatedNear);
 
 
-    // fd.append('keyword', keyword);
+    fd.append('keyword', keyword);
     fd.append('description', description);
     fd.append('listingType', listingType);
     fd.append('propertyType', propertyType);
@@ -934,7 +1451,7 @@ const navigate = useNavigate()
       });
     });
 
-    fd.append("authToken", authToken);
+    fd.append("authToken", "QlhOUWNKY2pVUE11ZzFrM3RBekp3cGtpSDhNMzBIaGVzNklaUlRLalhXTT0=");
     fd.append("programType", "addPropertyMain");
 
     fd.forEach((value, key) => {
@@ -946,12 +1463,7 @@ const navigate = useNavigate()
     try {
       const response = await api.post("properties/prop1", fd);
       console.log("ee", response)
-      if(response.data.success){
-        toast.success(response.data.message)
-        navigate("/home")
-      }else{
-        toast.error(response.data.message)
-      }
+      toast.success(response.data.message)
     }
     catch (err) {
       console.log(err)
@@ -964,6 +1476,13 @@ const navigate = useNavigate()
     setPercentage(progress);
   }, [currentStep]);
 
+
+
+  useEffect(() => {
+    if (builtUpArea && builtUpArea !== "0.00") {
+      setShowBuiltUpArea(true); // auto open input if area already exists
+    }
+  }, [builtUpArea]);
 
 
 
@@ -1339,7 +1858,7 @@ const navigate = useNavigate()
                 />
 
                 {/* Keywords */}
-                {/* <h4 className="step-heading" style={{ color: "#161E2D" }}>
+                <h4 className="step-heading" style={{ color: "#161E2D" }}>
                   Keyword
                 </h4>
                 <input
@@ -1349,7 +1868,7 @@ const navigate = useNavigate()
                   value={keyword}
                   onChange={(e) => {
                     setKeyword(e.target.value);
-                    console.log("Keyword:", e.target.value); 
+                    console.log("Keyword:", e.target.value); // ✅ log input
                   }}
                   style={{
                     width: "100%",
@@ -1358,7 +1877,7 @@ const navigate = useNavigate()
                     border: "1px solid #ccc",
                     borderRadius: "6px",
                   }}
-                /> */}
+                />
 
 
                 {/* LISTING TYPE */}
@@ -1412,23 +1931,32 @@ const navigate = useNavigate()
                 {/* If Layout/Land development under Joint Venture */}
                 {listingType === "Joint Venture" &&
                   propertyType === "Layout/Land development" && (
-                    <button
-                      className="continue-btn"
-                      onClick={() => setCurrentStep(2)}
-                      style={{
-                        marginTop: "20px",
-                        padding: "12px 24px",
-                        backgroundColor: "#ED2027",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                        fontSize: "16px",
-                      }}
-                    >
-                      Continue
-                    </button>
+
+                    <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                      {/* Continue Button */}
+                      <button
+                        className="continue-btn"
+                        onClick={() => {
+                          handleUpdate1();   // ✅ call update
+                          setCurrentStep(2); // ✅ then move to next step
+                        }}
+                        style={{
+                          padding: "12px 24px",
+                          backgroundColor: "#ED2027",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          fontWeight: "600",
+                          fontSize: "16px",
+                        }}
+                      >
+                        Continue
+                      </button>
+
+
+                    </div>
+
                   )}
 
                 {/* SUB PROPERTY OPTIONS */}
@@ -1698,18 +2226,57 @@ const navigate = useNavigate()
                           (isResidentialOrSimple && subPropertyType));
 
                       return canContinue ? (
-                        <button className="continue-btn" onClick={() => setCurrentStep(2)}>
-                          Continue
-                        </button>
+                        <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                          {/* Continue Button */}
+                          <button
+                            className="continue-btn"
+                            onClick={() => {
+                              handleUpdate1();   // ✅ call update
+                              setCurrentStep(2); // ✅ then move to next step
+                            }}
+                            style={{
+                              padding: "12px 24px",
+                              backgroundColor: "#ED2027",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              fontWeight: "600",
+                              fontSize: "16px",
+                            }}
+                          >
+                            Continue
+                          </button>
+
+
+                        </div>
+
                       ) : (
-                        <button
-                          className="continue-btn"
-                          onClick={() =>
-                            alert("Please complete all selections before continuing.")
-                          }
-                        >
-                          Continue
-                        </button>
+                        <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                          {/* Continue Button */}
+                          <button
+                            className="continue-btn"
+                            onClick={() => {
+                              handleUpdate1();   // ✅ call update
+                              setCurrentStep(2); // ✅ then move to next step
+                            }}
+                            style={{
+                              padding: "12px 24px",
+                              backgroundColor: "#ED2027",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              fontWeight: "600",
+                              fontSize: "16px",
+                            }}
+                          >
+                            Continue
+                          </button>
+
+                      
+                        </div>
+
                       );
                     })()}
                   </>
@@ -1786,8 +2353,8 @@ const navigate = useNavigate()
                         <button
                           key={role}
                           type="button"
-                          onClick={() => setSelectedOwnership(role)}
-                          className={`ownership-option ${selectedOwnership === role ? "active" : ""
+                          onClick={() => setOwnerType(role)}
+                          className={`ownership-option ${ownerType === role ? "active" : ""
                             }`}
                         >
                           {role}
@@ -8963,11 +9530,15 @@ const navigate = useNavigate()
 
                 <div className="step3-continue-container">
                   <button
-                    onClick={() => setCurrentStep(4)}
+                    onClick={() => {
+                      handleUpdate3();   // ✅ call first
+                      setCurrentStep(4); // ✅ then go to step 4
+                    }}
                     className="step3-continue-btn"
                   >
                     Continue
                   </button>
+
                 </div>
               </div>
             )}
@@ -9071,42 +9642,25 @@ const navigate = useNavigate()
                           <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", justifyContent: "center" }}>
                             {section.files.map((file, i) => (
                               <div key={i} style={{ textAlign: "center" }}>
-                                {file.type.startsWith("image/") ? (
-                                  <img
-                                    src={URL.createObjectURL(file)}
-                                    alt="preview"
-                                    style={{ height: "300px", width: "100%" }}
-                                  />
-                                ) : (
-                                  <div
-                                    style={{
-                                      width: "100%",
-                                      height: "100px",
-                                      border: "1px solid #dee2e6",
-                                      borderRadius: "8px",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      background: "#f8f9fa",
-                                    }}
-                                  >
-                                    <span style={{ fontSize: "24px" }}>📄</span>
-                                  </div>
-                                )}
-                                <p
-                                  style={{
-                                    fontSize: "12px",
-                                    color: "#6c757d",
-                                    marginTop: "8px",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
-                                  }}
-                                >
+                                <img
+                                  src={file.preview} // always use preview for both API & uploaded images
+                                  alt="preview"
+                                  style={{ height: "300px", width: "100%" }}
+                                />
+                                <p style={{
+                                  fontSize: "12px",
+                                  color: "#6c757d",
+                                  marginTop: "8px",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}>
                                   {file.name}
                                 </p>
                               </div>
                             ))}
+
+
                           </div>
                         ) : (
                           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
@@ -9185,7 +9739,11 @@ const navigate = useNavigate()
 
                   <button
                     disabled={!sections.some((s) => s.files.length > 0)}
-                    onClick={() => setCurrentStep(5)}
+                    onClick={() => {
+                      handleUpdate4();   // ✅ call first
+                      setCurrentStep(5)
+                    }
+                    }
                     style={{
                       padding: "12px 24px",
                       background: sections.some((s) => s.files.length > 0) ? "#ED2027" : "#e9ecef",
@@ -15544,7 +16102,6 @@ const navigate = useNavigate()
                   Select Amenities
                 </h4>
 
-                {/* Amenities Section */}
                 <div style={{ marginBottom: 25 }}>
                   <h5
                     style={{
@@ -15556,6 +16113,7 @@ const navigate = useNavigate()
                   >
                     Amenities
                   </h5>
+
                   <div
                     style={{
                       display: "grid",
@@ -15563,41 +16121,48 @@ const navigate = useNavigate()
                       gap: "10px",
                     }}
                   >
-                    {allAmenities.map((amenity) => (
-                      <button
-                        key={amenity.name}
-                        type="button"
-                        onClick={() => toggleAmenity(amenity.name)}
-                        className={`amenity-btn ${selectedAmenities.includes(amenity.name) ? "active" : ""
-                          }`}
-                      >
-                        {amenity.image && (
-                          <img
-                            src={`${api.imageUrl}/${amenity.image}`}
-                            alt={amenity.name}
-                            className="amenity-icon"
-                            style={{
-                              width: 20,
-                              height: 20,
-                              marginRight: 6,
-                              verticalAlign: "middle",
-                            }}
-                          />
-                        )}
-                        {amenity.name}
-                      </button>
-                    ))}
+                    {allAmenities.length > 0 ? (
+                      allAmenities.map((amenity) => (
+                        <button
+                          key={amenity.name}
+                          type="button"
+                          onClick={() => toggleAmenity(amenity.name)}
+                          className={`amenity-btn ${selectedAmenities.includes(amenity.name) ? "active" : ""
+                            }`}
+                        >
+                          {amenity.image && (
+                            <img
+                              src={`${api.imageUrl}/${amenity.image}`}
+                              alt={amenity.name}
+                              className="amenity-icon"
+                              style={{
+                                width: 20,
+                                height: 20,
+                                marginRight: 6,
+                                verticalAlign: "middle",
+                              }}
+                            />
+                          )}
+                          {amenity.name}
+                        </button>
+                      ))
+                    ) : (
+                      <p>No amenities found.</p>
+                    )}
                   </div>
                 </div>
 
-                {/* Submit */}
-                <button type="button"
-                  onClick={handleSubmitPropperty}
-                  className="submit-btn" style={{marginTop:"80px"}} >
+                <button
+                  type="button"
+                  onClick={handleUpdate6}
+                  className="submit-btn"
+                  style={{ marginTop: "80px" }}
+                >
                   Submit Property
                 </button>
               </div>
             )}
+
 
 
           </div>
@@ -15607,4 +16172,4 @@ const navigate = useNavigate()
   );
 };
 
-export default AddProperty;
+export default UpdateProperty;

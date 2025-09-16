@@ -69,7 +69,7 @@ const ContactUs = () => {
                                     </li>
                                     <li className="box">
                                         <div className="text-1 title">Infomation:</div>
-                                        <p className="p-16 text-variant-1">+91-7411043895 <br/> info@eazy_acers.com</p>
+                                        <p className="p-16 text-variant-1">+91-7411043895 <br/> info@eazy_acres.com</p>
                                     </li>
                                   
                                     <li className="box">
