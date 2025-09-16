@@ -4,10 +4,6 @@ import './Header.css';
 import api from '../api/api';
 import easy from "../assets/easy.png"
 import toast from 'react-hot-toast';
-import Arrow from '../assets/Arrow.png'
-import India from '../assets/india.png'
-import Dubai from '../assets/dubai.png'
-
 
 
 
@@ -76,35 +72,6 @@ const Header = () => {
       ]
     },
     // { label: 'My Profile', className: 'myprofile', onClick: () => navigate('/myprofile') }
-  ];
-
-
-  // Mobile menu items (step-by-step)
-  const menuItemsMobile = [
-    { label: "Home", className: "home", onClick: () => navigate("/home") },
-    { label: "Properties", className: "Properties", onClick: () => navigate("/listing") },
-    {
-      label: "Pages",
-      className: "dropdown2",
-      submenu: [
-        { text: "About Us", onClick: () => navigate("/aboutus") },
-        { text: "Contact Us", onClick: () => navigate("/contactus") },
-        { text: "FAQs", onClick: () => navigate("/FAQ") },
-        { text: "Privacy Policy", onClick: () => navigate("/Privacy-Policy") },
-        { text: "Blogs", onClick: () => navigate("/blogs") },
-      ],
-    },
-    {
-      label: "My profile",
-      className: "dropdown3",
-      submenu: [
-
-        { text: "Dashboard", onClick: () => navigate("/dashboard") },
-        { text: "My Favorites", onClick: () => navigate("/myfavorites") },
-        { text: "My Properties", onClick: () => navigate("/myproperties") },
-
-      ],
-    },
   ];
 
   // ---------------- Register Form States ----------------
@@ -555,90 +522,70 @@ const Header = () => {
   };
 
 
+const [isToggled, setIsToggled] = useState(false);
 
-  const toggleStyle = {
-    display: "flex",
-    justifyContent: "center",
-    padding: "8px 0",
-  };
+const toggleStyle = {
+  display: "flex",
+  justifyContent: "center",
+  padding: "8px 0",
+};
 
+const labelStyle = {
+  display: "flex",
+  alignItems: "center",
+  borderRadius: "50px",
+  padding: "6px",
+  cursor: "pointer",
+  position: "relative",
+  transition: "all 0.3s ease",
+};
 
+const toggleHandleStyle = {
+  width: "72px",
+  height: "30px",
+  borderRadius: "50px",
+  position: "relative",
+  overflow: "hidden", // so flags don’t overflow
+  boxShadow:
+    "inset 3px 3px 5px rgba(0, 0, 0, 0.1), inset -3px -3px 5px rgba(255, 255, 255, 0.7)",
+};
 
-  const [isToggled, setIsToggled] = useState(false);
+const flagBackgroundStyle = {
+  position: "absolute",
+  top: 0,
+  left: "-10px",
+  width: "100%",
+  height: "100%",
+  objectFit: "contain",
+  transition: "opacity 0.4s ease",
+};
 
-  const handleToggle = () => {
-    setIsToggled(!isToggled);
-  };
-  //   const handleToggle = () => {
-  //   setIsToggled((prev) => !prev);
-  // };
+const flagBackgroundStyles = {
+  position: "absolute",
+  top: 0,
+  left: "10px",
+  width: "100%",
+  height: "100%",
+  objectFit: "contain",
+  transition: "opacity 0.4s ease",
+};
 
-  const toggleWrapperStyle = {
-    display: "flex",
-    justifyContent: "center",
-    padding: "8px 0",
-    alignItems: "center",
-    gap: "12px",
-  };
+const handleKnobStyle = (isToggled) => ({
+  position: "absolute",
+  top: "3px",
+  left: isToggled ? "calc(100% - 27px)" : "3px",
+  width: "24px",
+  height: "24px",
+  background: "white",
+  borderRadius: "50%",
+  transition: "all 0.3s ease",
+  boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
+  zIndex: 2,
+});
 
-  const labelStyle = {
-    display: "flex",
-    alignItems: "center",
-    borderRadius: "50px",
-    padding: "6px",
-    cursor: "pointer",
-    position: "relative",
-    transition: "all 0.3s ease",
-  };
-
-  const toggleHandleStyle = {
-    width: "72px",
-    height: "30px",
-    borderRadius: "50px",
-    position: "relative",
-    overflow: "hidden", // so flags don’t overflow
-    boxShadow:
-      "inset 3px 3px 5px rgba(0, 0, 0, 0.1), inset -3px -3px 5px rgba(255, 255, 255, 0.7)",
-  };
-
-  const flagBackgroundStyle = {
-    position: "absolute",
-    top: 0,
-    left: "-10px",
-    width: "100%",
-    height: "100%",
-    objectFit: "contain",
-    transition: "opacity 0.4s ease",
-  };
-
-  const flagBackgroundStyles = {
-    position: "absolute",
-    top: 0,
-    left: "10px",
-    width: "100%",
-    height: "100%",
-    objectFit: "contain",
-    transition: "opacity 0.4s ease",
-  };
-
-  const handleKnobStyle = (isToggled) => ({
-    position: "absolute",
-    top: "3px",
-    left: isToggled ? "calc(100% - 27px)" : "3px",
-    width: "24px",
-    height: "24px",
-    background: "white",
-    borderRadius: "50%",
-    transition: "all 0.3s ease",
-    boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
-    zIndex: 2,
-  });
-
-
-
-
-
-
+const handleToggle = () => {
+  setIsToggled((prev) => !prev);
+};
 
   return (
     <>
@@ -750,75 +697,41 @@ const Header = () => {
                     <>
                       <ul className="d-flex">
                         <li style={{ marginRight: "20px" }}>
-                          <div style={toggleWrapperStyle}>
-                            {/* Left Label */}
-                            <span
-                              style={{
-                                fontSize: "16px",
-                                fontWeight: "600",
-                                color: !isToggled ? "#000" : "#aaa",
-                              }}
-                            >
-                              IN
-                            </span>
+    <div style={toggleStyle}>
+      <div
+        style={labelStyle}
+        onClick={handleToggle}
+        onKeyPress={(e) => e.key === "Enter" && handleToggle()}
+        tabIndex={0}
+        role="button"
+        aria-label="Toggle between flags"
+      >
+        <div style={toggleHandleStyle}>
+          {/* Background flag images */}
+          <img
+            src="/images/logo/flag.png"
+            alt="flag1"
+            style={{
+              ...flagBackgroundStyles,
+              opacity: isToggled ? 0 : 1,
+            }}
+          />
+          <img
+            src="/images/logo/flag (1).png"
+            alt="flag2"
+            style={{
+              ...flagBackgroundStyle,
+              opacity: isToggled ? 1 : 0,
+            }}
+          />
 
-                            {/* Toggle Container */}
-                            <div
-                              style={{
-                                width: "80px",
-                                height: "40px",
-                                borderRadius: "50px",
-                                backgroundColor: "#f0f0f0",
-                                position: "relative",
-                                cursor: "pointer",
-                                boxShadow:
-                                  "inset 2px 2px 5px rgba(0,0,0,0.1), inset -2px -2px 5px rgba(255,255,255,0.8)",
-                              }}
-                              onClick={handleToggle}
-                            >
-                              {/* Knob with Flag */}
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "4px",
-                                  left: isToggled ? "calc(100% - 36px)" : "4px",
-                                  width: "32px",
-                                  height: "32px",
-                                  borderRadius: "50%",
-                                  overflow: "hidden",
-                                  boxShadow: "2px 2px 6px rgba(0,0,0,0.25)",
-                                  transition: "all 0.3s ease",
-                                }}
-                              >
-                                <img
-                                  src={isToggled ? Dubai : India}
-                                  alt="flag"
-                                  style={{
-                                    width: isToggled ? "120%" : "100%",   // zoom Dubai flag slightly
-                                    height: isToggled ? "120%" : "100%",  // same zoom for height
-                                    objectFit: "cover",
-                                    display: "block",
-                                    transform: isToggled ? "translate(-8%, -8%)" : "none", // re-center Dubai flag
-                                  }}
-                                />
-
-                              </div>
-                            </div>
-
-                            {/* Right Label */}
-                            <span
-                              style={{
-                                fontSize: "16px",
-                                fontWeight: "600",
-                                color: isToggled ? "#000" : "#aaa",
-                              }}
-                            >
-                              AE
-                            </span>
-                          </div>
-                        </li>
-
-                        <li style={{ display: "flex", alignItems: "center" }}>
+          {/* Knob */}
+          <div style={handleKnobStyle(isToggled)}></div>
+        </div>
+      </div>
+    </div>
+  </li>
+                        <li style={{display:"flex", alignItems:"center"}}>
                           <a
                             href="#"
                             onClick={(e) => {
@@ -863,48 +776,53 @@ const Header = () => {
           <span className="icon flaticon-cancel-1"></span>
         </div>
         {/* login/register mobile */}
-        <div className="mobile-menu" style={{ display: menuVisible ? "block" : "none" }}>
+        <div className="mobile-menu" style={{ display: menuVisible ? 'block' : 'none' }}>
           <div className="menu-backdrop" onClick={toggleMobileMenu}></div>
           <nav className="menu-box">
             <div className="nav-logo">
-              <a
-                href=""
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate("/home");
-                  toggleMobileMenu();
-                }}
-              >
+              <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); toggleMobileMenu(); }}>
                 <img src={easy} alt="nav-logo" width="174" height="44" />
               </a>
             </div>
             <div className="bottom-canvas">
               <div className="login-box flex align-items-center">
-                {!localStorage.getItem("authToken") ||
-                  localStorage.getItem("authToken") === "Guest" ? (
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowRegister(true);
-                      toggleMobileMenu();
-                    }}
-                  >
-                    Login/Register
-                  </a>
+                {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
+                  <>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowRegister(true);
+                        toggleMobileMenu();
+                      }}
+                    >
+                      Login/Register
+                    </a>
+                  </>
                 ) : (
-                  <p></p>
+                  <>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate("/myprofile");
+                        toggleMobileMenu();
+                      }}
+                    >
+                      My Profile
+                    </a>
+                  </>
                 )}
               </div>
 
+
               <div className="menu-outer">
-                <ul className="navigation clearfix">
-                  {menuItemsMobile.map((item, index) => (
-                    <li
-                      key={index}
-                      className={`${item.className || ""} ${activeDropdown === index ? "open" : ""}`}
-                    >
-                      <div
+                <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
+                  <ul className="navigation clearfix">
+                    {menuItems.map((item, index) => (
+                      <li
+                        key={index}
+                        className={`${item.className || ''} ${activeDropdown === index ? 'open' : ''}`}
                         onClick={() => {
                           if (item.submenu) {
                             handleDropdownClick(index);
@@ -913,88 +831,43 @@ const Header = () => {
                             toggleMobileMenu();
                           }
                         }}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          cursor: "pointer",
-                          padding: "10px 0"
-                        }}
                       >
-                        <span>{item.label}</span>
-
-                        {/* Dropdown arrow only if submenu exists */}
+                        <a href="#" onClick={(e) => e.preventDefault()}>
+                          {item.label}
+                        </a>
                         {item.submenu && (
-                          <img
-                            src={Arrow}// 👈 your dropdown image
-                            alt="dropdown icon"
-                            style={{
-                              width: "14px",
-                              height: "14px",
-                              marginLeft: "8px",
-                              transition: "transform 0.3s",
-                              transform: activeDropdown === index ? "rotate(180deg)" : "rotate(0deg)"
-                            }}
-                          />
-
+                          <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
+                            {item.submenu.map((sub, i) => (
+                              <li key={i}>
+                                <a
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    if (sub.onClick) {
+                                      sub.onClick();
+                                      toggleMobileMenu();
+                                    }
+                                  }}
+                                >
+                                  {sub.text}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
                         )}
-                      </div>
-
-                      {item.submenu && (
-                        <ul style={{ display: activeDropdown === index ? "block" : "none", paddingLeft: "15px" }}>
-                          {item.submenu.map((sub, i) => (
-                            <li key={i} style={{ padding: "6px 0" }}>
-                              <a
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  if (sub.onClick) {
-                                    sub.onClick();
-                                    toggleMobileMenu();
-                                  }
-                                }}
-                                style={{ textDecoration: "none", color: "" }}
-                              >
-                                {sub.text}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-
-              </div>
-
-              {/* Buttons only when logged in */}
-              {localStorage.getItem("authToken") &&
-                localStorage.getItem("authToken") !== "Guest" ? (
-                <div className="button-mobi-sell">
-                  <a
-                    className="tf-btn primary"
-                    style={{ marginBottom: "1rem" }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/addproperty");
-                    }}
-                  >
-                    Add Property
-                  </a>
-                  <a
-                    className="tf-btn primary"
-                    href=""
-                    onClick={(e) => {
-                      e.preventDefault();
-                      localStorage.clear();
-                      navigate("/home");
-                      window.location.reload();
-                    }}
-                  >
-                    <span className="icon icon-sign-out"></span> Logout
-                  </a>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              ) : null}
+              </div>
+              {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
+                <></>
+
+              ) : (
+                <div className="button-mobi-sell">
+                  <a className="tf-btn primary" onClick={() => navigate('/addproperty')}>Add Property</a>
+                </div>
+              )}
 
               <div className="mobi-icon-box">
                 <div className="box d-flex align-items-center">
@@ -1003,13 +876,12 @@ const Header = () => {
                 </div>
                 <div className="box d-flex align-items-center">
                   <span className="icon icon-mail"></span>
-                  <div>info@easy_acers.com</div>
+                  <div>info@easy_acres.com</div>
                 </div>
               </div>
             </div>
           </nav>
         </div>
-
       </header>
 
 

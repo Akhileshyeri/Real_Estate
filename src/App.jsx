@@ -23,6 +23,8 @@ import Blogs from "./Components/Blogs";
 import BlogOverview from "./Components/BlogOverview";
 import Inquiries from "./Components/Inquiries";
 import ReviewList from "./Components/ReviewList";
+import UpdateProperty from "./Components/UpdateProperty";
+import StateList from "./Components/CityList";
 
 // ✅ Inline ScrollToTop helper
 const ScrollToTop = () => {
@@ -60,12 +62,13 @@ function App() {
         <Route exact path="/addproperty" element={<Addproperty />} />
         <Route exact path="/add" element={<Adddetails />} />
         <Route exact path="/blogs" element={<Blogs />} />
-        <Route exact path="/city-list" element={<CityList />} />
+        <Route exact path="/city-list/:id" element={<StateList />} />
         <Route exact path="/blogoverview/:id" element={<BlogOverview />} />
         <Route exact path="/inquiries" element={<Inquiries />} />
         <Route exact path="/inquiries/:id" element={<Inquiries />} />
         <Route path="/reviewlist" element={<ReviewList />} />
         <Route path="/reviewlist/:id" element={<ReviewList />} />
+               <Route exact path="/edit-property/:id" element={<UpdateProperty />} />
       </Routes>
     </>
   );

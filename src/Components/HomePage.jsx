@@ -1005,8 +1005,8 @@ const HomePage = () => {
                                     }}
                                 >
                                     {/* Card 1 */}
-                                    <a
-                                        href="city-list"
+                                    <div
+                                         onClick={() => navigate("/city-list/229")}
                                         className="box-location"
                                         style={{
                                             display: "block",
@@ -1066,11 +1066,11 @@ const HomePage = () => {
                                                 Dubai, United Kingdom
                                             </h6>
                                         </div>
-                                    </a>
+                                    </div>
 
                                     {/* Card 2 */}
-                                    <a
-                                        href=""
+                                    <div
+                                       onClick={() => navigate("/city-list/101")}
                                         className="box-location"
                                         style={{
                                             display: "block",
@@ -1125,7 +1125,7 @@ const HomePage = () => {
                                                 India
                                             </h6>
                                         </div>
-                                    </a>
+                                    </div>
 
                                     {/* Add more cards as needed */}
                                 </div>
@@ -1211,7 +1211,7 @@ const HomePage = () => {
                         <div className="container">
                             <div className="box-title text-center wow fadeInUpSmall" data-wow-delay=".2s" data-wow-duration="2000ms">
                                 <div className="text-subtitle text-primary">Our Benifit</div>
-                                <h4 className="mt-4">Why Choose Easy Acers</h4>
+                                <h4 className="mt-4">Why Choose Easy Acres</h4>
                             </div>
                             <div className="wrap-benefit wow fadeInUpSmall" data-wow-delay=".2s" data-wow-duration="2000ms">
                                 <div className="box-benefit">

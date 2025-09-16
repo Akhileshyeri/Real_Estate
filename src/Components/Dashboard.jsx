@@ -877,6 +877,7 @@ const Dashboard = () => {
                                                                                     <li>
                                                                                         <a className="remove-file item">
                                                                                             <button
+                                                                                                onClick={() => navigate(`/edit-property/${property.id}`)}
                                                                                                 style={{
                                                                                                     display: "flex",
                                                                                                     alignItems: "center",
