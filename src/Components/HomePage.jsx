@@ -518,8 +518,8 @@ const HomePage = () => {
                                                             <div className="wd-find-select">
                                                                 <div className="inner-group">
                                                                     <div className="form-group-1 search-form form-style">
-                                                                        <label>Keyword</label>
-                                                                        <input type="text" className="form-control" placeholder="Search Keyword." title="Search for" required="" />
+                                                                        <label>Search</label>
+                                                                        <input type="text" className="form-control" placeholder="Search Properties" title="Search for" required="" />
                                                                     </div>
                                                                     <div className="form-group-2 form-style">
                                                                         <label>Location</label>

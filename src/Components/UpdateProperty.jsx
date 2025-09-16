@@ -360,7 +360,7 @@ const UpdateProperty = () => {
 
   // Location step states
   const [title, setTitle] = useState("");
-  const [keyword, setKeyword] = useState("");
+//   const [keyword, setKeyword] = useState("");
 
   const [city, setCity] = useState("");
   const [location, setLocation] = useState("");
@@ -686,7 +686,7 @@ const UpdateProperty = () => {
       subPropertyType,
       subPropertyQuestionOption,
       title,
-      keyword,
+    //   keyword,
       city,
       selectedOwnership,
       location,
@@ -744,7 +744,7 @@ const UpdateProperty = () => {
     subPropertyQuestionOption,
     city,
     title,
-    keyword,
+    // keyword,
     selectedOwnership,
     location,
     subLocality,
@@ -804,7 +804,7 @@ const UpdateProperty = () => {
       setSubPropertyQuestionOption(parsed.subPropertyQuestionOption || "");
       setCity(parsed.city || "");
       setTitle(parsed.title || "");
-      setKeyword(parsed.keyword || "");
+    //   setKeyword(parsed.keyword || "");
 
       setAddress(parsed.address || "");
       setPostalCode(parsed.postalCode || "");
@@ -1257,7 +1257,7 @@ const UpdateProperty = () => {
     fd.append('located_near', locatedNear);
 
 
-    fd.append('keyword', keyword);
+    // fd.append('keyword', keyword);
     fd.append('description', description);
     fd.append('listingType', listingType);
     fd.append('propertyType', propertyType);
@@ -1858,7 +1858,7 @@ const UpdateProperty = () => {
                 />
 
                 {/* Keywords */}
-                <h4 className="step-heading" style={{ color: "#161E2D" }}>
+                {/* <h4 className="step-heading" style={{ color: "#161E2D" }}>
                   Keyword
                 </h4>
                 <input
@@ -1868,7 +1868,7 @@ const UpdateProperty = () => {
                   value={keyword}
                   onChange={(e) => {
                     setKeyword(e.target.value);
-                    console.log("Keyword:", e.target.value); // ✅ log input
+                    console.log("Keyword:", e.target.value); 
                   }}
                   style={{
                     width: "100%",
@@ -1877,7 +1877,7 @@ const UpdateProperty = () => {
                     border: "1px solid #ccc",
                     borderRadius: "6px",
                   }}
-                />
+                /> */}
 
 
                 {/* LISTING TYPE */}

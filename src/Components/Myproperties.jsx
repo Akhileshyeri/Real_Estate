@@ -585,7 +585,7 @@ const Myproperties = () => {
                                                     fontSize: "12px",
                                                     fontWeight: "500",
 
-                                                    background: "#fff",
+                                                 
                                                     padding: "0 4px"
                                                 }}
                                             >
@@ -612,7 +612,7 @@ const Myproperties = () => {
                                                     fontSize: "12px",
                                                     fontWeight: "500",
 
-                                                    background: "#fff",
+                                                   
                                                     padding: "0 4px"
                                                 }}
                                             >
@@ -853,7 +853,7 @@ const Myproperties = () => {
 
                             </div>
                             <div className="footer-dashboard">
-                                <p className="text-variant-2">©2024 Homzen. All Rights Reserved.</p>
+                                <p className="text-variant-2">©2025 Eazy_Acres. All Rights Reserved.</p>
                             </div>
 
                             <div className="overlay-dashboard"></div>

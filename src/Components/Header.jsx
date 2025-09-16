@@ -820,7 +820,7 @@ const handleToggle = () => {
 
 
                 {/* login/register */}
-                <div className="header-account d-flex align-items-center justify-content-end" style={{ gap: '20px' }}>
+                <div className="header-account d-flex align-items-center justify-content-end">
                   {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
                     <>
                       {/* Login/Register */}
@@ -858,42 +858,7 @@ const handleToggle = () => {
                     <>
                       {/* Country toggle + My Profile */}
                       <ul className="d-flex">
-                        <li style={{ marginRight: "20px" }}>
-
-    <div style={toggleStyle}>
-      <div
-        style={labelStyle}
-        onClick={handleToggle}
-        onKeyPress={(e) => e.key === "Enter" && handleToggle()}
-        tabIndex={0}
-        role="button"
-        aria-label="Toggle between flags"
-      >
-        <div style={toggleHandleStyle}>
-          {/* Background flag images */}
-          <img
-            src="/images/logo/flag.png"
-            alt="flag1"
-            style={{
-              ...flagBackgroundStyles,
-              opacity: isToggled ? 0 : 1,
-            }}
-          />
-          <img
-            src="/images/logo/flag (1).png"
-            alt="flag2"
-            style={{
-              ...flagBackgroundStyle,
-              opacity: isToggled ? 1 : 0,
-            }}
-          />
-
-          {/* Knob */}
-          <div style={handleKnobStyle(isToggled)}></div>
-        </div>
-      </div>
-    </div>
-  </li>
+                      
                         <li style={{display:"flex", alignItems:"center"}}>
 
                           <div style={toggleStyle}>
@@ -938,6 +903,7 @@ const handleToggle = () => {
                               e.preventDefault();
                               navigate("/myprofile");
                             }}
+                            style={{margin:"0px 10px 0px 10px"}}
                           >
                             My Profile
                           </a>
@@ -952,6 +918,7 @@ const handleToggle = () => {
                             e.preventDefault();
                             navigate("/addproperty"); // Navigate to add property
                           }}
+                           style={{margin:"0px 20px 0px 0px"}}
                         >
                           Add property
                         </a>

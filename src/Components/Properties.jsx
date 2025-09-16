@@ -1126,7 +1126,10 @@ const Properties = () => {
                                             ).map((rev) => (
                                                 <li className="list-review-item" key={rev.id}>
                                                     <div className="avatar avt-60 round">
-                                                        <img src={download} alt="avatar" />
+                                                        <img 
+                                                        // src={download} 
+                                                        src={rev?.profile ? `${api.imageUrl}${rev.profile}` : download}
+                                                        alt="avatar" />
 
                                                     </div>
                                                     <div className="content">

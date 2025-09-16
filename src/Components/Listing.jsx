@@ -359,10 +359,10 @@ const Listing = () => {
                                                 <form method="post">
                                                     <div className="wd-filter-select">
                                                         <div className="inner-group inner-filter">
-                                                            <div className="form-style">
+                                                            {/* <div className="form-style">
                                                                 <label className="title-select">Keyword</label>
                                                                 <input type="text" className="form-control" placeholder="Search Keyword." required="" />
-                                                            </div>
+                                                            </div> */}
                                                             <div className="form-group-2 form-style">
                                                                 <label>Location</label>
                                                                 <div className="group-select">

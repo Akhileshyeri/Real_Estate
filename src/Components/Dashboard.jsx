@@ -570,7 +570,7 @@ const Dashboard = () => {
                         <div className="main-content">
 
                             <div className="main-content-inner">
-                                <h6 className="title">My Properties</h6>
+                                <h6 className="title">Property</h6>
                                 {/* <div className="button-show-hide show-mb">
                                     <span className="body-1">Show Dashboard</span>
                                 </div> */}
@@ -867,9 +867,9 @@ const Dashboard = () => {
                                                                             </td>
                                                                             <td>
                                                                                 <div className="status-wrap">
-                                                                                    <a href="" className="btn-status">
+                                                                                    <span  className="btn-status">
                                                                                         {statusLabel}
-                                                                                    </a>
+                                                                                    </span>
                                                                                 </div>
                                                                             </td>
                                                                             <td>
@@ -1016,7 +1016,7 @@ const Dashboard = () => {
                                 </div>
                             </div>
                             <div className="footer-dashboard">
-                                <p className="text-variant-2">©2024 Homzen. All Rights Reserved.</p>
+                                <p className="text-variant-2">©2025 Eazy_Acres. All Rights Reserved.</p>
                             </div>
                             <div className="overlay-dashboard"></div>
 

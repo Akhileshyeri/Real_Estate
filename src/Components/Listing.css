@@ -40,3 +40,25 @@
   min-width: 0;  
   width:"50%"     /* prevents overflow on small screens */
 }
+/* Default (desktop/tablet) */
+.nice-select.list-page,
+.nice-select.list-sort {
+  width: auto;
+  display: inline-block;
+  margin-left: 10px;
+}
+
+/* Mobile only */
+@media (max-width: 768px) {
+  .box-filter-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* space between the two */
+  }
+
+  .nice-select.list-page,
+  .nice-select.list-sort {
+    width: 100% !important;
+    margin: 0; /* reset margins */
+  }
+}
