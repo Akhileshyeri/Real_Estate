@@ -252,7 +252,7 @@ const Listing = () => {
         const fd = new FormData();
         fd.append("programType", "getStateListOnChangeOfCountry");
         fd.append("authToken", localStorage.getItem("authToken"));
-        fd.append("country", 101);
+        fd.append("country", localStorage.getItem("country"));
 
         try {
             const response = await api.post("properties/preRequirements", fd);
@@ -363,7 +363,7 @@ const Listing = () => {
                                                                 <label className="title-select">Keyword</label>
                                                                 <input type="text" className="form-control" placeholder="Search Keyword." required="" />
                                                             </div> */}
-                                                            <div className="form-group-2 form-style">
+                                                            {/* <div className="form-group-2 form-style">
                                                                 <label>Location</label>
                                                                 <div className="group-select">
                                                                     <div className="nice-select" tabIndex="0">
@@ -375,7 +375,7 @@ const Listing = () => {
                                                                         </ul>
                                                                     </div>
                                                                 </div>
-                                                            </div>
+                                                            </div> */}
 
                                                             <div className="form-style">
                                                                 <label className="title-select">State</label>

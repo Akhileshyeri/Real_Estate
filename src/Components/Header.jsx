@@ -20,6 +20,8 @@ const Header = ({ showSearch }) => {
   const [showSearchAnimated, setShowSearchAnimated] = useState(false);
 
 
+
+
   const dropdownRef = useRef(null);
 
   const handleOptionSelect = (option) => {
@@ -160,6 +162,18 @@ const Header = ({ showSearch }) => {
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(30); // countdown seconds
   const [canResend, setCanResend] = useState(false);
+
+const [isToggled, setIsToggled] = useState(() => {
+  return localStorage.getItem("country") === "101";
+});
+// Save country whenever toggled
+useEffect(() => {
+  if (isToggled) {
+    localStorage.setItem("country", "101");
+  } else {
+    localStorage.setItem("country", "229");
+  }
+}, [isToggled]);
 
 
 
@@ -603,7 +617,6 @@ const Header = ({ showSearch }) => {
   };
 
 
-  const [isToggled, setIsToggled] = useState(false);
 
   const toggleStyle = {
     display: "flex",
@@ -664,9 +677,15 @@ const Header = ({ showSearch }) => {
     zIndex: 2,
   });
 
-  const handleToggle = () => {
-    setIsToggled((prev) => !prev);
-  };
+// Toggle handler with reload
+const handleToggle = () => {
+  setIsToggled((prev) => !prev);
+
+  // reload AFTER localStorage is updated
+  setTimeout(() => {
+    window.location.reload();
+  }, 150);
+};
 
   return (
     <>
@@ -862,20 +881,21 @@ const Header = ({ showSearch }) => {
                             >
                               <div style={toggleHandleStyle}>
                                 {/* Background flag images */}
-                                <img
-                                  src="/images/logo/flag.png"
-                                  alt="flag1"
-                                  style={{
-                                    ...flagBackgroundStyles,
-                                    opacity: isToggled ? 0 : 1,
-                                  }}
-                                />
+                                
                                 <img
                                   src="/images/logo/flag (1).png"
-                                  alt="flag2"
+                                  alt="Dubai"
                                   style={{
                                     ...flagBackgroundStyle,
                                     opacity: isToggled ? 1 : 0,
+                                  }}
+                                />
+                                <img
+                                  src="/images/logo/flag.png"
+                                  alt="India"
+                                  style={{
+                                    ...flagBackgroundStyles,
+                                    opacity: isToggled ? 0 : 1,
                                   }}
                                 />
 
@@ -1051,7 +1071,7 @@ const Header = ({ showSearch }) => {
               ) : (
                 <div className="button-mobi-sell">
 
-                
+
                   <a
                     className="tf-btn primary"
                     style={{ marginBottom: "1rem" }}
