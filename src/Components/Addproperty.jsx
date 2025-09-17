@@ -6,9 +6,13 @@ import "react-circular-progressbar/dist/styles.css";
 import api from "../api/api";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { FaPlus, FaMinus } from "react-icons/fa";
 
 const AddProperty = () => {
-const navigate = useNavigate()
+
+
+
+  const navigate = useNavigate()
   const [percentage, setPercentage] = useState(0);
   const [listingType, setListingType] = useState("Sell");
   const [ownerPercentage, setOwnerPercentage] = useState("");
@@ -16,7 +20,7 @@ const navigate = useNavigate()
 
   const [sections, setSections] = useState([{ type: "Plan", files: [] }]);
 
-    const authToken = localStorage.getItem("authToken") || "Guest";
+  const authToken = localStorage.getItem("authToken") || "Guest";
 
 
   const [isOpen, setIsOpen] = useState(false);
@@ -946,10 +950,10 @@ const navigate = useNavigate()
     try {
       const response = await api.post("properties/prop1", fd);
       console.log("ee", response)
-      if(response.data.success){
+      if (response.data.success) {
         toast.success(response.data.message)
         navigate("/home")
-      }else{
+      } else {
         toast.error(response.data.message)
       }
     }
@@ -983,6 +987,112 @@ const navigate = useNavigate()
     }
   };
 
+
+
+
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [newApartment, setNewApartment] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // 🔹 API call for search
+  const projectList = async (searchText = "") => {
+    const fd = new FormData();
+    fd.append("programType", "getProjectsOrApartments");
+    fd.append("authToken", localStorage.getItem("authToken"));
+    fd.append("name", searchText);
+
+    try {
+      setLoading(true);
+      const response = await api.post("properties/preRequirements", fd);
+      console.log("Project List:", response.data);
+
+      let data = response.data.data || [];
+
+      // if no search text, show only last 4
+      if (!searchText) {
+        data = data.slice(-4); // ✅ keep last 4
+      }
+
+      setResults(data);
+    } catch (error) {
+      console.error("projectList error:", error);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔹 Default fetch on mount (last 4)
+  useEffect(() => {
+    projectList(""); // get last 4
+  }, []);
+
+  // 🔹 Trigger search when typing
+  useEffect(() => {
+    if (!apartment) {
+      projectList(""); // show last 4 by default
+      setShowDropdown(true);
+      return;
+    }
+
+    const delayDebounce = setTimeout(() => {
+      projectList(apartment);
+      setShowDropdown(true);
+    }, 400);
+
+    return () => clearTimeout(delayDebounce);
+  }, [apartment]);
+
+  // 🔹 Add new project API
+  const addproject = async (name) => {
+    const fd = new FormData();
+    fd.append("programType", "addProjectsOrApartments");
+    fd.append("authToken", localStorage.getItem("authToken"));
+    fd.append("name", name);
+
+    try {
+      const response = await api.post("properties/preRequirements", fd);
+      console.log("Project added:", response.data);
+    } catch (error) {
+      console.error("addproject error:", error);
+    }
+  };
+
+
+
+  const [states, setStates] = useState([]);
+  const [state, setState] = useState("");
+
+
+  const StateList = async () => {
+    setLoading(true);
+    const fd = new FormData();
+    fd.append("programType", "getStateListOnChangeOfCountry");
+    fd.append("authToken", localStorage.getItem("authToken"));
+    fd.append("country", 101);
+
+    try {
+      const response = await api.post("properties/preRequirements", fd);
+      console.log("states list:", response.data);
+
+      if (response.data.success) {
+        setStates(response.data.data || []); // <-- correct key
+      } else {
+        setStates([]);
+      }
+    } catch (error) {
+      console.error("states error:", error);
+      setStates([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    StateList();
+  }, []);
 
 
 
@@ -1762,21 +1872,27 @@ const navigate = useNavigate()
 
                 {/* City Select */}
                 <div className="form-group">
-                  <label>City</label>
-                  <select
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="select-field"
-                    style={{ height: "55px" }}
-                  >
-                    <option value="">Select City</option>
-                    <option value="Bangalore">Bangalore</option>
-                    <option value="Mumbai">Mumbai</option>
-                    <option value="Delhi">Delhi</option>
-                    <option value="Chennai">Chennai</option>
-                  </select>
+                  <label>State</label>
+                  {loading ? (
+                    <div style={{ height: "55px", display: "flex", alignItems: "center" }}>
+                      Loading states...
+                    </div>
+                  ) : (
+                    <select
+                      value={state}
+                      onChange={(e) => setState(e.target.value)}
+                      className="select-field"
+                      style={{ height: "55px" }}
+                    >
+                      <option value="">Select State</option>
+                      {states.map((s) => (
+                        <option key={s.id} value={s.name}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
-
                 {/* You are? Buttons */}
                 {city && (
                   <div className="form-group">
@@ -1813,21 +1929,218 @@ const navigate = useNavigate()
 
                 {/* Apartment Select */}
                 {location && (
-                  <div className="form-group">
+
+                  <div className="form-group" style={{ position: "relative", width: "100%" }}>
                     <label>Apartment/Project</label>
-                    <select
-                      value={apartment}
-                      onChange={(e) => setApartment(e.target.value)}
-                      className="select-field"
-                      style={{ height: "55px" }}
-                    >
-                      <option value="">Select Apartment</option>
-                      <option value="Prestige Lakeside">Prestige Lakeside</option>
-                      <option value="Brigade Gateway">Brigade Gateway</option>
-                      <option value="Sobha Dream Acres">Sobha Dream Acres</option>
-                      <option value="Other">Other</option>
-                    </select>
+                    <div style={{ position: "relative" }}>
+                      <input
+                        type="text"
+                        value={apartment}
+                        onChange={(e) => {
+                          setApartment(e.target.value);
+                          setLoading(true); // ✅ show loader while typing/fetching
+                        }}
+                        placeholder="Search or type apartment..."
+                        className="select-field"
+                        style={{
+                          height: "55px",
+                          width: "100%",
+                          paddingRight: "40px", // space for icon
+                        }}
+                      />
+
+                      {/* Plus/Minus Icon */}
+                      <div
+                        onClick={() => setShowModal(!showModal)}
+                        style={{
+                          position: "absolute",
+                          right: "10px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          cursor: "pointer",
+                          fontSize: "18px",
+                          color: showModal ? "#ED2027" : "#ED2027",
+                        }}
+                      >
+                        {showModal ? <FaMinus /> : <FaPlus />}
+                      </div>
+
+                      {/* Dropdown suggestions */}
+                      {(apartment && (loading || results.length > 0)) && (
+                        <ul
+                          style={{
+                            position: "absolute",
+                            top: "60px",
+                            left: 0,
+                            width: "100%",
+                            background: "#fff",
+                            border: "1px solid #ccc",
+                            borderRadius: "5px",
+                            maxHeight: "200px",
+                            overflowY: "auto",
+                            zIndex: 1000,
+                            listStyle: "none",
+                            padding: 0,
+                            margin: 0,
+                          }}
+                        >
+                          {/* Loader row */}
+                          {loading && (
+                            <li
+                              style={{
+                                padding: "10px",
+                                textAlign: "center",
+                                color: "#CD380F",
+                                fontStyle: "italic",
+                              }}
+                            >
+                              Loading...
+                            </li>
+                          )}
+
+                          {/* Results */}
+                          {!loading &&
+                            results.map((item) => (
+                              <li
+                                key={item.id}
+                                onClick={() => {
+                                  setApartment(item.name); // ✅ fill selected
+                                  setResults([]);          // ✅ clear list
+                                  setLoading(false);       // ✅ stop loader
+                                }}
+                                style={{
+                                  padding: "10px",
+                                  cursor: "pointer",
+                                  borderBottom: "1px solid #eee",
+                                }}
+                              >
+                                {item.name}
+                              </li>
+                            ))}
+                        </ul>
+                      )}
+
+                      {/* No results */}
+                      {apartment && !loading && results.length === 0 && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "60px",
+                            left: 0,
+                            width: "100%",
+                            background: "#fff",
+                            border: "1px solid #ccc",
+                            borderRadius: "5px",
+                            padding: "10px",
+                            zIndex: 1000,
+                            color: "#666",
+                          }}
+                        >
+                          No results found
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Modal (unchanged logic, improved UI) */}
+                    {showModal && (
+                      <div
+                        style={{
+                          position: "fixed",
+                          top: 0,
+                          left: 0,
+                          width: "100vw",
+                          height: "100vh",
+                          background: "rgba(0,0,0,0.5)",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          zIndex: 9999,
+                          padding: "10px", // ✅ ensures spacing on mobile
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "100%",
+                            maxWidth: "360px", // ✅ smaller, centered box
+                            background: "#fff",
+                            borderRadius: "12px",
+                            padding: "18px",
+                            boxShadow: "0 6px 12px rgba(0,0,0,0.25)",
+                          }}
+                        >
+                          <h3 style={{ marginBottom: "12px", fontSize: "18px", fontWeight: "600" }}>
+                            Add New Apartment/Project
+                          </h3>
+
+                          <input
+                            type="text"
+                            placeholder="Enter new apartment name"
+                            value={newApartment}
+                            onChange={(e) => setNewApartment(e.target.value)}
+                            style={{
+                              width: "100%",
+                              padding: "8px 10px",
+                              border: "1px solid #ccc",
+                              borderRadius: "6px",
+                              marginBottom: "15px",
+                              fontSize: "14px",
+                            }}
+                          />
+
+                          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                            <button
+                              onClick={() => setShowModal(false)}
+                              style={{
+                                padding: "8px 12px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                                transition: "all 0.2s ease",
+                              }}
+                              onMouseOver={(e) => (e.currentTarget.style.background = "#eee")}
+                              onMouseOut={(e) => (e.currentTarget.style.background = "#f8f8f8")}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!newApartment) {
+                                  toast.error("Please enter a name");
+                                  return;
+                                }
+                                await addproject(newApartment);
+                                setApartment(newApartment);
+                                setNewApartment("");
+                                setShowModal(false);
+                                setResults([]); // ✅ close dropdown after submit
+                                setLoading(false);
+                              }}
+                              style={{
+                                padding: "8px 14px",
+                                border: "none",
+                                borderRadius: "6px",
+                                background: "#ED2027",
+                                color: "#fff",
+                                fontSize: "14px",
+                                fontWeight: "500",
+                                cursor: "pointer",
+                                transition: "all 0.2s ease",
+                              }}
+                              onMouseOver={(e) => (e.currentTarget.style.background = "#ED2027")}
+                              onMouseOut={(e) => (e.currentTarget.style.background = "#CD380F")}
+                            >
+                              Submit
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
+
+
+
                 )}
 
 
@@ -15593,7 +15906,7 @@ const navigate = useNavigate()
                 {/* Submit */}
                 <button type="button"
                   onClick={handleSubmitPropperty}
-                  className="submit-btn" style={{marginTop:"80px"}} >
+                  className="submit-btn" style={{ marginTop: "80px" }} >
                   Submit Property
                 </button>
               </div>

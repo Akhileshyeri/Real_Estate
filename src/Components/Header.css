@@ -279,6 +279,7 @@
 
 
 
+
 /* Desktop (default) */
 .mobile-header {
   display: none;
@@ -395,3 +396,20 @@
 
 
 }
+
+.desktop-only {
+  display: block;
+}
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .desktop-only {
+    display: none;
+  }
+  .mobile-only {
+    display: block;
+  }
+}
+
