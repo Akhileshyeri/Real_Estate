@@ -52,29 +52,19 @@ const Header = ({ showSearch }) => {
 
 
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (toggleRef.current && !toggleRef.current.contains(event.target)) {
-        setIsMenuToggled(false);
-      }
-    };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+
   const searchRef = useRef(null);
   const toggleRef = useRef(null);
 
   useEffect(() => {
-  if (showSearch) {
-    const timeout = setTimeout(() => setShowSearchAnimated(true), 10); // trigger animation
-    return () => clearTimeout(timeout);
-  } else {
-    setShowSearchAnimated(false);
-  }
-}, [showSearch]);
+    if (showSearch) {
+      const timeout = setTimeout(() => setShowSearchAnimated(true), 10); // trigger animation
+      return () => clearTimeout(timeout);
+    } else {
+      setShowSearchAnimated(false);
+    }
+  }, [showSearch]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -613,74 +603,74 @@ const Header = ({ showSearch }) => {
   };
 
 
-const [isToggled, setIsToggled] = useState(false);
+  const [isToggled, setIsToggled] = useState(false);
 
-const toggleStyle = {
-  display: "flex",
-  justifyContent: "center",
-  padding: "8px 0",
-};
+  const toggleStyle = {
+    display: "flex",
+    justifyContent: "center",
+    padding: "8px 0",
+  };
 
-const labelStyle = {
-  display: "flex",
-  alignItems: "center",
-  borderRadius: "50px",
-  padding: "6px",
-  cursor: "pointer",
-  position: "relative",
-  transition: "all 0.3s ease",
-};
+  const labelStyle = {
+    display: "flex",
+    alignItems: "center",
+    borderRadius: "50px",
+    padding: "6px",
+    cursor: "pointer",
+    position: "relative",
+    transition: "all 0.3s ease",
+  };
 
-const toggleHandleStyle = {
-  width: "72px",
-  height: "30px",
-  borderRadius: "50px",
-  position: "relative",
-  overflow: "hidden", // so flags don’t overflow
-  boxShadow:
-    "inset 3px 3px 5px rgba(0, 0, 0, 0.1), inset -3px -3px 5px rgba(255, 255, 255, 0.7)",
-};
+  const toggleHandleStyle = {
+    width: "72px",
+    height: "30px",
+    borderRadius: "50px",
+    position: "relative",
+    overflow: "hidden", // so flags don’t overflow
+    boxShadow:
+      "inset 3px 3px 5px rgba(0, 0, 0, 0.1), inset -3px -3px 5px rgba(255, 255, 255, 0.7)",
+  };
 
-const flagBackgroundStyle = {
-  position: "absolute",
-  top: 0,
-  left: "-10px",
-  width: "100%",
-  height: "100%",
-  objectFit: "contain",
-  transition: "opacity 0.4s ease",
-};
+  const flagBackgroundStyle = {
+    position: "absolute",
+    top: 0,
+    left: "-10px",
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+    transition: "opacity 0.4s ease",
+  };
 
-const flagBackgroundStyles = {
-  position: "absolute",
-  top: 0,
-  left: "10px",
-  width: "100%",
-  height: "100%",
-  objectFit: "contain",
-  transition: "opacity 0.4s ease",
-};
+  const flagBackgroundStyles = {
+    position: "absolute",
+    top: 0,
+    left: "10px",
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+    transition: "opacity 0.4s ease",
+  };
 
-const handleKnobStyle = (isToggled) => ({
-  position: "absolute",
-  top: "3px",
-  left: isToggled ? "calc(100% - 27px)" : "3px",
-  width: "24px",
-  height: "24px",
-  background: "white",
-  borderRadius: "50%",
-  transition: "all 0.3s ease",
-  boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
-  zIndex: 2,
-});
+  const handleKnobStyle = (isToggled) => ({
+    position: "absolute",
+    top: "3px",
+    left: isToggled ? "calc(100% - 27px)" : "3px",
+    width: "24px",
+    height: "24px",
+    background: "white",
+    borderRadius: "50%",
+    transition: "all 0.3s ease",
+    boxShadow: "2px 2px 4px rgba(0, 0, 0, 0.2)",
+    zIndex: 2,
+  });
 
-const handleToggle = () => {
-  setIsToggled((prev) => !prev);
-};
+  const handleToggle = () => {
+    setIsToggled((prev) => !prev);
+  };
 
   return (
     <>
-      <header className="main-header fixed-header " style={{ height: "75px" }}>
+      <header className="main-header fixed-header desktop-header" style={{ height: "75px" }}>
         <div className="header-lower">
           <div className="row" >
             <div className="col-lg-12">
@@ -696,7 +686,10 @@ const handleToggle = () => {
 
 
                 {showSearch && (
-                  <div className="header-search-wrapper" ref={searchRef}>
+                  <div
+                    className={`header-search-wrapper ${showSearchAnimated ? "animate-in" : "animate-out"}`}
+                    ref={searchRef}
+                  >
                     <div className="header-search" style={{ marginTop: "5px" }}>
                       <div className="search-wrapper">
                         {/* Custom slider dropdown */}
@@ -718,8 +711,8 @@ const handleToggle = () => {
 
                           {/* Slider dropdown options */}
                           <div
-                            className={`dropdown-slider-options ${dropdownOpen ? "open" : ""}`}
-                            style={{ width: "150px" }}
+                            className={`dropdown-slider-options drd ${dropdownOpen ? "open" : ""}`}
+
                           >
                             <div className="slider-option" onClick={() => handleOptionSelect("Rent")}>
                               Rent
@@ -741,17 +734,14 @@ const handleToggle = () => {
                         </div>
 
                         {/* Input field */}
-                        <input
-                          type="text"
-                          placeholder="Search properties..."
+                        {/* Input field */}
+                        <input type="text" placeholder="Search properties..."
                           style={{
                             width: "100%",
-                            padding: "8px 40px 8px 180px", // ✅ right padding adjusted for icon
-                            border: "1px solid #ccc",
-                            borderRadius: "6px",
-                            outline: "none",
-                          }}
-                        />
+                            padding: "8px 40px 8px 180px", // ✅ right padding adjusted for icon 
+                            border: "1px solid #ccc", borderRadius: "6px", outline: "none",
+                          }} />
+
 
                         {/* ✅ Custom imported search icon */}
                         <img src={Search} alt="search" className="search-icon" />
@@ -858,8 +848,8 @@ const handleToggle = () => {
                     <>
                       {/* Country toggle + My Profile */}
                       <ul className="d-flex">
-                      
-                        <li style={{display:"flex", alignItems:"center"}}>
+
+                        <li style={{ display: "flex", alignItems: "center" }}>
 
                           <div style={toggleStyle}>
                             <div
@@ -903,7 +893,7 @@ const handleToggle = () => {
                               e.preventDefault();
                               navigate("/myprofile");
                             }}
-                            style={{margin:"0px 10px 0px 10px"}}
+                            style={{ margin: "0px 10px 0px 10px" }}
                           >
                             My Profile
                           </a>
@@ -918,7 +908,7 @@ const handleToggle = () => {
                             e.preventDefault();
                             navigate("/addproperty"); // Navigate to add property
                           }}
-                           style={{margin:"0px 20px 0px 0px"}}
+                          style={{ margin: "0px 20px 0px 0px" }}
                         >
                           Add property
                         </a>
@@ -1103,6 +1093,323 @@ const handleToggle = () => {
           </nav>
         </div>
       </header>
+
+      <header className="main-header fixed-header mobile-header">
+        <div className="header-lower">
+          <div className="row">
+            <div className="col-12">
+              <div className="inner-container d-flex align-items-center justify-content-between">
+
+                {/* ✅ Left - Logo */}
+                {!showSearch && (
+                  <div className="logo-box mobile-logo">
+                    <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>
+                      <img src={easy} alt="logo" className="logo-img" />
+                    </a>
+                  </div>)}
+
+                {/* ✅ Center - Search */}
+                {/* ✅ Center - Search */}
+                {showSearch && (
+                  <div
+                    ref={searchRef}
+                    className={`header-search mobile-search header-search-wrapper ${showSearchAnimated ? "animate-in" : "animate-out"}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      border: "1px solid #ccc",
+                      borderRadius: "25px",
+                      padding: "4px 8px",
+                      background: "#fff",
+                      position: "relative",
+                      width: "100%",
+                      maxWidth: "100%", // full width on mobile
+                      margin: "0 auto",
+                      flexWrap: "nowrap", // keep items in a row
+                      // overflow: "hidden",
+                    }}
+                  >
+                    {/* 🔽 Dropdown inside search */}
+                    <div
+                      ref={dropdownRef}
+                      style={{
+                        position: "relative",
+                        marginRight: "6px",
+                        cursor: "pointer",
+                        flex: "0 0 auto", // prevent shrinking
+                      }}
+                    >
+                      <div
+                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          fontSize: "12px",
+                          color: "black",
+                          fontWeight: "500",
+                          padding: "4px 6px",
+                          borderRadius: "5px",
+                          background: "#f8f8f8",
+                          minWidth: "60px",
+                          justifyContent: "center",
+                          height: "45px",
+                          marginLeft: "-10px"
+                        }}
+                      >
+                        {selectedOption}
+                        <span style={{ fontSize: "8px", color: "#ED2027" }}>▼</span>
+                      </div>
+
+                      {dropdownOpen && (
+                        <ul
+                          style={{
+                            position: "absolute",
+                            top: "110%",
+                            left: 0,
+                            width: "max-content",
+                            minWidth: "80px",
+                            background: "#fff",
+                            border: "1px solid #ddd",
+                            borderRadius: "6px",
+                            boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                            listStyle: "none",
+                            margin: 0,
+                            padding: "6px 0",
+                            zIndex: 9999, // ✅ make it very high
+                          }}
+                        >
+                          {["Sell", "Rent", "Joint Venture"].map((option) => (
+                            <li
+                              key={option}
+                              onClick={() => handleOptionSelect(option)}
+                              style={{
+                                padding: "6px 10px",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                color: "#333",
+                              }}
+                              onMouseEnter={(e) => (e.target.style.background = "#f2f2f2")}
+                              onMouseLeave={(e) => (e.target.style.background = "transparent")}
+                            >
+                              {option}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                    </div>
+
+                    {/* Text input */}
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      className="search-input"
+                      style={{
+                        flex: 1,
+                        border: "none",
+                        outline: "none",
+                        fontSize: "12px",
+                        minWidth: "0", // important for flexbox on mobile
+                      }}
+                    />
+
+                    {/* Search Icon */}
+                    <img
+                      src={Search}
+                      alt="search"
+                      className="search-icon"
+                      style={{ width: "14px", height: "auto", marginLeft: "6px", cursor: "pointer" }}
+                    />
+                  </div>
+                )}
+
+                {/* ✅ Right - Hamburger */}
+                <div className="close-btn" onClick={toggleMobileMenu}>
+                  <span className="icon flaticon-cancel-1"></span>
+                </div>
+
+                <div className="mobile-hamburger" onClick={toggleMobileMenu}>
+                  <i class="fi fi-rr-menu-burger" style={{ color: "#ED2027" }}></i>
+                  <div className={`mobile-menu ${menuVisible ? "open" : ""}`}>
+                    <div className="menu-backdrop" onClick={toggleMobileMenu}></div>
+                    <nav className="menu-box" onClick={(e) => e.stopPropagation()} >
+                      <div className="nav-logo">
+                        <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); toggleMobileMenu(); }}>
+                          <img src={easy} alt="nav-logo" width="174" height="44" />
+                        </a>
+                      </div>
+
+
+                      <div className="bottom-canvas">
+
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <label style={{ fontSize: "15px" }}>Country</label>
+                          <div
+                            style={labelStyle}
+                            onClick={handleToggle}
+                            onKeyPress={(e) => e.key === "Enter" && handleToggle()}
+                            tabIndex={0}
+                            role="button"
+                            aria-label="Toggle between flags"
+                          >
+                            <div style={toggleHandleStyle}>
+                              {/* Background flag images */}
+                              <img
+                                src="/images/logo/flag.png"
+                                alt="flag1"
+                                style={{
+                                  ...flagBackgroundStyles,
+                                  opacity: isToggled ? 0 : 1,
+                                }}
+                              />
+                              <img
+                                src="/images/logo/flag (1).png"
+                                alt="flag2"
+                                style={{
+                                  ...flagBackgroundStyle,
+                                  opacity: isToggled ? 1 : 0,
+                                }}
+                              />
+
+                              {/* Knob */}
+                              <div style={handleKnobStyle(isToggled)}></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="login-box flex align-items-center">
+                          {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
+                            <>
+                              <a
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setShowRegister(true);
+                                  toggleMobileMenu();
+                                }}
+                                style={{ fontSize: "15px" }}
+                              >
+                                Login/Register
+                              </a>
+                            </>
+                          ) : (
+                            <>
+                              <a
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  navigate("/myprofile");
+                                  toggleMobileMenu();
+                                }}
+                                style={{ fontSize: "15px" }}
+                              >
+                                My Profile
+                              </a>
+                            </>
+                          )}
+                        </div>
+
+
+                        <div className="menu-outer">
+                          <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
+                            <ul className="navigation clearfix">
+                              {menuItems.map((item, index) => (
+                                <li
+                                  key={index}
+                                  className={`${item.className || ''} ${activeDropdown === index ? 'open' : ''}`}
+                                  onClick={() => {
+                                    if (item.submenu) {
+                                      handleDropdownClick(index);
+                                    } else if (item.onClick) {
+                                      item.onClick();
+                                      // toggleMobileMenu();
+                                    }
+                                  }}
+                                >
+                                  <a href="#" onClick={(e) => e.preventDefault()}>
+                                    {item.label}
+                                  </a>
+                                  {item.submenu && (
+                                    <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
+                                      {item.submenu.map((sub, i) => (
+                                        <li key={i}>
+                                          <a
+                                            href="#"
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              if (sub.onClick) {
+                                                sub.onClick();
+                                                toggleMobileMenu();
+                                              }
+                                            }}
+                                          >
+                                            {sub.text}
+                                          </a>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                        {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
+                          <></>
+
+                        ) : (
+                          <div className="button-mobi-sell">
+
+
+
+                            <a
+                              className="tf-btn primary"
+                              style={{ marginBottom: "1rem" }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate("/addproperty");
+                              }}
+                            >
+                              Add Property
+                            </a>
+                            <a
+                              className="tf-btn primary"
+                              href=""
+                              onClick={(e) => {
+                                e.preventDefault();
+                                localStorage.clear();
+                                navigate("/home");
+                                window.location.reload();
+                              }}
+                            >
+                              <span className="icon icon-sign-out"></span> Logout
+                            </a>
+
+
+                          </div>
+                        )}
+
+                        <div className="mobi-icon-box">
+                          <div className="box d-flex align-items-center">
+                            <span className="icon icon-phone2"></span>
+                            <div style={{ fontSize: "15px" }}>+91-7411043895</div>
+                          </div>
+                          <div className="box d-flex align-items-center">
+                            <span className="icon icon-mail"></span>
+                            <div style={{ fontSize: "15px" }}>info@easy_acres.com</div>
+                          </div>
+                        </div>
+                      </div>
+                    </nav>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
 
 
       {/* Register form  */}

@@ -9,7 +9,7 @@ import Arrow from '../assets/Arrow.png'
 
 
 
-const Myproperties = () => {
+const RecentProperties = () => {
     const navigate = useNavigate();
 
 
@@ -124,35 +124,6 @@ const Myproperties = () => {
     const [totalPages, setTotalPages] = useState(1);
 
 
-    const myPropertyList = async (pageNum = 1) => {
-        const fd = new FormData();
-        fd.append("programType", "myPropertyDetails");
-        fd.append("authToken", localStorage.getItem("authToken"));
-        fd.append("page", pageNum);   // ✅ append page
-        fd.append("limit", limit);    // ✅ append limit
-
-        try {
-            setLoading(true);
-            const response = await api.post("/properties/property", fd);
-
-            if (response.data.success) {
-                setProperties(response.data.data["My Property"] || []);
-
-                // if API returns total count or total pages, set it here
-                if (response.data.data.totalPages) {
-                    setTotalPages(response.data.data.totalPages);
-                }
-            }
-        } catch (error) {
-            console.error("tax error:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        myPropertyList(page);
-    }, [page]);
 
 
 
@@ -177,33 +148,20 @@ const Myproperties = () => {
     const [toDate, setToDate] = useState("");
 
 
-    const dashboardList = async (from = "", to = "") => {
-        const fd = new FormData();
-        fd.append("programType", "userProfileDashboard");
-        fd.append("authToken", localStorage.getItem("authToken"));
 
-        if (from && to) {
-            fd.append("fromDate", from);
-            fd.append("toDate", to);
+    // With this useEffect:
+    useEffect(() => {
+        // Get recent properties from localStorage
+        const storedRecentProperties = localStorage.getItem("recentProperties");
+        if (storedRecentProperties) {
+            setRecentProperties(JSON.parse(storedRecentProperties));
+        } else {
+            setRecentProperties([]); // fallback if nothing in storage
         }
 
-        try {
-            setLoading(true);
-            const response = await api.post("/properties/property", fd);
-            console.log("dashboard list ", response);
-
-            if (response.data?.data?.dashboard_stats) {
-                setStats(response.data.data.dashboard_stats);
-            }
-            if (response.data?.data?.recent_properties) {
-                setRecentProperties(response.data.data.recent_properties);
-            }
-        } catch (error) {
-            console.error("Dashboard fetch error:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        // Optionally, you can still fetch dashboard stats if needed
+        // dashboardList();
+    }, []);
 
 
 
@@ -217,9 +175,6 @@ const Myproperties = () => {
         dashboardList(fromDate, toDate);
     };
 
-    useEffect(() => {
-        dashboardList();
-    }, []);
 
 
     const [showModal, setShowModal] = useState(false);
@@ -330,7 +285,7 @@ const Myproperties = () => {
                                                     <p className="name" style={{ cursor: "pointer" }}> {name}<span className="icon icon-arr-down"></span></p>
                                                     <div
                                                         className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}
-                                                       style={{
+                                                        style={{
                                                                 position: "absolute",
                                                                 top: "100%",
                                                                 right: 0,
@@ -348,11 +303,10 @@ const Myproperties = () => {
                                                         <a className="dropdown-item" onClick={() => navigate("/dashboard")}>
                                                             Dashboard
                                                         </a>
-                                                        {/* <a className="dropdown-item" onClick={() => navigate('/myproperties')}>My Properties</a> */}
-                                                      
+                                                        <a className="dropdown-item" onClick={() => navigate('/myproperties')}>My Properties</a>
+
                                                         <a className="dropdown-item" onClick={() => navigate('/myfavorites')}>My Favorites</a>
                                                         {/* <a className="dropdown-item" onClick={() => navigate('/reviews')}>Reviews</a> */}
-                                                        <a className="dropdown-item" onClick={() => navigate('/recent')}>Recent Properties</a>
 
                                                         <a className="dropdown-item" onClick={(e) => {
                                                             e.preventDefault();
@@ -536,7 +490,7 @@ const Myproperties = () => {
                                         <span className="icon icon-heart"></span> My Favorites
                                     </a>
                                 </li>
-                                 <li className="nav-menu-item">
+                                  <li className="nav-menu-item">
                                     <a className="nav-menu-link" href="" onClick={(e) => { e.preventDefault(); navigate('/recent'); }}>
                                         <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i>  Recent Properties
                                     </a>
@@ -586,280 +540,126 @@ const Myproperties = () => {
                                 {/* <div className="button-show-hide show-mb" onClick={toggleDashboard}>
                                     <span className="body-1">Show Dashboard</span>
                                 </div> */}
-                                <div className="row">
-                                    <div className="wd-filter">
-
-                                        {/* From Date */}
-                                        <div style={{ position: "relative" }}>
-                                            <label
-                                                htmlFor="datepicker1"
-                                                style={{
-                                                    position: "absolute",
-                                                    top: "-10px",
-                                                    left: "5px",
-                                                    fontSize: "12px",
-                                                    fontWeight: "500",
-
-                                                 
-                                                    padding: "0 4px"
-                                                }}
-                                            >
-                                                From
-                                            </label>
-                                            <input
-                                                type="date"
-                                                id="datepicker1"
-                                                className="ip-datepicker icon"
-                                                placeholder="From Date"
-                                                value={fromDate}
-                                                onChange={(e) => setFromDate(e.target.value)}
-                                            />
-                                        </div>
-
-                                        {/* To Date */}
-                                        <div style={{ position: "relative" }}>
-                                            <label
-                                                htmlFor="datepicker2"
-                                                style={{
-                                                    position: "absolute",
-                                                    top: "-10px",
-                                                    left: "5px",
-                                                    fontSize: "12px",
-                                                    fontWeight: "500",
-
-                                                   
-                                                    padding: "0 4px"
-                                                }}
-                                            >
-                                                To
-                                            </label>
-                                            <input
-                                                type="date"
-                                                id="datepicker2"
-                                                className="ip-datepicker icon"
-                                                placeholder="To Date"
-                                                value={toDate}
-                                                onChange={(e) => setToDate(e.target.value)}
-                                            />
-                                        </div>
-
-                                        {/* Filter Button */}
-                                        <button
-                                            type="button"
-                                            className="tf-btn primary flex items-center gap-2"
-                                            onClick={handleFilter}
-                                        >
-                                            <img
-                                                src="/edit.png"
-                                                alt="Edit Icon"
-                                                style={{ width: "20px", height: "25px", marginRight: "10px" }}
-                                            />
-                                            Filter
-                                        </button>
-                                    </div>
-                                </div>
 
 
                                 <div className="widget-box-2 wd-listing mt-3">
-                                    <h6 className="title">My Properties</h6>
+                                    <h6 className="title">Recent Properties</h6>
                                     <div className="wrap-table">
                                         <div className="table-responsive">
                                             <table>
                                                 <thead>
                                                     <tr>
                                                         <th>Title</th>
-                                                        <th>Date Published</th>
-                                                        <th>Status</th>
+
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
 
                                                 <tbody>
-                                                    {loading ? (
-                                                        Array.from({ length: 5 }).map((_, idx) => (
-                                                            <tr key={idx} className="file-delete" style={{ minHeight: "100px" }}>
+                                                    {recentProperties.length > 0 ? (
+                                                        recentProperties.map((property) => (
+                                                            <tr key={property.id}>
                                                                 <td>
-                                                                    <div className="listing-box">
-                                                                        <div className="images skeleton-box" style={{ width: "80px", height: "60px" }}></div>
-                                                                        <div className="content">
-                                                                            <div className="skeleton-box" style={{ width: "150px", height: "18px", marginBottom: "6px" }}></div>
-                                                                            <div className="skeleton-box" style={{ width: "100px", height: "14px", marginBottom: "6px" }}></div>
+                                                                    <div
+                                                                        style={{
+                                                                            display: "flex",
+                                                                            alignItems: "flex-start",
+                                                                            gap: "20px",
+                                                                            padding: "15px",
+
+
+                                                                            marginBottom: "15px",
+                                                                            transition: "transform 0.2s",
+                                                                        }}
+
+                                                                    >
+                                                                        <img
+                                                                            src={`${api.imageUrl}${property.image}`}
+                                                                            alt={property.name}
+                                                                            style={{
+                                                                                width: "160px",
+                                                                                height: "160px",
+                                                                                objectFit: "cover",
+                                                                                borderRadius: "8px",
+                                                                                flexShrink: 0,
+                                                                            }}
+                                                                        />
+                                                                        <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
+                                                                            {/* Title + Status */}
+                                                                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                                                                <span style={{ fontSize: "18px", fontWeight: 600, color: "#333" }}>
+                                                                                    <span style={{ marginRight: "10px" }}>{property.name}</span>
+
+                                                                                    <span
+                                                                                        style={{
+                                                                                            backgroundColor: property.for === "sale" ? "#4CAF50" : "#2196F3",
+                                                                                            color: "#fff",
+                                                                                            padding: "4px 10px",
+                                                                                            borderRadius: "20px",
+                                                                                            fontSize: "10px",
+                                                                                            textTransform: "uppercase",
+                                                                                            fontWeight: 500,
+                                                                                        }}
+                                                                                    >
+                                                                                        {property.for}
+                                                                                    </span>
+                                                                                </span>
+
+                                                                            </div>
+
+                                                                            {/* Location & Price */}
+                                                                            <span style={{ fontSize: "14px", color: "#555" }}>
+                                                                                <strong>Location:</strong> {property.location || "N/A"}
+                                                                            </span>
+                                                                            <span style={{ fontSize: "14px", color: "#555" }}>
+                                                                                <strong>Price:</strong> ₹{Number(property.priceValue).toLocaleString()} {property.priceUnit}
+                                                                            </span>
+
+                                                                            {/* Type */}
+                                                                            <span style={{ fontSize: "14px", color: "#555" }}>
+                                                                                <strong>Type:</strong> {property.subType}
+                                                                            </span>
+
+                                                                            {/* Meta Info */}
 
                                                                         </div>
                                                                     </div>
+
+
                                                                 </td>
                                                                 <td>
-                                                                    <div className="skeleton-box" style={{ width: "80px", height: "16px" }}></div>
+                                                                    <button
+                                                                        onClick={() => navigate(`/property/${property.id}`)}
+                                                                        style={{
+                                                                            backgroundColor: "#4CAF50", // green background
+                                                                            color: "#fff",              // white text
+                                                                            padding: "6px 14px",
+                                                                            border: "none",
+                                                                            borderRadius: "6px",
+                                                                            cursor: "pointer",
+                                                                            fontWeight: "500",
+                                                                            transition: "all 0.3s ease"
+                                                                        }}
+                                                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#45a049"}
+                                                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#4CAF50"}
+                                                                    >
+                                                                        View
+                                                                    </button>
                                                                 </td>
-                                                                <td>
-                                                                    <div className="skeleton-box" style={{ width: "70px", height: "16px" }}></div>
-                                                                </td>
-                                                                <td>
-                                                                    <div className="skeleton-box" style={{ width: "120px", height: "20px" }}></div>
-                                                                </td>
+
                                                             </tr>
                                                         ))
-                                                    ) : recentProperties.length > 0 ? (
-                                                        recentProperties.map((property) => {
-                                                            // ✅ Status handling
-                                                            let statusLabel = "Pending";
-                                                            if (property.status === "approved" || property.property_status === 1)
-                                                                statusLabel = "Approved";
-                                                            else if (property.status === "rejected" || property.property_status === 2)
-                                                                statusLabel = "Rejected";
-
-                                                            // ✅ Date Published handling based on status
-                                                            const datePublished =
-                                                                statusLabel === "Approved" && property.created_at
-                                                                    ? (() => {
-                                                                        const d = new Date(property.created_at);
-                                                                        const day = String(d.getDate()).padStart(2, "0");
-                                                                        const month = String(d.getMonth() + 1).padStart(2, "0");
-                                                                        const year = d.getFullYear();
-                                                                        return `${day}-${month}-${year}`;
-                                                                    })()
-                                                                    : "-----";
-
-                                                            // Image handling
-                                                            // const defaultImg =
-                                                            //     "https://themesflat.co/html/homzen/images/home/house-1.jpg";
-                                                            // const imageUrl = property.property_images
-                                                            //     ? property.property_images
-                                                            //     : defaultImg;
-
-
-                                                            const defaultImg =
-                                                                "https://themesflat.co/html/homzen/images/home/house-1.jpg";
-                                                            const imageUrl = property.propertyImage
-                                                                ? `${api.imageUrl}${property.propertyImage}`
-                                                                : defaultImg;
-
-
-                                                         
-
-
-                                                            return (
-                                                                <tr key={property.id} className="file-delete">
-                                                                    <td>
-                                                                        <div
-                                                                            className="listing-box"
-                                                                            style={{ cursor: "pointer" }}
-                                                                            onClick={() =>
-                                                                                navigate(`/property/${property.id}`, {
-                                                                                    state: { fromMyProperties: true },
-                                                                                })
-                                                                            }
-                                                                        >
-                                                                            <div className="images">
-                                                                                {/* <img src={imageUrl} alt={property.title} /> */}
-
-
-                                                                                {/* <img
-                                                                                    src={
-                                                                                        property.propertyImage
-                                                                                            ? `${api.imageUrl}${property.propertyImage}`
-                                                                                            : "https://themesflat.co/html/homzen/images/home/house-1.jpg"
-                                                                                    }
-                                                                                    alt={property.title}
-                                                                                /> */}
-
-
-                                                                                <img
-                                                                                    src={imageUrl}
-                                                                                    alt={property.title}
-                                                                                    onError={(e) => {
-                                                                                        e.currentTarget.onerror = null; // prevents infinite loop
-                                                                                        e.currentTarget.src = defaultImg;
-                                                                                    }}
-                                                                                />
-
-
-                                                                            </div>
-                                                                            <div className="content">
-                                                                                <div
-                                                                                    className="title"
-                                                                                    style={{ cursor: "pointer" }}
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        navigate(`/property/${property.id}`, {
-                                                                                            state: { fromMyProperties: true },
-                                                                                        });
-                                                                                    }}
-                                                                                >
-                                                                                    {property.title}
-                                                                                </div>
-                                                                                <div className="listing-type" style={{ marginTop: "4px" }}>
-                                                                                    <span className="fw-6">Listing Type:</span>{" "}
-                                                                                    <span>{property.listing_type}</span>
-                                                                                </div>
-                                                                                <div className="text-date">
-                                                                                    <p className="fw-5">
-                                                                                        <span className="fw-6 text-variant-1 " style={{ color: "#161E2D" }}>Posting date:</span>
-                                                                                        {" "}
-                                                                                        {property.created_at
-                                                                                            ? (() => {
-                                                                                                const d = new Date(property.created_at);
-                                                                                                const day = String(d.getDate()).padStart(2, "0");
-                                                                                                const month = String(d.getMonth() + 1).padStart(2, "0");
-                                                                                                const year = d.getFullYear();
-                                                                                                return `${day}-${month}-${year}`;
-                                                                                            })()
-                                                                                            : "-----"}
-                                                                                    </p>
-                                                                                </div>
-
-                                                                                <div className="text-1 fw-7">{property.property_type}</div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </td>
-
-                                                                    {/* ✅ Date Published column */}
-                                                                    <td>{datePublished}</td>
-
-                                                                    {/* ✅ Status column */}
-                                                                    <td>
-                                                                        <div className="status-wrap">
-                                                                            <span className="btn-status">{statusLabel}</span>
-                                                                        </div>
-                                                                    </td>
-
-                                                                    {/* ✅ Action column */}
-                                                                    <td>
-                                                                        <ul className="list-action">
-                                                                            <li>
-                                                                                <div className="remove-file item btn-wrapper">
-                                                                                    <button className="btn edit-btn" onClick={() => navigate(`/edit-property/${property.id}`)}>Edit</button>
-                                                                                    <button
-                                                                                        className="btn inquiry-btn"
-                                                                                        onClick={() =>
-                                                                                            handleInquiryClick(property.inquiry, property.title)
-                                                                                        }
-                                                                                    >
-                                                                                        Inquiry
-                                                                                    </button>
-                                                                                    <button
-                                                                                        className="btn review-btn"
-                                                                                        onClick={() =>
-                                                                                            handleReviewClick(property.review, property.title)
-                                                                                        }
-                                                                                    >
-                                                                                        Review
-                                                                                    </button>
-                                                                                </div>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })
                                                     ) : (
                                                         <tr>
-                                                            <td colSpan={4} className="text-center">
+                                                            <td colSpan={2} style={{ textAlign: "center" }}>
                                                                 No recent properties found.
                                                             </td>
                                                         </tr>
                                                     )}
                                                 </tbody>
+
+
+
                                             </table>
                                         </div>
                                     </div>
@@ -872,12 +672,12 @@ const Myproperties = () => {
                             </div>
 
                             <div className="overlay-dashboard"></div>
-{/* 
+
                             <div className="progress-wrap">
                                 <svg className="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
                                     <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98" style={{ transition: 'stroke-dashoffset 10ms linear 0s', strokeDasharray: '307.919, 307.919', strokeDashoffset: '286.138' }}></path>
                                 </svg>
-                            </div> */}
+                            </div>
                         </div>
 
                         {/* {showModal && (
@@ -1110,4 +910,4 @@ const Myproperties = () => {
     )
 }
 
-export default Myproperties
+export default RecentProperties
