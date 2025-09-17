@@ -1,14 +1,14 @@
 import axios from "axios";
 
-// const IMG_URL = "https://jewellery.hisabapp.com/admin/";
+const IMG_URL = "https://jewellery.hisabapp.com/admin/";
 
-const IMG_URL = "http://192.168.1.103/projects/easyAcers/admin/";
+// const IMG_URL = "http://192.168.1.103/projects/easyAcers/admin/";
 
 
 const api = axios.create({
-  // baseURL: "https://jewellery.hisabapp.com/admin/api/",
+  baseURL: "https://jewellery.hisabapp.com/admin/api/",
 
-  baseURL: "http://192.168.1.103/projects/easyAcers/admin/api",
+  // baseURL: "http://192.168.1.103/projects/easyAcers/admin/api",
 
 });
 
