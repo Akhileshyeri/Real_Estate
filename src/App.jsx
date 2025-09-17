@@ -25,6 +25,7 @@ import Inquiries from "./Components/Inquiries";
 import ReviewList from "./Components/ReviewList";
 import UpdateProperty from "./Components/UpdateProperty";
 import StateList from "./Components/CityList";
+import RecentProperties from "./Components/RecentProperties";
 
 // ✅ Inline ScrollToTop helper
 const ScrollToTop = () => {
@@ -69,6 +70,8 @@ function App() {
         <Route path="/reviewlist" element={<ReviewList />} />
         <Route path="/reviewlist/:id" element={<ReviewList />} />
                <Route exact path="/edit-property/:id" element={<UpdateProperty />} />
+                              <Route exact path="/recent" element={<RecentProperties />} />
+
       </Routes>
     </>
   );

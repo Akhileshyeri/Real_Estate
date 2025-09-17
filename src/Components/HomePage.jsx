@@ -368,7 +368,36 @@ const HomePage = () => {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    const addToRecentProperties = (property) => {
+        // Get existing recent properties from localStorage
+        const recent = JSON.parse(localStorage.getItem("recentProperties")) || [];
 
+        // Remove the property if it already exists (avoid duplicates)
+        const filtered = recent.filter((p) => p.id !== property.id);
+
+        // Add the new property at the beginning
+        filtered.unshift({
+            id: property.id,
+            name: property.name,
+            image: property.image,
+            detailsUrl: property.detailsUrl || `/property/${property.id}`,
+            location: property.location,
+            priceValue: property.priceValue,
+            priceUnit: property.priceUnit,
+            agentName: property.agentName,
+            meta: property.meta,
+            featured: property.featured,
+            type: property.type,
+            subType: property.subType,
+            for: property.for,
+        });
+
+        // Keep only the latest 4
+        const latest = filtered.slice(0, 4);
+
+        // Save back to localStorage
+        localStorage.setItem("recentProperties", JSON.stringify(latest));
+    };
 
 
 
@@ -378,8 +407,8 @@ const HomePage = () => {
     if (loading || bannersLoading) {
         return (
             <div>
-                <Header showSearch={showSearch}  />
-             
+                <Header showSearch={showSearch} />
+
 
 
 
@@ -431,11 +460,11 @@ const HomePage = () => {
         <div className='body bg-surface '>
             <div id="wrapper">
                 <div id="pagee" className="clearfix">
-                    <Header showSearch={showSearch}  />
+                    <Header showSearch={showSearch} />
 
-                   
+
                     {/* ✅ Floating search bar */}
-                   
+
                     {/* SLIDER & TABS */}
                     <section
                         className="flat-slider home-1"
@@ -895,7 +924,11 @@ const HomePage = () => {
                                                     <div key={item.id} className="col-xl-4 col-lg-6 col-md-6">
                                                         <div className="homeya-box">
                                                             <div className="archive-top">
-                                                                <a onClick={() => navigate(`/property/${item.id}`)} className="images-group">
+                                                                <a onClick={() => {
+                                                                    addToRecentProperties(item); // ✅ Add to recent
+                                                                    navigate(`/property/${item.id}`);
+                                                                }}
+                                                                    className="images-group">
                                                                     <div className="images-style">
                                                                         <img
                                                                             src={
@@ -920,7 +953,12 @@ const HomePage = () => {
                                                                 </a>
                                                                 <div className="content">
                                                                     <div className="h7 text-capitalize fw-7">
-                                                                        <a onClick={() => navigate(`/property/${item.id}`)} style={{ cursor: "pointer" }}>
+                                                                        <a
+                                                                            onClick={() => {
+                                                                                addToRecentProperties(item); // ✅ Add to recent
+                                                                                navigate(`/property/${item.id}`);
+                                                                            }}
+                                                                            style={{ cursor: "pointer" }}>
                                                                             {item.name}
                                                                         </a>
                                                                     </div>
@@ -1030,7 +1068,7 @@ const HomePage = () => {
                                 >
                                     {/* Card 1 */}
                                     <div
-                                         onClick={() => navigate("/city-list/229")}
+                                        onClick={() => navigate("/city-list/229")}
                                         className="box-location"
                                         style={{
                                             display: "block",
@@ -1093,7 +1131,7 @@ const HomePage = () => {
 
                                     {/* Card 2 */}
                                     <div
-                                       onClick={() => navigate("/city-list/101")}
+                                        onClick={() => navigate("/city-list/101")}
                                         className="box-location"
                                         style={{
                                             display: "block",

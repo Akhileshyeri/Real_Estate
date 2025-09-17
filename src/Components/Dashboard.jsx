@@ -105,6 +105,7 @@ const Dashboard = () => {
                 { text: ' My Profile', onClick: () => navigate('/myprofile') },
                 { text: 'My Favorites', onClick: () => navigate('/myfavorites') },
                 { text: 'My Properties', onClick: () => navigate('/myproperties') },
+                { text: 'Recent Properties', onClick: () => navigate('/recent') },
                 // { text: 'Reviews', onClick: () => navigate('/reviews') },
             ]
         },
@@ -341,17 +342,24 @@ const Dashboard = () => {
                                                     <div
                                                         className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}
                                                         style={{
-                                                            position: 'absolute',
-                                                            top: '100%',
-                                                            right: 0,
-                                                            zIndex: 1000,
-                                                            marginTop: '0.5rem',
-
-                                                        }}
+                                                                position: "absolute",
+                                                                top: "100%",
+                                                                right: 0,
+                                                                zIndex: 1000,
+                                                                marginTop: "0.5rem",
+                                                                display: dropdownOpen ? "block" : "none",
+                                                                background: "#fff",
+                                                                border: "1px solid #ddd",
+                                                                borderRadius: "6px",
+                                                                boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
+                                                                minWidth: "180px",
+                                                            }}
                                                     >
                                                         <a className="dropdown-item" onClick={() => navigate('/myprofile')}>My Profile</a>
                                                         <a className="dropdown-item" onClick={() => navigate('/myproperties')}>My Properties</a>
                                                         <a className="dropdown-item" onClick={() => navigate('/myfavorites')}>My Favorites</a>
+                                                        <a className="dropdown-item" onClick={() => navigate('/recent')}>Recent Properties</a>
+                                                       
                                                         {/* <a className="dropdown-item" onClick={() => navigate('/reviews')}>Reviews</a> */}
 
                                                         <a className="dropdown-item" onClick={(e) => {
@@ -531,6 +539,11 @@ const Dashboard = () => {
                                 <li className="nav-menu-item">
                                     <a className="nav-menu-link" href="" onClick={(e) => { e.preventDefault(); navigate('/myfavorites'); }}>
                                         <span className="icon icon-heart"></span> My Favorites
+                                    </a>
+                                </li>
+                                 <li className="nav-menu-item">
+                                    <a className="nav-menu-link" href="" onClick={(e) => { e.preventDefault(); navigate('/recent'); }}>
+                                        <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i> Recent Properties
                                     </a>
                                 </li>
                                 {/* <li className="nav-menu-item">

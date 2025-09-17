@@ -95,6 +95,7 @@ const MyFavorites = () => {
                 { text: 'Dashboard', onClick: () => navigate('/dashboard') },
 
                 { text: 'My Properties', onClick: () => navigate('/myproperties') },
+                { text: 'Recent Properties', onClick: () => navigate('/recent') },
                 // { text: 'Reviews', onClick: () => navigate('/reviews') },
             ]
         },
@@ -258,18 +259,27 @@ const MyFavorites = () => {
                                                     <div
                                                         className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}
                                                         style={{
-                                                            position: 'absolute',
-                                                            top: '100%',
-                                                            right: 0,
-                                                            zIndex: 1000,
-                                                            marginTop: '0.5rem'
-                                                        }}
+                                                                position: "absolute",
+                                                                top: "100%",
+                                                                right: 0,
+                                                                zIndex: 1000,
+                                                                marginTop: "0.5rem",
+                                                                display: dropdownOpen ? "block" : "none",
+                                                                background: "#fff",
+                                                                border: "1px solid #ddd",
+                                                                borderRadius: "6px",
+                                                                boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
+                                                                minWidth: "180px",
+                                                            }}
                                                     >
                                                         <Link className="dropdown-item" to="/myprofile">My Profile</Link>
                                                         <a className="dropdown-item" onClick={() => navigate("/dashboard")}>
                                                             Dashboard
                                                         </a>
                                                         <Link className="dropdown-item" to="/myproperties">My Properties</Link>
+
+                                                        <Link className="dropdown-item" to="/recent">Recent Properties</Link>
+
 
                                                         {/* <Link className="dropdown-item" to="/reviews">Reviews</Link> */}
 
@@ -449,6 +459,11 @@ const MyFavorites = () => {
                                 <li className="nav-menu-item">
                                     <Link className="nav-menu-link" onClick={(e) => { e.preventDefault(); navigate('/myfavorites'); }}>
                                         <span className="icon icon-heart"></span> My Favorites
+                                    </Link>
+                                </li>
+                                  <li className="nav-menu-item">
+                                    <Link className="nav-menu-link" onClick={(e) => { e.preventDefault(); navigate('/recent'); }}>
+                                         <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i> Recent Properties
                                     </Link>
                                 </li>
                                 {/* <li className="nav-menu-item">
