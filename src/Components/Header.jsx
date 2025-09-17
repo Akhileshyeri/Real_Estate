@@ -682,7 +682,7 @@ const handleToggle = () => {
     <>
       <header className="main-header fixed-header " style={{ height: "75px" }}>
         <div className="header-lower">
-          <div className="row" style={{ marginRight: "-40px" }}>
+          <div className="row" >
             <div className="col-lg-12">
               <div className="inner-container d-flex justify-content-between align-items-center">
                 <div className="logo-box">
@@ -1061,8 +1061,7 @@ const handleToggle = () => {
               ) : (
                 <div className="button-mobi-sell">
 
-                  <a className="tf-btn primary" onClick={() => navigate('/addproperty')}>Add Property</a>
-
+                
                   <a
                     className="tf-btn primary"
                     style={{ marginBottom: "1rem" }}

@@ -109,13 +109,36 @@ const Footer = () => {
                             <div className="footer-cl-3">
                                 <div className="fw-7 text-white">Our Company</div>
                                 <ul className="mt-10 navigation-menu-footer">
-                                    <li> <a href="" className="caption-1 text-variant-2">Property For Sale</a> </li>
+                                    <li>
+                                        <Link
+                                            to="/listing?listingType=sale"
+                                            className="caption-1 text-variant-2"
+                                        >
+                                            Property For Sale
+                                        </Link>
+                                    </li>
 
-                                    <li> <a href="" className="caption-1 text-variant-2">Property For Rent</a> </li>
-                                    <li> <a href="" className="caption-1 text-variant-2">Property For Buy</a> </li>
+                                    <li>
+                                        <Link
+                                            to="/listing?listingType=rent"
+                                            className="caption-1 text-variant-2"
+                                        >
+                                            Property For Rent
+                                        </Link>
+                                    </li>
+
+                                    <li>
+                                        <Link
+                                            to="/listing?listingType=joint venture"
+                                            className="caption-1 text-variant-2"
+                                        >
+                                         Joint venture
+                                        </Link>
+                                    </li>
+
                                     <li>
                                         <Link to="/blogs" className="caption-1 text-variant-2">
-                                          Blogs
+                                            Blogs
                                         </Link>
                                     </li>
                                 </ul>
