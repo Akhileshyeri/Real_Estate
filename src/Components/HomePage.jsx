@@ -14,8 +14,112 @@ import Dub from "../assets/du.jpg"
 
 
 
+
 const HomePage = () => {
+
+
+    const [recentProperties, setRecentProperties] = useState([]);
+
+    const addToRecent = (property) => {
+        let recent = JSON.parse(localStorage.getItem("recentProperties")) || [];
+
+        // normalize property shape
+        const normalized = {
+            id: property.id,
+            title: property.title || property.name || "Untitled",
+            image: property.image || property.image_path || null,
+            location: property.location || "Unknown Location",
+
+            price: property.price || "Price on Request",
+            priceValue: property.priceValue || 0,
+            priceUnit: property.priceUnit || "",
+
+            status: property.status || property.for || "N/A",
+            subType: property.subType || "N/A",
+
+            // 👇 preserve meta (bed, bath, sqft)
+            meta: property.meta || [],
+
+            createdAt: new Date().toISOString(),
+        };
+
+        // remove duplicate if already exists
+        recent = recent.filter((p) => p.id !== normalized.id);
+
+        // add to start
+        recent.unshift(normalized);
+
+        // ✅ keep only 3
+        if (recent.length > 2) {
+            recent = recent.slice(0, 2);
+        }
+
+        // save to localStorage
+        localStorage.setItem("recentProperties", JSON.stringify(recent));
+
+        // ✅ update React state immediately
+        setRecentProperties(recent);
+    };
+
+
+
+
+    useEffect(() => {
+        setLoading(true);
+
+        const storedRecent = localStorage.getItem("recentProperties");
+        if (storedRecent) {
+            const parsed = JSON.parse(storedRecent).map(p => ({
+                id: p.id,
+                title: p.title || p.name || "Untitled",
+                image: p.image || null,
+                location: p.location || "Unknown Location",
+
+                price: p.price || "Price on Request",
+                priceValue: p.priceValue || 0,
+                priceUnit: p.priceUnit || "",
+
+                status: p.status || "N/A",
+                subType: p.subType || "N/A",
+
+                // 👇 keep meta array intact
+                meta: p.meta || [],
+
+                createdAt: p.createdAt || new Date().toISOString(),
+            }));
+
+
+            const today = new Date().toLocaleDateString();
+            const todayRecent = parsed
+                .filter(p => {
+                    const createdAt = new Date(p.createdAt).toLocaleDateString();
+                    return createdAt === today;
+                })
+                .slice(0, 3);   // ✅ enforce limit 6
+
+            setRecentProperties(todayRecent);
+        } else {
+            setRecentProperties([]);
+        }
+
+
+        setLoading(false);
+    }, []);
+
+
+
+
+
+
+
+
+
+
+
+
     const [reviews, setReviews] = useState([]);
+
+
 
     const [bannerUrl, setBannerUrl] = useState(""); // state for dynamic banner
     const [popupBanner, setPopupBanner] = useState(""); // state for dynamic banner
@@ -150,8 +254,25 @@ const HomePage = () => {
         const fd = new FormData();
         fd.append("programType", "getProperties");
         fd.append("authToken", authToken);
-        fd.append("limit", 500);
+        fd.append("limit", 9);
         fd.append("page", 1);
+        // 🔹 Read country from localStorage
+        const countryCode = localStorage.getItem("country");
+        let countryName = "";
+
+        if (countryCode === "101") {
+            countryName = "india";
+        } else if (countryCode === "229") {
+            countryName = "dubai";
+        }
+
+        // ✅ Append country name instead of numeric code
+        if (countryName) {
+            fd.append("country", countryName);
+        }
+
+        console.log("country", countryName)
+
 
         try {
             const response = await api.post("/properties/property", fd);
@@ -369,7 +490,7 @@ const HomePage = () => {
     }, []);
 
     const addToRecentProperties = (property) => {
-        // Get existing recent properties from localStorage
+        // Get existing Recent activity from localStorage
         const recent = JSON.parse(localStorage.getItem("recentProperties")) || [];
 
         // Remove the property if it already exists (avoid duplicates)
@@ -638,6 +759,60 @@ const HomePage = () => {
                                                                 width="90%"   // 👈 makes it responsive
                                                                 style={{ maxWidth: "600px" }} // 👈 optional cap for larger screens
                                                             >
+
+
+                                                                {/* Listing Type Selection */}
+                                                                <div className="filter-section" style={{ marginBottom: "25px" }}>
+                                                                    <h6 className="filter-title">Listing Type</h6>
+                                                                    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                                                                        {["Rent", "Sale", "Joint Venture"].map((type) => (
+                                                                            <button
+                                                                                key={type}
+                                                                                onClick={() => setSelectedListingType(type.toLowerCase())}
+                                                                                style={{
+                                                                                    padding: "8px 16px",
+                                                                                    borderRadius: "20px",
+                                                                                    border: "1px solid #ccc",
+                                                                                    backgroundColor: selectedListingType === type.toLowerCase() ? "#ed2027" : "#fff",
+                                                                                    color: selectedListingType === type.toLowerCase() ? "#fff" : "#000",
+                                                                                    cursor: "pointer",
+                                                                                }}
+                                                                            >
+                                                                                {type}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+
+
+                                                                <div className="form-group-3 form-style" style={{marginBottom:"25px"}}>
+                                                                    <label>Type</label>
+                                                                    <div className="group-select">
+                                                                        <div className="nice-select" tabIndex="0">
+                                                                            <span className="current">{selectedType}</span>
+                                                                            <ul className="list">
+                                                                                <li
+                                                                                    className={`option ${selectedType === "All" ? "selected" : ""}`}
+                                                                                    onClick={() => setSelectedType("All")}
+                                                                                >
+                                                                                    All
+                                                                                </li>
+                                                                                {propertyTypes.map((type) => (
+                                                                                    <li
+                                                                                        key={type}
+                                                                                        className={`option ${selectedType === type ? "selected" : ""}`}
+                                                                                        onClick={() => setSelectedType(type)}
+                                                                                    >
+                                                                                        {type}
+                                                                                    </li>
+                                                                                ))}
+                                                                            </ul>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                
+
                                                                 {/* Rent or Price Slider */}
                                                                 {selectedListingType === "rent" ? (
                                                                     <div className="filter-section" style={{ marginBottom: "25px" }}>
@@ -826,8 +1001,7 @@ const HomePage = () => {
                                                                 {/* Apply Filters Button */}
                                                                 <div style={{ textAlign: "right", marginTop: "25px" }}>
                                                                     <button
-                                                                        type="button"
-                                                                        onClick={handleCloseAdvanced}
+
                                                                         style={{
                                                                             padding: "10px 24px",
                                                                             borderRadius: "25px",
@@ -837,6 +1011,23 @@ const HomePage = () => {
                                                                             border: "none",
                                                                             cursor: "pointer",
                                                                         }}
+                                                                        onClick={() => {
+                                                                            // build query params
+                                                                            const queryParams = new URLSearchParams({
+                                                                                listingType: selectedListingType,
+                                                                                type: selectedType,
+                                                                                priceMin: priceRange[0],
+                                                                                priceMax: priceRange[1],
+                                                                                rentMin: rentRange[0],
+                                                                                rentMax: rentRange[1],
+                                                                                bhk: selectedBHK,
+                                                                                bedrooms: selectedBedrooms,
+                                                                                bathrooms: selectedBathroom,
+                                                                            });
+
+                                                                            navigate(`/listing?${queryParams.toString()}`);
+                                                                        }}
+
                                                                     >
                                                                         Apply Filters
                                                                     </button>
@@ -1192,6 +1383,177 @@ const HomePage = () => {
                                 </div>
                             </div>
                         </section>
+                        <div className="container" style={{ marginTop: "30px" }}>
+                            <div
+                                className="text-center wow fadeInUpSmall"
+                                data-wow-delay=".2s"
+                                data-wow-duration="2000ms"
+                            >
+                                <div className="text-subtitle text-primary">Properties</div>
+                                <h4 className="mt-4">Recent Activity</h4>
+                            </div>
+
+                            <div
+                                className="flat-tab-recommended wow fadeInUpSmall"
+                                data-wow-delay=".2s"
+                                data-wow-duration="2000ms"
+                            >
+                                <div className="tab-content" style={{ marginTop: "50px" }}>
+                                    <div className="tab-pane fade active show" role="tabpanel">
+                                        <div className="row">
+                                            {loading ? (
+                                                // 🔹 Skeleton Loader (same as home page)
+                                                [...Array(6)].map((_, i) => (
+                                                    <div
+                                                        key={i}
+                                                        className="col-xl-4 col-lg-6 col-md-6 mb-4"
+                                                    >
+                                                        <div className="homeya-box p-3">
+                                                            <div className="skeleton skeleton-img mb-3"></div>
+                                                            <br />
+                                                            <div className="skeleton skeleton-text w-75 mb-2"></div>
+                                                            <div className="skeleton skeleton-text w-50 mb-2"></div>
+                                                            <div className="skeleton skeleton-text w-100 mb-2"></div>
+                                                            <div className="d-flex justify-content-between mt-3">
+                                                                <div className="skeleton skeleton-avatar"></div>
+                                                                <div className="skeleton skeleton-text w-25"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : recentProperties.length === 0 ? (
+                                                // 🔹 No Recent Activity
+                                                <div className="col-12 text-center py-5 mt-3">
+                                                    <img
+                                                        src={nodata}
+                                                        alt="No Recent Activity"
+                                                        style={{ maxWidth: "280px", marginBottom: "20px" }}
+                                                    />
+                                                    <h5>No Recent Activity Today</h5>
+                                                    <p>Browse properties to see them appear here.</p>
+                                                </div>
+                                            ) : (
+                                                // 🔹 Property Cards (same styling as home page)
+                                                recentProperties.map((property) => (
+                                                    <div
+                                                        key={property.id}
+                                                        className="col-xl-4 col-lg-6 col-md-6 mb-4"
+                                                    >
+                                                        <div className="homeya-box">
+                                                            <div className="archive-top">
+                                                                <a
+                                                                    onClick={() => {
+                                                                        addToRecent(property);
+                                                                        navigate(`/property/${property.id}`);
+                                                                    }}
+                                                                    className="images-group"
+                                                                    style={{ cursor: "pointer" }}
+                                                                >
+                                                                    <div className="images-style">
+                                                                        <img
+                                                                            src={
+                                                                                property.image
+                                                                                    ? `${api.imageUrl}${property.image}`
+                                                                                    : "https://themesflat.co/html/homzen/images/home/house-1.jpg"
+                                                                            }
+                                                                            alt={property.title}
+                                                                            style={{
+                                                                                width: "100%",
+                                                                                height: "200px",
+                                                                                objectFit: "cover",
+                                                                                borderRadius: "8px",
+                                                                            }}
+                                                                            onError={(e) => {
+                                                                                e.target.onerror = null;
+                                                                                e.target.src =
+                                                                                    "https://themesflat.co/html/homzen/images/home/house-1.jpg";
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                    {/* <div className="top">
+                                                                        <ul className="d-flex gap-8">
+                                                                            {property.featured && <li className="flag-tag success">Featured</li>}
+                                                                            <li className="flag-tag style-1">{property.status}</li>
+                                                                        </ul>
+                                                                    </div>
+
+                                                                    <div className="bottom">
+                                                                        <span className="flag-tag style-2">{property.type}</span>
+                                                                    </div> */}
+
+
+                                                                </a>
+
+                                                                {/* Content section */}
+                                                                <div className="content">
+                                                                    <div className="h7 text-capitalize fw-7">
+                                                                        <a
+                                                                            onClick={() => {
+                                                                                addToRecent(property);
+                                                                                navigate(`/property/${property.id}`);
+                                                                            }}
+                                                                            style={{ cursor: "pointer" }}
+                                                                        >
+                                                                            {property.title}
+                                                                        </a>
+                                                                    </div>
+                                                                    <div className="desc">
+                                                                        <i className="fs-16 icon icon-mapPin"></i>
+                                                                        <p>{property.location}</p>
+
+
+                                                                    </div>
+                                                                    <ul className="meta-list">
+                                                                        {property.meta && property.meta.map((m, idx) => (
+                                                                            <li className="item" key={idx}>
+                                                                                <i className={`icon ${m.icon}`}></i>
+                                                                                <span>{m.label}</span>
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Bottom Price & Agent */}
+                                                            <div className="archive-bottom d-flex justify-content-between align-items-center">
+                                                                <div className="d-flex gap-8 align-items-center">
+                                                                    <div className="avatar avt-40 round">
+                                                                        <img
+                                                                            src={
+                                                                                property.agentImage ||
+                                                                                "https://themesflat.co/html/homzen/images/avatar/avt-7.jpg"
+                                                                            }
+                                                                            alt="agent"
+                                                                        />
+                                                                    </div>
+                                                                    <span>{property.agentName || "Agent"}</span>
+                                                                </div>
+                                                                <div className="d-flex align-items-center">
+                                                                    <h6>₹{Number(property.priceValue).toLocaleString()}</h6>
+                                                                    <span className="text-variant-1">{property.priceUnit}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 🔹 Show button only if data exists */}
+                                {!loading && recentProperties.length > 0 && (
+                                    <div className="text-center mt-4">
+                                        <Link to="/recent" className="tf-btn primary size-1">
+                                            View All Recent Activity
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+
+
 
                     </section>
 

@@ -947,19 +947,19 @@ const AddProperty = () => {
 
     });
 
-    // try {
-    //   const response = await api.post("properties/prop1", fd);
-    //   console.log("ee", response)
-    //   if (response.data.success) {
-    //     toast.success(response.data.message)
-    //     navigate("/home")
-    //   } else {
-    //     toast.error(response.data.message)
-    //   }
-    // }
-    // catch (err) {
-    //   console.log(err)
-    // }
+    try {
+      const response = await api.post("properties/prop1", fd);
+      console.log("ee", response)
+      if (response.data.success) {
+        toast.success(response.data.message)
+        navigate("/home")
+      } else {
+        toast.error(response.data.message)
+      }
+    }
+    catch (err) {
+      console.log(err)
+    }
 
   }
 
@@ -1071,7 +1071,7 @@ const AddProperty = () => {
     const fd = new FormData();
     fd.append("programType", "getStateListOnChangeOfCountry");
     fd.append("authToken", localStorage.getItem("authToken"));
-    fd.append("country", localStorage.getItem("country"));
+    fd.append("country", 101);
 
     try {
       const response = await api.post("properties/preRequirements", fd);
@@ -1093,6 +1093,28 @@ const AddProperty = () => {
   useEffect(() => {
     StateList();
   }, []);
+
+
+
+    const cityList = async () => {
+    setLoading(true);
+    const fd = new FormData();
+    fd.append("programType", "");
+    fd.append("authToken", localStorage.getItem("authToken"));
+    fd.append("country", 101);
+
+    try {
+      const response = await api.post("", fd);
+      console.log("states list:", response.data);
+    } catch (error) {
+      console.error("states error:", error);
+     
+    } 
+  };
+
+
+
+
 
 
 
@@ -1873,58 +1895,59 @@ const AddProperty = () => {
                 {/* City Select */}
                 <div className="form-group">
                   <label>State</label>
-
-                  <select
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    className="select-field"
-                    style={{ height: "55px" }}
-                  >
-                    <option value="">Select State</option>
-                    {states.map((s) => (
-                      <option key={s.id} value={s.name}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-
-                </div>
-
-
-
-                <div className="form-group">
-                  <label>City</label>
-                  <input
-                    type="text"
-                    placeholder="Enter Location"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="input-field"
-                  />
+                  {loading ? (
+                    <div style={{ height: "55px", display: "flex", alignItems: "center" }}>
+                      Loading states...
+                    </div>
+                  ) : (
+                    <select
+                      value={state}
+                      onChange={(e) => setState(e.target.value)}
+                      className="select-field"
+                      style={{ height: "55px" }}
+                    >
+                      <option value="">Select State</option>
+                      {states.map((s) => (
+                        <option key={s.id} value={s.name}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 {/* You are? Buttons */}
-
-                <div className="form-group">
-                  <label>You are?</label>
-                  <div className="ownership-buttons">
-                    {["Owner", "Broker", "Builder"].map((role) => (
-                      <button
-                        key={role}
-                        type="button"
-                        onClick={() => setSelectedOwnership(role)}
-                        className={`ownership-option ${selectedOwnership === role ? "active" : ""
-                          }`}
-                      >
-                        {role}
-                      </button>
-                    ))}
+                {city && (
+                  <div className="form-group">
+                    <label>You are?</label>
+                    <div className="ownership-buttons">
+                      {["Owner", "Broker", "Builder"].map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() => setSelectedOwnership(role)}
+                          className={`ownership-option ${selectedOwnership === role ? "active" : ""
+                            }`}
+                        >
+                          {role}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-
+                )}
 
                 {/* Location Input */}
-
-
+                {selectedOwnership && (
+                  <div className="form-group">
+                    <label>Location</label>
+                    <input
+                      type="text"
+                      placeholder="Enter Location"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="input-field"
+                    />
+                  </div>
+                )}
 
                 {/* Apartment Select */}
                 {location && (
@@ -2138,9 +2161,23 @@ const AddProperty = () => {
                     )}
                   </div>
 
+                  
+                  
+
 
 
                 )}
+
+                <div className="step2-section mt-3">
+                  <label className="step2-label">Postal Code</label>
+                  <input
+                    type="text"
+                    className="step2-input"
+                    placeholder="select city;"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                  />
+                </div>
 
 
                 {/* Address */}

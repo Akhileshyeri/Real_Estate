@@ -105,7 +105,7 @@ const Dashboard = () => {
                 { text: ' My Profile', onClick: () => navigate('/myprofile') },
                 { text: 'My Favorites', onClick: () => navigate('/myfavorites') },
                 { text: 'My Properties', onClick: () => navigate('/myproperties') },
-                { text: 'Recent Properties', onClick: () => navigate('/recent') },
+                { text: 'Recent activity', onClick: () => navigate('/recent') },
                 // { text: 'Reviews', onClick: () => navigate('/reviews') },
             ]
         },
@@ -284,7 +284,7 @@ const Dashboard = () => {
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                                                        <ul className="navigation clearfix">
+                                                        <ul className="navigation clearfix" style={{marginLeft:"228px"}}>
                                                             <li className="home ms-4">
                                                                 <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</a>
                                                             </li>
@@ -358,7 +358,7 @@ const Dashboard = () => {
                                                         <a className="dropdown-item" onClick={() => navigate('/myprofile')}>My Profile</a>
                                                         <a className="dropdown-item" onClick={() => navigate('/myproperties')}>My Properties</a>
                                                         <a className="dropdown-item" onClick={() => navigate('/myfavorites')}>My Favorites</a>
-                                                        <a className="dropdown-item" onClick={() => navigate('/recent')}>Recent Properties</a>
+                                                        <a className="dropdown-item" onClick={() => navigate('/recent')}>Recent activity</a>
                                                        
                                                         {/* <a className="dropdown-item" onClick={() => navigate('/reviews')}>Reviews</a> */}
 
@@ -543,7 +543,7 @@ const Dashboard = () => {
                                 </li>
                                  <li className="nav-menu-item">
                                     <a className="nav-menu-link" href="" onClick={(e) => { e.preventDefault(); navigate('/recent'); }}>
-                                        <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i> Recent Properties
+                                        <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i> Recent activity
                                     </a>
                                 </li>
                                 {/* <li className="nav-menu-item">
@@ -929,7 +929,7 @@ const Dashboard = () => {
                                                             ) : (
                                                                 <tr>
                                                                     <td colSpan={3} className="text-center">
-                                                                        No recent properties found.
+                                                                        No Recent activity found.
                                                                     </td>
                                                                 </tr>
                                                             )}

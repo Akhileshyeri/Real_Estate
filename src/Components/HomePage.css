@@ -44,3 +44,61 @@
   }
 }
 
+/* Default (desktop) - no change */
+.flat-tab-recommended {
+  margin-top: 0; /* or your current margin */
+}
+
+/* Mobile devices */
+@media (max-width: 768px) {
+  .flat-tab-recommended {
+    margin-top: 10px;  /* adjust as needed */
+    padding-top: 10px; /* optional, for inner spacing */
+  }
+
+  .flat-tab-recommended .nav-tab-recommended {
+    flex-wrap: wrap; /* ensures tabs don’t overflow */
+    gap: 8px;        /* spacing between tabs */
+  }
+
+  .flat-tab-recommended .nav-link-item {
+    font-size: 14px;   /* smaller font for mobile */
+    padding: 6px 12px; /* reduce padding */
+  }
+}
+
+
+@media (max-width: 768px) {
+  .text-center.wow.fadeInUpSmall {
+    margin-top: 100px;   /* push down */
+    padding-top: 10px;  /* optional extra padding */
+  }
+}
+
+.archive-bottom {
+  border-top: 1px solid #eee;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+}
+
+.archive-bottom .title a {
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+
+
+.text-address {
+  font-size: 18px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.price {
+  font-weight: bold;
+  margin-bottom:10px ;
+}
+.Type{
+  font-weight: bold;
+  margin-bottom:10px ;  
+}
