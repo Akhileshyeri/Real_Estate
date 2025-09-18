@@ -283,9 +283,11 @@ const Dashboard = () => {
                                             <div className="nav-outer">
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
-                                                    <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                                                        <ul className="navigation clearfix" style={{ marginLeft: "228px" }}>
-                                                            <li className="home ms-4">
+
+                                                   
+                                                    <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent" >
+                                                        <ul className="navigation clearfix ss" style={{marginLeft:"180px"}}>
+                                           <li className="home ms-4">
                                                                 <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</a>
                                                             </li>
 
@@ -410,9 +412,9 @@ const Dashboard = () => {
                                     </div>
                                     <div className="bottom-canvas">
                                         <div className="menu-outer">
-                                            <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
+                                            <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent" style={{marginRight:"50px"}}>
 
-                                                <ul className="navigation clearfix">
+                                                <ul className="navigation clearfix bb">
                                                     {menuItems.map((item, index) => (
                                                         <li
                                                             key={index}

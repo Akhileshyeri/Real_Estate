@@ -96,6 +96,37 @@ const Listing = () => {
     }, [navState]);
 
 
+    const getPagination = (totalPages, currentPage) => {
+        const pages = [];
+
+        if (totalPages <= 5) {
+            // If total pages are small, show all
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            // Always show first two
+            pages.push(1, 2);
+
+            if (currentPage > 4) {
+                pages.push("..."); // Ellipsis before current page
+            }
+
+            // Show current page -1, current, current +1 (if in range)
+            for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                if (i > 2 && i < totalPages - 1) {
+                    pages.push(i);
+                }
+            }
+
+            if (currentPage < totalPages - 3) {
+                pages.push("..."); // Ellipsis after current page
+            }
+
+            // Always show last two
+            pages.push(totalPages - 1, totalPages);
+        }
+
+        return pages;
+    };
 
 
 
@@ -714,20 +745,25 @@ const Listing = () => {
 
                                     {/* Pagination */}
                                     <ul className="justify-content-center wd-navigation">
-                                        {[...Array(totalPages)].map((_, i) => (
+                                        {getPagination(totalPages, page).map((p, i) => (
                                             <li key={i}>
-                                                <button
-                                                    style={{ border: "none" }}
-                                                    onClick={() => {
-                                                        setPage(i + 1);
-                                                        window.scrollTo({ top: 0, left: 0, behavior: "instant" }); // ✅ scroll here
-                                                    }}
-                                                    className={`nav-item ${page === i + 1 ? "active" : ""}`}
-                                                >
-                                                    {i + 1}
-                                                </button>
+                                                {p === "..." ? (
+                                                    <span className="nav-item">…</span>
+                                                ) : (
+                                                    <button
+                                                        style={{ border: "none" }}
+                                                        onClick={() => {
+                                                            setPage(p);
+                                                            window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                                                        }}
+                                                        className={`nav-item ${page === p ? "active" : ""}`}
+                                                    >
+                                                        {p}
+                                                    </button>
+                                                )}
                                             </li>
                                         ))}
+
                                         <li>
                                             <button
                                                 style={{ border: "none" }}
