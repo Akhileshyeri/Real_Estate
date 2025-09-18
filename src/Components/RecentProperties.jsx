@@ -582,18 +582,19 @@ const RecentProperties = () => {
                                                                                 <div className="title">{property.name}</div>
 
                                                                                 {/* Listing Badge */}
-                                                                                <div className="listing-type" >
+                                                                                <div className="listing-type">
                                                                                     <span
-                                                                                        className={` ${property.for === "sale" ? "success" : "style-1"
-                                                                                            }`}
-                                                                                    >  <span className="fw-6">Listing Type:</span>{" "}
-                                                                                        {property.for}
+                                                                                        className={` ${property.for === "sale" ? "success" : "style-1"}`}
+                                                                                    >
+                                                                                        <span className="fw-6">Listing Type:</span>{" "}
+                                                                                        {property.for.charAt(0).toUpperCase() + property.for.slice(1)}
                                                                                     </span>
                                                                                 </div>
+
                                                                             </div>
 
                                                                             {/* Location */}
-                                                                            <div className="" > 
+                                                                            <div className="" >
                                                                                 <span className="fw-6">Location:</span>{" "}
                                                                                 {property.location || "N/A"}
                                                                             </div>
@@ -615,31 +616,31 @@ const RecentProperties = () => {
 
                                                                 <td>
                                                                     <ul className="list-action">
-                                                                       <li style={{ display: "flex", justifyContent: "center" }}>
-  <button
-    type="button"
-    className="remove-file item flex items-center gap-1"
-    onClick={() => navigate(`/property/${property.id}`)}
-    style={{
-      backgroundColor: "#ed2027",
-      color: "#fff", // makes text white
-      padding: "8px 16px",
-      border: "none",
-      borderRadius: "6px",
-      cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: 600,
-      transition: "all 0.3s ease",
-      display: "flex",
-      alignItems: "center",
-      gap: "6px",
-    }}
-    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c91a21")}
-    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ed2027")}
-  >
-    <i className="fi fi-rs-eye" style={{ color: "#fff",marginTop:"5px" }}></i> View
-  </button>
-</li>
+                                                                        <li style={{ display: "flex", justifyContent: "center" }}>
+                                                                            <button
+                                                                                type="button"
+                                                                                className="remove-file item flex items-center gap-1"
+                                                                                onClick={() => navigate(`/property/${property.id}`)}
+                                                                                style={{
+                                                                                    backgroundColor: "#ed2027",
+                                                                                    color: "#fff", // makes text white
+                                                                                    padding: "8px 16px",
+                                                                                    border: "none",
+                                                                                    borderRadius: "6px",
+                                                                                    cursor: "pointer",
+                                                                                    fontSize: "14px",
+                                                                                    fontWeight: 600,
+                                                                                    transition: "all 0.3s ease",
+                                                                                    display: "flex",
+                                                                                    alignItems: "center",
+                                                                                    gap: "6px",
+                                                                                }}
+                                                                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c91a21")}
+                                                                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ed2027")}
+                                                                            >
+                                                                                <i className="fi fi-rs-eye" style={{ color: "#fff", marginTop: "5px" }}></i> View
+                                                                            </button>
+                                                                        </li>
 
 
                                                                     </ul>
@@ -667,7 +668,7 @@ const RecentProperties = () => {
 
                             <div className="overlay-dashboard"></div>
 
-                        
+
                         </div>
 
                         {/* {showModal && (

@@ -792,7 +792,7 @@ const Myproperties = () => {
                                                                                     <span className="fw-6">Listing Type:</span>{" "}
                                                                                     <span>{property.listing_type}</span>
                                                                                 </div>
-                                                                                <div className="text-date">
+                                                                                <div className="text-date m-0">
                                                                                     <p className="fw-5">
                                                                                         <span className="fw-6 text-variant-1 " style={{ color: "#161E2D" }}>Posting date:</span>
                                                                                         {" "}
@@ -808,7 +808,11 @@ const Myproperties = () => {
                                                                                     </p>
                                                                                 </div>
 
-                                                                                <div className="text-1 fw-7">{property.property_type}</div>
+                                                                                
+                                                                                 <div className="text-1 fw-7">
+                                                                                            <span style={{ fontWeight: "600",fontSize:"15px" }}> Property Type: </span><span style={{ fontWeight: "400" }}>{property.property_type}</span>
+                                                                                        </div>
+
                                                                             </div>
                                                                         </div>
                                                                     </td>

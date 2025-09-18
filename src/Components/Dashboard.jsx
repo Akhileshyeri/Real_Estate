@@ -284,7 +284,7 @@ const Dashboard = () => {
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                                                        <ul className="navigation clearfix" style={{marginLeft:"228px"}}>
+                                                        <ul className="navigation clearfix" style={{ marginLeft: "228px" }}>
                                                             <li className="home ms-4">
                                                                 <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</a>
                                                             </li>
@@ -342,24 +342,24 @@ const Dashboard = () => {
                                                     <div
                                                         className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}
                                                         style={{
-                                                                position: "absolute",
-                                                                top: "100%",
-                                                                right: 0,
-                                                                zIndex: 1000,
-                                                                marginTop: "0.5rem",
-                                                                display: dropdownOpen ? "block" : "none",
-                                                                background: "#fff",
-                                                                border: "1px solid #ddd",
-                                                                borderRadius: "6px",
-                                                                boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
-                                                                minWidth: "180px",
-                                                            }}
+                                                            position: "absolute",
+                                                            top: "100%",
+                                                            right: 0,
+                                                            zIndex: 1000,
+                                                            marginTop: "0.5rem",
+                                                            display: dropdownOpen ? "block" : "none",
+                                                            background: "#fff",
+                                                            border: "1px solid #ddd",
+                                                            borderRadius: "6px",
+                                                            boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
+                                                            minWidth: "180px",
+                                                        }}
                                                     >
                                                         <a className="dropdown-item" onClick={() => navigate('/myprofile')}>My Profile</a>
                                                         <a className="dropdown-item" onClick={() => navigate('/myproperties')}>My Properties</a>
                                                         <a className="dropdown-item" onClick={() => navigate('/myfavorites')}>My Favorites</a>
                                                         <a className="dropdown-item" onClick={() => navigate('/recent')}>Recent activity</a>
-                                                       
+
                                                         {/* <a className="dropdown-item" onClick={() => navigate('/reviews')}>Reviews</a> */}
 
                                                         <a className="dropdown-item" onClick={(e) => {
@@ -541,9 +541,9 @@ const Dashboard = () => {
                                         <span className="icon icon-heart"></span> My Favorites
                                     </a>
                                 </li>
-                                 <li className="nav-menu-item">
+                                <li className="nav-menu-item">
                                     <a className="nav-menu-link" href="" onClick={(e) => { e.preventDefault(); navigate('/recent'); }}>
-                                        <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i> Recent activity
+                                        <i class="fa-solid fa-clock-rotate-left" style={{ color: "#a3abb0" }}></i> Recent activity
                                     </a>
                                 </li>
                                 {/* <li className="nav-menu-item">
@@ -851,18 +851,19 @@ const Dashboard = () => {
                                                                                                 {property.title}
                                                                                             </a>
                                                                                         </div>
-                                                                                        <div className="listing-type" style={{ marginTop: "4px" }}>
-                                                                                            <span className="fw-6">Listing Type:</span>{" "}
-                                                                                            <span>{property.listing_type}</span>
-                                                                                        </div>
-                                                                                        <div className="text-date">
+                                                                                       <div className="listing-type" style={{ marginTop: "4px" }}>
+  <span className="fw-6">Listing Type:</span>{" "}
+  <span>
+    {property.listing_type
+      ? property.listing_type.trim().charAt(0).toUpperCase() + property.listing_type.trim().slice(1)
+      : ""}
+  </span>
+</div>
+
+                                                                                        <div className="text-date m-0">
                                                                                             <p className="fw-5">
-                                                                                                <span className="fw-4 text-variant-1">
-                                                                                                    Posting date:
-                                                                                                </span>{" "}
-
-
-
+                                                                                                <span className="fw-6 text-variant-1 " style={{ color: "#161E2D" }}>Posting date:</span>
+                                                                                                {" "}
                                                                                                 {property.created_at
                                                                                                     ? (() => {
                                                                                                         const d = new Date(property.created_at);
@@ -874,13 +875,16 @@ const Dashboard = () => {
                                                                                                     : "-----"}
                                                                                             </p>
                                                                                         </div>
-                                                                                        <div className="text-1 fw-7">{property.property_type}</div>
+                                                                                        <div className="text-1 fw-7">
+                                                                                            <span style={{ fontWeight: "600",fontSize:"15px" }}> Property Type: </span><span style={{ fontWeight: "400" }}>{property.property_type}</span>
+                                                                                        </div>
+
                                                                                     </div>
                                                                                 </div>
                                                                             </td>
                                                                             <td>
                                                                                 <div className="status-wrap">
-                                                                                    <span  className="btn-status">
+                                                                                    <span className="btn-status">
                                                                                         {statusLabel}
                                                                                     </span>
                                                                                 </div>

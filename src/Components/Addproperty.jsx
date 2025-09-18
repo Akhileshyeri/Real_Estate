@@ -947,19 +947,19 @@ const AddProperty = () => {
 
     });
 
-    // try {
-    //   const response = await api.post("properties/prop1", fd);
-    //   console.log("ee", response)
-    //   if (response.data.success) {
-    //     toast.success(response.data.message)
-    //     navigate("/home")
-    //   } else {
-    //     toast.error(response.data.message)
-    //   }
-    // }
-    // catch (err) {
-    //   console.log(err)
-    // }
+    try {
+      const response = await api.post("properties/prop1", fd);
+      console.log("ee", response)
+      if (response.data.success) {
+        toast.success(response.data.message)
+        navigate("/home")
+      } else {
+        toast.error(response.data.message)
+      }
+    }
+    catch (err) {
+      console.log(err)
+    }
 
   }
 
@@ -1874,27 +1874,6 @@ const AddProperty = () => {
                 <div className="form-group">
                   <label>State</label>
 
-                  {loading ? (
-                    <div style={{ height: "55px", display: "flex", alignItems: "center" }}>
-                      Loading states...
-                    </div>
-                  ) : (
-                    <select
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
-                      className="select-field"
-                      style={{ height: "55px" }}
-                    >
-                      <option value="">Select State</option>
-                      {states.map((s) => (
-                        <option key={s.id} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-
-
                   <select
                     value={state}
                     onChange={(e) => setState(e.target.value)}
@@ -1934,7 +1913,6 @@ const AddProperty = () => {
                     onChange={(e) => setLocation(e.target.value)}
                     className="input-field"
                   />
-
                 </div>
                 {/* You are? Buttons */}
 

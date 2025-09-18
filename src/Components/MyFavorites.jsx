@@ -201,7 +201,7 @@ const MyFavorites = () => {
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                                                        <ul className="navigation clearfix" style={{marginLeft:"228px"}}>
+                                                        <ul className="navigation clearfix" style={{ marginLeft: "228px" }}>
                                                             <li className="home ms-4">
                                                                 <Link to="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</Link>
                                                             </li>
@@ -259,18 +259,18 @@ const MyFavorites = () => {
                                                     <div
                                                         className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}
                                                         style={{
-                                                                position: "absolute",
-                                                                top: "100%",
-                                                                right: 0,
-                                                                zIndex: 1000,
-                                                                marginTop: "0.5rem",
-                                                                display: dropdownOpen ? "block" : "none",
-                                                                background: "#fff",
-                                                                border: "1px solid #ddd",
-                                                                borderRadius: "6px",
-                                                                boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
-                                                                minWidth: "180px",
-                                                            }}
+                                                            position: "absolute",
+                                                            top: "100%",
+                                                            right: 0,
+                                                            zIndex: 1000,
+                                                            marginTop: "0.5rem",
+                                                            display: dropdownOpen ? "block" : "none",
+                                                            background: "#fff",
+                                                            border: "1px solid #ddd",
+                                                            borderRadius: "6px",
+                                                            boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
+                                                            minWidth: "180px",
+                                                        }}
                                                     >
                                                         <Link className="dropdown-item" to="/myprofile">My Profile</Link>
                                                         <a className="dropdown-item" onClick={() => navigate("/dashboard")}>
@@ -461,9 +461,9 @@ const MyFavorites = () => {
                                         <span className="icon icon-heart"></span> My Favorites
                                     </Link>
                                 </li>
-                                  <li className="nav-menu-item">
+                                <li className="nav-menu-item">
                                     <Link className="nav-menu-link" onClick={(e) => { e.preventDefault(); navigate('/recent'); }}>
-                                         <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i> Recent activity
+                                        <i class="fa-solid fa-clock-rotate-left" style={{ color: "#a3abb0" }}></i> Recent activity
                                     </Link>
                                 </li>
                                 {/* <li className="nav-menu-item">
@@ -602,14 +602,19 @@ const MyFavorites = () => {
                                                                                 <span className="fw-6">Listing Type:</span>{" "}
                                                                                 <span>{fav.listing_type}</span>
                                                                             </div>
-                                                                            <div className="text-date">
+                                                                            <div className="text-date m-0">
+                                                                                <span className="fw-6">Location:</span>{" "}
                                                                                 {fav.location}, {fav.sub_locality}
                                                                             </div>
                                                                             <div className="text-1 fw-7">
-                                                                                {fav.listing_type === "rent"
-                                                                                    ? `₹${fav.expected_rent} / ${fav.rent_period}`
-                                                                                    : `₹${fav.expected_price}`}
+                                                                                <span style={{ fontWeight: 600 }}>Price: </span>
+                                                                                <span style={{ fontWeight: 700 }}>
+                                                                                    {fav.listing_type === "rent"
+                                                                                        ? `₹${fav.expected_rent} / ${fav.rent_period}`
+                                                                                        : `₹${fav.expected_price}`}
+                                                                                </span>
                                                                             </div>
+
                                                                         </div>
                                                                     </div>
                                                                 </td>
