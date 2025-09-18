@@ -20,6 +20,50 @@ const HomePage = () => {
 
     const [recentProperties, setRecentProperties] = useState([]);
 
+
+
+
+    const [reviews, setReviews] = useState([]);
+
+
+
+    const [bannerUrl, setBannerUrl] = useState(""); // state for dynamic banner
+    const [popupBanner, setPopupBanner] = useState(""); // state for dynamic banner
+    const [stickyBanner, setStickyBanner] = useState(""); // state for dynamic banner
+
+    const [footerBannerUrl, setFooterBannerUrl] = useState(""); // state for footer banner
+    const [offset, setOffset] = useState(307.919); // full length (hidden)
+    const [properties, setProperties] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState("View All"); // keep track of which tab is clicked
+    const navigate = useNavigate()
+    const [bannersLoading, setBannersLoading] = useState(true); // 👈 new state
+    const [showPopup, setShowPopup] = useState(false);
+
+    const [showSticky, setShowSticky] = useState(false);
+
+    const authToken = localStorage.getItem("authToken") || "Guest";
+    localStorage.setItem("authToken", authToken);
+
+
+    const [blogs, setBlogs] = useState([]);
+
+    const [page, setPage] = useState(1); // current page
+    const [hasMore, setHasMore] = useState(true); // to check if more blogs exist
+
+
+    const [priceRange, setPriceRange] = useState([0, 10000000]); // Default price range
+    const [selectedBHK, setSelectedBHK] = useState(''); // Default BHK selection
+
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [selectedBathroom, setSelectedBathroom] = useState("");
+    const [selectedBedrooms, setSelectedBedrooms] = useState("");
+
+
+    const handleOpenAdvanced = () => setShowAdvanced(true);
+    const handleCloseAdvanced = () => setShowAdvanced(false);
+
+
     const addToRecent = (property) => {
         let recent = JSON.parse(localStorage.getItem("recentProperties")) || [];
 
@@ -105,60 +149,6 @@ const HomePage = () => {
 
         setLoading(false);
     }, []);
-
-
-
-
-
-
-
-
-
-
-
-
-    const [reviews, setReviews] = useState([]);
-
-
-
-    const [bannerUrl, setBannerUrl] = useState(""); // state for dynamic banner
-    const [popupBanner, setPopupBanner] = useState(""); // state for dynamic banner
-    const [stickyBanner, setStickyBanner] = useState(""); // state for dynamic banner
-
-    const [footerBannerUrl, setFooterBannerUrl] = useState(""); // state for footer banner
-    const [offset, setOffset] = useState(307.919); // full length (hidden)
-    const [properties, setProperties] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState("View All"); // keep track of which tab is clicked
-    const navigate = useNavigate()
-    const [bannersLoading, setBannersLoading] = useState(true); // 👈 new state
-    const [showPopup, setShowPopup] = useState(false);
-
-    const [showSticky, setShowSticky] = useState(false);
-
-    const authToken = localStorage.getItem("authToken") || "Guest";
-    localStorage.setItem("authToken", authToken);
-
-
-    const [blogs, setBlogs] = useState([]);
-
-    const [page, setPage] = useState(1); // current page
-    const [hasMore, setHasMore] = useState(true); // to check if more blogs exist
-
-    console.log("image ", api.imageUrl)
-
-    const [priceRange, setPriceRange] = useState([0, 10000000]); // Default price range
-    const [selectedBHK, setSelectedBHK] = useState(''); // Default BHK selection
-
-    const [showAdvanced, setShowAdvanced] = useState(false);
-    const [selectedBathroom, setSelectedBathroom] = useState("");
-    const [selectedBedrooms, setSelectedBedrooms] = useState("");
-
-
-
-    const handleOpenAdvanced = () => setShowAdvanced(true);
-    const handleCloseAdvanced = () => setShowAdvanced(false);
-
 
 
     useEffect(() => {
@@ -443,14 +433,36 @@ const HomePage = () => {
 
 
 
+    // update whenever localStorage authToken changes (like after login)
+    useEffect(() => {
+        const checkToken = () => {
+            setAuthToken(localStorage.getItem("authToken") || "Guest");
+        };
+
+        // listen for changes across tabs/windows
+        window.addEventListener("storage", checkToken);
+
+        return () => {
+            window.removeEventListener("storage", checkToken);
+        };
+    }, []);
+
+    // 🔹 Call reviewList whenever authToken changes & is not Guest
+    useEffect(() => {
+        if (authToken && authToken !== "Guest") {
+            reviewList();
+        }
+    }, [authToken]);
+
+
     const reviewList = async () => {
         const fd = new FormData();
         fd.append("programType", "getAllInquiryDetails");
-        fd.append("authToken", localStorage.getItem("authToken"));
+        fd.append("authToken", authToken);
 
         try {
             const response = await api.post("/properties/propertyInquiry", fd);
-            console.log("ReviewDetails home", response.data);
+            console.log("ReviewDetails home", response);
 
             if (response.data.success && response.data.data) {
                 setReviews(
@@ -467,9 +479,6 @@ const HomePage = () => {
 
 
 
-    useEffect(() => {
-        reviewList();
-    }, []);
 
 
 
@@ -785,7 +794,7 @@ const HomePage = () => {
                                                                 </div>
 
 
-                                                                <div className="form-group-3 form-style" style={{marginBottom:"25px"}}>
+                                                                <div className="form-group-3 form-style" style={{ marginBottom: "25px" }}>
                                                                     <label>Type</label>
                                                                     <div className="group-select">
                                                                         <div className="nice-select" tabIndex="0">
@@ -811,7 +820,7 @@ const HomePage = () => {
                                                                     </div>
                                                                 </div>
 
-                                                                
+
 
                                                                 {/* Rent or Price Slider */}
                                                                 {selectedListingType === "rent" ? (
@@ -1142,7 +1151,7 @@ const HomePage = () => {
                                                                         <span className="flag-tag style-2">{item.type}</span>
                                                                     </div>
                                                                 </a>
-                                                                <div className="content">
+                                                                <div className="content" style={{ background: "#fff" }}>
                                                                     <div className="h7 text-capitalize fw-7">
                                                                         <a
                                                                             onClick={() => {
@@ -1400,7 +1409,8 @@ const HomePage = () => {
                             >
                                 <div className="tab-content" style={{ marginTop: "50px" }}>
                                     <div className="tab-pane fade active show" role="tabpanel">
-                                        <div className="row">
+                                        <div className={`row ${recentProperties.length <= 2 && !loading ? "justify-content-center" : ""
+                                            }`}>
                                             {loading ? (
                                                 // 🔹 Skeleton Loader (same as home page)
                                                 [...Array(6)].map((_, i) => (
@@ -1485,7 +1495,7 @@ const HomePage = () => {
                                                                 </a>
 
                                                                 {/* Content section */}
-                                                                <div className="content">
+                                                                <div className="content" style={{ background: "#fff" }}>
                                                                     <div className="h7 text-capitalize fw-7">
                                                                         <a
                                                                             onClick={() => {

@@ -19,15 +19,23 @@ const Header = ({ showSearch }) => {
   const [selectedOption, setSelectedOption] = useState("Rent");
   const [showSearchAnimated, setShowSearchAnimated] = useState(false);
 
+  const [loginWithEmail, setLoginWithEmail] = useState(false);
+  const [email, setEmail] = useState("");
+
+  const [requireMobile, setRequireMobile] = useState(false);
+  const [fallbackMobile, setFallbackMobile] = useState("");
+
+
+
 
 
 
   const dropdownRef = useRef(null);
 
   const handleOptionSelect = (option) => {
-  setSelectedOption(option);
-  setDropdownOpen(false);
-};;
+    setSelectedOption(option);
+    setDropdownOpen(false);
+  };;
 
   // ✅ Close dropdown on outside click
   useEffect(() => {
@@ -123,7 +131,7 @@ const Header = ({ showSearch }) => {
     }
   }, [menuVisible]);
 
- const menuItems = [
+  const menuItems = [
     { label: "Home", className: "home", onClick: () => navigate("/home") },
     { label: "Properties", className: "listing", onClick: () => navigate("/listing") },
 
@@ -212,30 +220,59 @@ const Header = ({ showSearch }) => {
   // ---- Send OTP API ----
   const sendOtp = async () => {
     const fd = new FormData();
-    fd.append("programType", "customerRegister");
-    fd.append("username", countryCode + phoneNumber);
-    fd.append("country", "india");
+
+    if (requireMobile) {
+      // user already asked to enter mobile separately
+      fd.append("programType", "customerRegisterWithEmail");
+      fd.append("username", email);
+      fd.append("mobileNo", countryCode + fallbackMobile); // 👈 append as mobileNo
+      fd.append("country", "india");
+    } else if (loginWithEmail) {
+      fd.append("programType", "customerRegisterWithEmail");
+      fd.append("username", email);
+      fd.append("country", "india");
+    } else {
+      fd.append("programType", "customerRegister");
+      fd.append("username", countryCode + phoneNumber);
+      fd.append("country", "india");
+    }
+
+
+
+    console.log("Submitting form data:");
+    for (let pair of fd.entries()) {
+      console.log(pair[0], pair[1]); // Logs each key-value pair
+    }
+
 
     try {
       const response = await api.post("/customers/customer", fd);
       console.log("OTP Sent:", response);
+
       if (response.data.success) {
         setOtpSent(response.data.data.otp);
         setShowOtpModal(true);
-        toast.success(response.data.message)
+        setShowRegister(false)
+        
+        toast.success(response.data.message);
+      } else if (response.data.message === "Please Enter Mobile No") {
+        // ✅ Ask user for phone number
+        setRequireMobile(true);
+        toast.error("Please enter your mobile number to continue.");
       }
-
     } catch (error) {
       console.error("Error sending OTP:", error);
-      alert("Failed to send OTP. Please try again.");
+      toast.error("Failed to send OTP. Please try again.");
     }
   };
+
+
 
   // ---- Verify OTP API ----
   const verifyOtp = async () => {
     const enteredOtp = otp.join("");
     if (enteredOtp.length < 4) {
-      alert("Please enter the full 4-digit OTP");
+      toast.error("Please enter the full 4-digit OTP");
       return;
     }
 
@@ -268,11 +305,12 @@ const Header = ({ showSearch }) => {
         setIsLoggedIn(true);   // ✅ mark user logged in
         setShowOtpModal(false);
         setShowRegister(false);
+        resetFormFields();
         navigate("/home");
       }
     } catch (error) {
       console.error("Error verifying OTP:", error);
-      alert("Failed to verify OTP. Please try again.");
+      toast.error("Failed to verify OTP. Please try again.");
     } finally {
       setLoadingButton(prev => ({ ...prev, verifyOtp: false }));
     }
@@ -293,11 +331,11 @@ const Header = ({ showSearch }) => {
         toast.success(response.data.message)
         setShowOtpModal(true); // keep OTP modal open
       } else {
-        alert(response.data?.message || "Failed to resend OTP");
+        toast.error(response.data?.message || "Failed to resend OTP");
       }
     } catch (error) {
       console.error("Error resending OTP:", error);
-      alert("Failed to resend OTP. Please try again.");
+      toast.error("Failed to resend OTP. Please try again.");
     }
   };
 
@@ -319,13 +357,23 @@ const Header = ({ showSearch }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!agreedToTerms) {
-      alert("Please agree to Terms and Conditions");
+      toast.error("Please agree to Terms and Conditions");
       return;
     }
-    if (!phoneNumber) {
-      alert("Phone number is required");
+
+     if (loginWithEmail) {
+    // ✅ Email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      toast.error("Please enter your Email Address");
       return;
     }
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid Email Address");
+      return;
+    }
+  }
+
 
     setLoadingButton(prev => ({ ...prev, continue: true }));
 
@@ -335,6 +383,17 @@ const Header = ({ showSearch }) => {
       setLoadingButton(prev => ({ ...prev, continue: false }));
     }
   };
+  const resetFormFields = () => {
+    setLoginWithEmail(false);
+    setEmail("");
+    setPhoneNumber("");
+    setFallbackMobile("");
+    setOtp(["", "", "", ""]);
+    setRequireMobile(false);
+    setAgreedToTerms(false);
+    setOtpSent("");
+    setAgentOtp("");
+  };
 
 
 
@@ -342,11 +401,11 @@ const Header = ({ showSearch }) => {
   const handleAgent = async (e) => {
     e.preventDefault();
     if (!agreedToTerms) {
-      alert("Please agree to Terms and Conditions");
+      toast.error("Please agree to Terms and Conditions");
       return;
     }
     if (!phoneNumber) {
-      alert("Phone number is required");
+      toast.error("Phone number is required");
       return;
     }
 
@@ -374,7 +433,7 @@ const Header = ({ showSearch }) => {
     const enteredOtp = otp.join(""); // combine the 4 digits
 
     if (enteredOtp.length < 4) {
-      alert("Please enter complete OTP");
+      toast.error("Please enter complete OTP");
       return;
     }
 
@@ -390,11 +449,11 @@ const Header = ({ showSearch }) => {
         navigate("/home"); // ✅ redirect to home
       } else {
         setLoading(false);
-        alert(result.message || "Invalid OTP, try again");
+        toast.error(result.message || "Invalid OTP, try again");
       }
     } catch (err) {
       setLoading(false);
-      alert("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
@@ -465,7 +524,7 @@ const Header = ({ showSearch }) => {
 
     } catch (error) {
       console.error('agent error:', error);
-      alert("Failed to send OTP. Please try again.");
+      toast.error("Failed to send OTP. Please try again.");
     }
   };
 
@@ -510,11 +569,11 @@ const Header = ({ showSearch }) => {
         // ✅ Navigate to home page
         navigate("/home");
       } else {
-        alert(response.data.message || "OTP verification failed");
+        toast.error(response.data.message || "OTP verification failed");
       }
     } catch (error) {
       console.error("agent verify error:", error);
-      alert("Something went wrong, please try again.");
+      toast.error("Something went wrong, please try again.");
     } finally {
       setLoadingButton((prev) => ({ ...prev, verifyOtp: false }));
     }
@@ -711,7 +770,7 @@ const Header = ({ showSearch }) => {
                             className="dropdown-slider-display"
                             onClick={() => setDropdownOpen(!dropdownOpen)} style={{ height: "10px", }}
                           >
-                            <span style={{fontWeight: "bold"}}>{selectedOption}</span>
+                            <span style={{ fontWeight: "bold" }}>{selectedOption}</span>
                             <img
                               src={Arrow}
                               alt="dropdown icon"
@@ -768,60 +827,60 @@ const Header = ({ showSearch }) => {
                   <div className="nav-outer">
                     <nav className="main-menu show navbar-expand-md">
                       <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                       <ul className="navigation clearfix">
-      {menuItems.map((item, index) => (
-        <li
-          key={index}
-          className={`${item.className || ""} ${activeDropdown === index ? "open" : ""}`}
-          onClick={(e) => {
-            if (item.submenu) {
-              e.preventDefault();
-              handleDropdownClick(index);
-            } else if (item.onClick) {
-              item.onClick();
-            }
-          }}
-          onMouseEnter={() => {
-            if (!isMobileView && item.submenu) {
-              setActiveDropdown(index);
-            }
-          }}
-          onMouseLeave={() => {
-            if (!isMobileView && item.submenu) {
-              setActiveDropdown(null);
-            }
-          }}
-        >
-          <a href="#" onClick={(e) => e.preventDefault()}>
-            {item.label}
-          </a>
+                        <ul className="navigation clearfix ss">
+                          {menuItems.map((item, index) => (
+                            <li
+                              key={index}
+                              className={`${item.className || ""} ${activeDropdown === index ? "open" : ""}`}
+                              onClick={(e) => {
+                                if (item.submenu) {
+                                  e.preventDefault();
+                                  handleDropdownClick(index);
+                                } else if (item.onClick) {
+                                  item.onClick();
+                                }
+                              }}
+                              onMouseEnter={() => {
+                                if (!isMobileView && item.submenu) {
+                                  setActiveDropdown(index);
+                                }
+                              }}
+                              onMouseLeave={() => {
+                                if (!isMobileView && item.submenu) {
+                                  setActiveDropdown(null);
+                                }
+                              }}
+                            >
+                              <a href="#" onClick={(e) => e.preventDefault()}>
+                                {item.label}
+                              </a>
 
-          {item.submenu && (
-            <ul style={{ display: activeDropdown === index ? "block" : "none" }}>
-              {item.submenu
-                // ✅ Hide current active page from dropdown
-                .filter(
-                  (sub) =>
-                    sub.path && location.pathname.toLowerCase() !== sub.path.toLowerCase()
-                )
-                .map((sub, i) => (
-                  <li key={i}>
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (sub.onClick) sub.onClick();
-                      }}
-                    >
-                      {sub.text}
-                    </a>
-                  </li>
-                ))}
-            </ul>
-          )}
-        </li>
-      ))}
-    </ul>
+                              {item.submenu && (
+                                <ul style={{ display: activeDropdown === index ? "block" : "none" }}>
+                                  {item.submenu
+                                    // ✅ Hide current active page from dropdown
+                                    .filter(
+                                      (sub) =>
+                                        sub.path && location.pathname.toLowerCase() !== sub.path.toLowerCase()
+                                    )
+                                    .map((sub, i) => (
+                                      <li key={i}>
+                                        <a
+                                          href="#"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            if (sub.onClick) sub.onClick();
+                                          }}
+                                        >
+                                          {sub.text}
+                                        </a>
+                                      </li>
+                                    ))}
+                                </ul>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </nav>
                   </div>
@@ -838,12 +897,12 @@ const Header = ({ showSearch }) => {
                   {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
                     <>
                       {/* Login/Register */}
-                      <div className="register" style={{ marginTop: showSearch ? "9px" : "0px"}}>
+                      <div className="register" style={{ marginTop: showSearch ? "9px" : "0px" }}>
                         <ul className="d-flex">
                           <li>
                             <a
                               href="#"
-                               style={{ margin: "0px 10px 0px 10px" }}
+                              style={{ margin: "0px 10px 0px 10px" }}
                               onClick={(e) => {
                                 e.preventDefault();
                                 setShowRegister(true);
@@ -856,7 +915,7 @@ const Header = ({ showSearch }) => {
                       </div>
 
                       {/* Add property button */}
-                      <div className="flat-bt-top"  style={{ marginTop: showSearch ? "9px" : "0px"}}>
+                      <div className="flat-bt-top" style={{ marginTop: showSearch ? "9px" : "0px" }}>
                         <a
                           className="tf-btn primary"
                           href="#"
@@ -864,7 +923,7 @@ const Header = ({ showSearch }) => {
                             e.preventDefault();
                             setShowRegister(true); // Open login modal if not logged in
                           }}
-                         
+
                         >
                           Add property
                         </a>
@@ -1461,7 +1520,10 @@ const Header = ({ showSearch }) => {
         }}>
           <div style={containerStyle}>
             <button
-              onClick={() => setShowRegister(false)}
+              onClick={() => {
+                resetFormFields();
+                setShowRegister(false)
+              }}
               style={{
                 position: "absolute",
                 top: "10px",
@@ -1474,83 +1536,246 @@ const Header = ({ showSearch }) => {
             >×</button>
 
             <h1 style={{ marginBottom: "1px", fontSize: "25px" }}>Login / Register</h1>
-            <p style={{ marginBottom: "10px" }}>Please enter your Phone Number</p>
+            <label style={{ marginBottom: "10px" }}>
+              {loginWithEmail ? "Please enter your Email Address" : "Please enter your Phone Number"}
+            </label>
+
             <form onSubmit={handleSubmit}>
               <div style={{ display: "flex", marginBottom: "20px" }}>
-                {/* Country Selector - merged with input */}
-                <div
-                  ref={countryDropdownRef}
-                  style={{
-                    width: "80px",
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "0 10px",
-                    border: "1px solid #ddd",
-                    borderRight: "none",
-                    borderRadius: "5px 0 0 5px",
-                    backgroundColor: "#f9f9f9",
-                    cursor: "pointer",
-                    position: "relative"
-                  }}
-                  onClick={() => setShowCountryDropdown(prev => !prev)}
-                >
-                  <img
-                    src={countryCodes.find(c => c.code === countryCode)?.flag}
-                    alt=""
-                    style={{ width: "20px", height: "14px", marginRight: "6px" }}
-                  />
-                  <span>{countryCode}</span>
+                {/* Phone or Email input */}
 
-                  {showCountryDropdown && (
-                    <div style={{
-                      position: "absolute",
-                      top: "100%",
-                      left: 0,
-                      right: 0,
-                      background: "#fff",
-                      border: "1px solid #ddd",
-                      borderRadius: "0 0 5px 5px",
-                      zIndex: 10
-                    }}>
-                      {countryCodes.map((item, idx) => (
-                        <div key={idx}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCountryCode(item.code);
-                            setShowCountryDropdown(false);
-                          }}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            padding: "8px 10px",
-                            cursor: "pointer",
-                            background: countryCode === item.code ? "#f0f0f0" : "transparent"
-                          }}
-                        >
-                          <img src={item.flag} alt="" style={{ width: "20px", height: "14px", marginRight: "6px" }} />
-                          <span>{item.code}</span>
-                        </div>
-                      ))}
+                {!loginWithEmail ? (
+                  <div style={{ width: "100%", marginBottom: "20px" }}>
+                    <div style={{ display: "flex" }}>
+                      {/* Country Selector */}
+                      <div
+                        ref={countryDropdownRef}
+                        style={{
+                          width: "80px",
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "0 10px",
+                          border: "1px solid #ddd",
+                          borderRight: "none",
+                          borderRadius: "5px 0 0 5px",
+                          backgroundColor: "#f9f9f9",
+                          cursor: "pointer",
+                          position: "relative"
+                        }}
+                        onClick={() => setShowCountryDropdown(prev => !prev)}
+                      >
+                        <img
+                          src={countryCodes.find(c => c.code === countryCode)?.flag}
+                          alt=""
+                          style={{ width: "20px", height: "14px", marginRight: "6px" }}
+                        />
+                        <span>{countryCode}</span>
+                        {showCountryDropdown && (
+                          <div style={{
+                            position: "absolute",
+                            top: "100%",
+                            left: 0,
+                            right: 0,
+                            background: "#fff",
+                            border: "1px solid #ddd",
+                            borderRadius: "0 0 5px 5px",
+                            zIndex: 10
+                          }}>
+                            {countryCodes.map((item, idx) => (
+                              <div
+                                key={idx}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCountryCode(item.code);
+                                  setShowCountryDropdown(false);
+                                }}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  padding: "8px 10px",
+                                  cursor: "pointer",
+                                  background: countryCode === item.code ? "#f0f0f0" : "transparent"
+                                }}
+                              >
+                                <img src={item.flag} alt="" style={{ width: "20px", height: "14px", marginRight: "6px" }} />
+                                <span>{item.code}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Phone input */}
+                      <input
+                        type="tel"
+                        style={{
+                          flex: 1,
+                          padding: "12px 15px",
+                          border: "1px solid #ddd",
+                          borderLeft: "none",
+                          borderRadius: "0 5px 5px 0",
+                          backgroundColor: "#f9f9f9"
+                        }}
+                        placeholder="Enter phone number"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ""))}
+                      />
                     </div>
-                  )}
-                </div>
 
-                {/* Phone input */}
-                <input
-                  type="tel"
-                  style={{
-                    flex: 1,
-                    padding: "12px 15px",
-                    border: "1px solid #ddd",
-                    borderLeft: "none",
-                    borderRadius: "0 5px 5px 0",
-                    backgroundColor: "#f9f9f9"
-                  }}
-                  placeholder="Enter phone number"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9]/g, ""))}
-                />
+                    {/* Toggle link aligned right */}
+                    <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "5px" }}>
+                      <label
+                        onClick={() => setLoginWithEmail(!loginWithEmail)}
+                        style={{
+                          cursor: "pointer",
+                          color: "#000",
+                          fontSize: "13px",
+                          textDecoration: "none"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.textDecoration = "underline";
+                          e.target.style.textDecorationColor = "red";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.textDecoration = "none";
+                        }}
+                      >
+                        Login with Email instead
+                      </label>
+                    </div>
+
+
+                  </div>
+                ) : (
+                  <div style={{ width: "100%", marginBottom: "20px" }}>
+                    <input
+                      type="text"
+                      style={{
+                        width: "100%",
+                        padding: "12px 15px",
+                        border: "1px solid #ddd",
+                        borderRadius: "5px",
+                        backgroundColor: "#f9f9f9"
+                      }}
+                      placeholder="Enter email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+
+                    {loginWithEmail && requireMobile && (
+                      <div style={{ width: "100%", marginTop: "10px" }}>
+                        <div style={{ display: "flex" }}>
+                          {/* Country Selector (reused) */}
+                          <div
+                            ref={countryDropdownRef}
+                            style={{
+                              width: "80px",
+                              display: "flex",
+                              alignItems: "center",
+                              padding: "0 10px",
+                              border: "1px solid #ddd",
+                              borderRight: "none",
+                              borderRadius: "5px 0 0 5px",
+                              backgroundColor: "#f9f9f9",
+                              cursor: "pointer",
+                              position: "relative"
+                            }}
+                            onClick={() => setShowCountryDropdown(prev => !prev)}
+                          >
+                            <img
+                              src={countryCodes.find(c => c.code === countryCode)?.flag}
+                              alt=""
+                              style={{ width: "20px", height: "14px", marginRight: "6px" }}
+                            />
+                            <span>{countryCode}</span>
+                            {showCountryDropdown && (
+                              <div style={{
+                                position: "absolute",
+                                top: "100%",
+                                left: 0,
+                                right: 0,
+                                background: "#fff",
+                                border: "1px solid #ddd",
+                                borderRadius: "0 0 5px 5px",
+                                zIndex: 10
+                              }}>
+                                {countryCodes.map((item, idx) => (
+                                  <div
+                                    key={idx}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setCountryCode(item.code);
+                                      setShowCountryDropdown(false);
+                                    }}
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      padding: "8px 10px",
+                                      cursor: "pointer",
+                                      background: countryCode === item.code ? "#f0f0f0" : "transparent"
+                                    }}
+                                  >
+                                    <img src={item.flag} alt="" style={{ width: "20px", height: "14px", marginRight: "6px" }} />
+                                    <span>{item.code}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Fallback Phone input */}
+                          <input
+                            type="tel"
+                            style={{
+                              flex: 1,
+                              padding: "12px 15px",
+                              border: "1px solid #ddd",
+                              borderLeft: "none",
+                              borderRadius: "0 5px 5px 0",
+                              backgroundColor: "#f9f9f9"
+                            }}
+                            placeholder="Enter phone number"
+                            value={fallbackMobile}
+                            onChange={(e) => setFallbackMobile(e.target.value.replace(/[^0-9]/g, ""))}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+
+                    {/* Toggle link aligned right */}
+                    <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "5px" }}>
+                      <label
+                        onClick={() => setLoginWithEmail(!loginWithEmail)}
+                        style={{
+                          cursor: "pointer",
+                          color: "#000",
+                          fontSize: "13px",
+                          textDecoration: "none"
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.textDecoration = "underline";
+                          e.target.style.textDecorationColor = "red";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.textDecoration = "none";
+                        }}
+                      >
+                        Login with Phone instead
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+
+
+
+
               </div>
+
+
+
+
 
               <label style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
                 <input
@@ -1615,6 +1840,7 @@ const Header = ({ showSearch }) => {
             <button
               onClick={() => {
                 setShowOtpModal(false);
+
                 setShowRegister(false);
               }}
               style={{
@@ -1633,9 +1859,22 @@ const Header = ({ showSearch }) => {
             <h2 style={{ fontSize: "25px" }}>Verify your number</h2>
 
             {/* Number + Edit link */}
+            {/* Number/Email + Edit link */}
             <p style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              {countryCode}
-              {phoneNumber}
+              {loginWithEmail ? (
+                requireMobile && fallbackMobile ? (
+                  <>
+                    {countryCode}{fallbackMobile}
+                  </>
+                ) : (
+                  <>{email}</>
+                )
+              ) : (
+                <>
+                  {countryCode}{phoneNumber}
+                </>
+              )}
+
               <span
                 style={{
                   fontSize: "14px",
@@ -1651,6 +1890,7 @@ const Header = ({ showSearch }) => {
                 Edit
               </span>
             </p>
+
             {otpSent && (
               <p style={{ fontSize: "16px", color: "#ED2027", marginTop: "6px" }}>
                 {otpSent}

@@ -765,8 +765,8 @@ const AddProperty = () => {
     fd.append("possessionBy", possessionBy);
 
 
-    fd.append('city', city);
-    fd.append('location', location);
+    fd.append('city', location);
+    fd.append('location', state);
     fd.append('subLocality', subLocality);
     fd.append('apartment', apartment);
     fd.append('houseNo', houseNo);
