@@ -14,6 +14,8 @@ const Listing = () => {
     const { search, state: navState } = useLocation(); // 👈 navState comes from navigate
     const [limit, setLimit] = useState(10);
 
+    const [searchCity, setSearchCity] = useState("");
+
 
     const [properties, setProperties] = useState([]);
     const [page, setPage] = useState(1);
@@ -135,6 +137,9 @@ const Listing = () => {
         fd.append("authToken", localStorage.getItem("authToken"));
         fd.append("page", pageNumber);
         fd.append("limit", limit);
+        fd.append("state", selectedState);
+
+        console.log(selectedState);
 
         const appliedFilters = filters || {
             listingType: selectedListingType,
@@ -143,6 +148,7 @@ const Listing = () => {
             bathrooms: selectedBathroom,
             bedrooms: selectedBedroom,
             city: selectedCity,
+            city: searchCity, 
             priceRange,
             rentRange
         };
@@ -154,6 +160,14 @@ const Listing = () => {
         if (appliedFilters.bhk) fd.append("apartment_bhk", appliedFilters.bhk);
         if (appliedFilters.bedrooms) fd.append("bedrooms", appliedFilters.bedrooms);
 
+        // ✅ Add country dynamically
+        const countryCode = localStorage.getItem("country");
+        if (countryCode === "101") {
+            fd.append("country", "India");
+        } else if (countryCode === "229") {
+            fd.append("country", "Dubai");
+        }
+
         if (appliedFilters.listingType === "rent" && appliedFilters.rentRange) {
             fd.append("priceStart", appliedFilters.rentRange[0]);
             fd.append("priceEnd", appliedFilters.rentRange[1]);
@@ -162,18 +176,15 @@ const Listing = () => {
             fd.append("priceEnd", appliedFilters.priceRange[1]);
         }
 
-
         console.log("Submitting form data:");
         for (let pair of fd.entries()) {
             console.log(pair[0], pair[1]); // Logs each key-value pair
         }
 
-
-
         try {
             const response = await api.post("/properties/property", fd);
+            console.log(response);
 
-            console.log(response)
             const { properties, page, limit } = response.data.data;
             const mapped = properties.map((item) => {
                 let priceValue = "N/A";
@@ -190,7 +201,6 @@ const Listing = () => {
                         : "N/A";
                 }
 
-                // dynamically prepare meta info
                 const metaInfo = [];
                 if (item.bedrooms) {
                     metaInfo.push({ icon: "icon-bed", label: `${item.bedrooms} Beds` });
@@ -224,11 +234,9 @@ const Listing = () => {
 
             setProperties(mapped);
 
-            // if API provides total count, compute totalPages
             if (response.data.data.total) {
                 setTotalPages(Math.ceil(response.data.data.total / limit));
             } else {
-                // fallback: stop if less results than limit
                 setTotalPages(mapped.length < limit ? page : page + 1);
             }
         } catch (error) {
@@ -237,6 +245,7 @@ const Listing = () => {
             setLoading(false);
         }
     };
+
 
     // Property types for filtering
     const propertyTypes = [
@@ -284,6 +293,7 @@ const Listing = () => {
         fd.append("programType", "getStateListOnChangeOfCountry");
         fd.append("authToken", localStorage.getItem("authToken"));
         fd.append("country", localStorage.getItem("country"));
+
 
         try {
             const response = await api.post("properties/preRequirements", fd);
@@ -390,10 +400,7 @@ const Listing = () => {
                                                 <form method="post">
                                                     <div className="wd-filter-select">
                                                         <div className="inner-group inner-filter">
-                                                            {/* <div className="form-style">
-                                                                <label className="title-select">Keyword</label>
-                                                                <input type="text" className="form-control" placeholder="Search Keyword." required="" />
-                                                            </div> */}
+
                                                             {/* <div className="form-group-2 form-style">
                                                                 <label>Location</label>
                                                                 <div className="group-select">
@@ -428,6 +435,17 @@ const Listing = () => {
                                                                 </Select>
 
                                                             </div>
+                                                            <div className="form-style">
+                                                                <label className="title-select">Search City</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control"
+                                                                    placeholder="Search city"
+                                                                    value={searchCity}
+                                                                    onChange={(e) => setSearchCity(e.target.value)}
+                                                                />
+                                                            </div>
+
 
 
                                                             <div className="form-style">
