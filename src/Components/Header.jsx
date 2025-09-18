@@ -25,15 +25,9 @@ const Header = ({ showSearch }) => {
   const dropdownRef = useRef(null);
 
   const handleOptionSelect = (option) => {
-    setSelectedOption(option);
-    setDropdownOpen(false);
-
-    // Update the hidden select value
-    const select = document.querySelector('.hidden-select');
-    if (select) {
-      select.value = option;
-    }
-  };
+  setSelectedOption(option);
+  setDropdownOpen(false);
+};;
 
   // ✅ Close dropdown on outside click
   useEffect(() => {
@@ -129,23 +123,23 @@ const Header = ({ showSearch }) => {
     }
   }, [menuVisible]);
 
-  const menuItems = [
-    { label: 'Home', className: 'home', onClick: () => navigate('/home') },
-    { label: 'Properties', className: 'listing', onClick: () => navigate('/listing') },
+ const menuItems = [
+    { label: "Home", className: "home", onClick: () => navigate("/home") },
+    { label: "Properties", className: "listing", onClick: () => navigate("/listing") },
 
     {
-      label: 'Pages', className: 'dropdown2',
+      label: "Pages",
+      className: "dropdown2",
       submenu: [
-        { text: 'About Us', onClick: () => navigate('/aboutus') },
-        { text: 'Contact Us', onClick: () => navigate('/contactus') },
-        { text: 'FAQs', onClick: () => navigate('/FAQ') },
-        { text: 'Privacy Policy', onClick: () => navigate('/Privacy-Policy') },
-        { text: 'Blogs', onClick: () => navigate('/blogs') },
-      ]
+        { text: "About Us", path: "/aboutus", onClick: () => navigate("/aboutus") },
+        { text: "Contact Us", path: "/contactus", onClick: () => navigate("/contactus") },
+        { text: "FAQs", path: "/faq", onClick: () => navigate("/faq") },
+        { text: "Privacy Policy", path: "/privacy-policy", onClick: () => navigate("/privacy-policy") },
+        { text: "Blogs", path: "/blogs", onClick: () => navigate("/blogs") },
+      ],
     },
     // { label: 'My Profile', className: 'myprofile', onClick: () => navigate('/myprofile') }
   ];
-
   // ---------------- Register Form States ----------------
   const [phoneNumber, setPhoneNumber] = useState("");
   const [countryCode, setCountryCode] = useState("+91");
@@ -717,7 +711,7 @@ const Header = ({ showSearch }) => {
                             className="dropdown-slider-display"
                             onClick={() => setDropdownOpen(!dropdownOpen)} style={{ height: "10px", }}
                           >
-                            <span>{selectedOption}</span>
+                            <span style={{fontWeight: "bold"}}>{selectedOption}</span>
                             <img
                               src={Arrow}
                               alt="dropdown icon"
@@ -745,7 +739,7 @@ const Header = ({ showSearch }) => {
                           </div>
 
                           {/* Hidden select for form submission if needed */}
-                          <select className="hidden-select" defaultValue="Rent">
+                          <select className="hidden-select" value={selectedOption} readOnly>
                             <option value="Rent">Rent</option>
                             <option value="Sale">Sale</option>
                             <option value="Joint Venture">Joint Venture</option>
@@ -774,53 +768,60 @@ const Header = ({ showSearch }) => {
                   <div className="nav-outer">
                     <nav className="main-menu show navbar-expand-md">
                       <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                        <ul className="navigation clearfix">
-                          {menuItems.map((item, index) => (
-                            <li
-                              key={index}
-                              className={`${item.className || ''} ${activeDropdown === index ? 'open' : ''}`}
-                              onClick={(e) => {
-                                if (item.submenu) {
-                                  e.preventDefault();
-                                  handleDropdownClick(index);
-                                } else if (item.onClick) {
-                                  item.onClick();
-                                }
-                              }}
-                              onMouseEnter={() => {
-                                if (!isMobileView && item.submenu) {
-                                  setActiveDropdown(index);
-                                }
-                              }}
-                              onMouseLeave={() => {
-                                if (!isMobileView && item.submenu) {
-                                  setActiveDropdown(null);
-                                }
-                              }}
-                            >
-                              <a href="#" onClick={(e) => e.preventDefault()}>
-                                {item.label}
-                              </a>
-                              {item.submenu && (
-                                <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
-                                  {item.submenu.map((sub, i) => (
-                                    <li key={i}>
-                                      <a
-                                        href="#"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          if (sub.onClick) sub.onClick();
-                                        }}
-                                      >
-                                        {sub.text}
-                                      </a>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
+                       <ul className="navigation clearfix">
+      {menuItems.map((item, index) => (
+        <li
+          key={index}
+          className={`${item.className || ""} ${activeDropdown === index ? "open" : ""}`}
+          onClick={(e) => {
+            if (item.submenu) {
+              e.preventDefault();
+              handleDropdownClick(index);
+            } else if (item.onClick) {
+              item.onClick();
+            }
+          }}
+          onMouseEnter={() => {
+            if (!isMobileView && item.submenu) {
+              setActiveDropdown(index);
+            }
+          }}
+          onMouseLeave={() => {
+            if (!isMobileView && item.submenu) {
+              setActiveDropdown(null);
+            }
+          }}
+        >
+          <a href="#" onClick={(e) => e.preventDefault()}>
+            {item.label}
+          </a>
+
+          {item.submenu && (
+            <ul style={{ display: activeDropdown === index ? "block" : "none" }}>
+              {item.submenu
+                // ✅ Hide current active page from dropdown
+                .filter(
+                  (sub) =>
+                    sub.path && location.pathname.toLowerCase() !== sub.path.toLowerCase()
+                )
+                .map((sub, i) => (
+                  <li key={i}>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (sub.onClick) sub.onClick();
+                      }}
+                    >
+                      {sub.text}
+                    </a>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
                       </div>
                     </nav>
                   </div>
@@ -1340,14 +1341,13 @@ const Header = ({ showSearch }) => {
                           )}
                         </div>
 
-
                         <div className="menu-outer">
                           <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
                             <ul className="navigation clearfix">
                               {menuItems.map((item, index) => (
                                 <li
                                   key={index}
-                                  className={`${item.className || ''} ${activeDropdown === index ? 'open' : ''}`}
+                                  className={`${item.className || ""} ${activeDropdown === index ? "open" : ""}`}
                                   onClick={() => {
                                     if (item.submenu) {
                                       handleDropdownClick(index);
@@ -1360,24 +1360,28 @@ const Header = ({ showSearch }) => {
                                   <a href="#" onClick={(e) => e.preventDefault()}>
                                     {item.label}
                                   </a>
+
                                   {item.submenu && (
-                                    <ul style={{ display: activeDropdown === index ? 'block' : 'none' }}>
-                                      {item.submenu.map((sub, i) => (
-                                        <li key={i}>
-                                          <a
-                                            href="#"
-                                            onClick={(e) => {
-                                              e.preventDefault();
-                                              if (sub.onClick) {
-                                                sub.onClick();
-                                                toggleMobileMenu();
-                                              }
-                                            }}
-                                          >
-                                            {sub.text}
-                                          </a>
-                                        </li>
-                                      ))}
+                                    <ul style={{ display: activeDropdown === index ? "block" : "none" }}>
+                                      {item.submenu
+                                        // ✅ Hide current active page from submenu
+                                        .filter((sub) => location.pathname.toLowerCase() !== sub.path.toLowerCase())
+                                        .map((sub, i) => (
+                                          <li key={i}>
+                                            <a
+                                              href="#"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                if (sub.onClick) {
+                                                  sub.onClick();
+                                                  toggleMobileMenu();
+                                                }
+                                              }}
+                                            >
+                                              {sub.text}
+                                            </a>
+                                          </li>
+                                        ))}
                                     </ul>
                                   )}
                                 </li>

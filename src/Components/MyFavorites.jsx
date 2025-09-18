@@ -95,7 +95,7 @@ const MyFavorites = () => {
                 { text: 'Dashboard', onClick: () => navigate('/dashboard') },
 
                 { text: 'My Properties', onClick: () => navigate('/myproperties') },
-                { text: 'Recent Properties', onClick: () => navigate('/recent') },
+                { text: 'Recent activity', onClick: () => navigate('/recent') },
                 // { text: 'Reviews', onClick: () => navigate('/reviews') },
             ]
         },
@@ -201,7 +201,7 @@ const MyFavorites = () => {
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                                                        <ul className="navigation clearfix">
+                                                        <ul className="navigation clearfix" style={{marginLeft:"228px"}}>
                                                             <li className="home ms-4">
                                                                 <Link to="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</Link>
                                                             </li>
@@ -278,7 +278,7 @@ const MyFavorites = () => {
                                                         </a>
                                                         <Link className="dropdown-item" to="/myproperties">My Properties</Link>
 
-                                                        <Link className="dropdown-item" to="/recent">Recent Properties</Link>
+                                                        <Link className="dropdown-item" to="/recent">Recent activity</Link>
 
 
                                                         {/* <Link className="dropdown-item" to="/reviews">Reviews</Link> */}
@@ -463,7 +463,7 @@ const MyFavorites = () => {
                                 </li>
                                   <li className="nav-menu-item">
                                     <Link className="nav-menu-link" onClick={(e) => { e.preventDefault(); navigate('/recent'); }}>
-                                         <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i> Recent Properties
+                                         <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i> Recent activity
                                     </Link>
                                 </li>
                                 {/* <li className="nav-menu-item">

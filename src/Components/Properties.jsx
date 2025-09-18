@@ -619,36 +619,27 @@ const Properties = () => {
                 <div className="container">
                     {/* Header */}
                     <div className="header-property-detail">
-                        <div className="content-top d-flex justify-content-between align-items-center">
-                            <div className="box-name">
-                                {/* <a href="#" className="flag-tag primary">
-                                    {propertyData.property.status === 1 ? "Active" : "Inactive"}
-                                </a> */}
-                                <span
-                                    className="flag-tag primary"
-                                    style={{ marginLeft: "5px" }}
-                                >
-                                    {propertyData.property.listing_type}
-                                </span>
-                                <h4 className="title link">{propertyData.property.title}</h4>
-                                {isPlot && <span className="badge bg-secondary ms-2">Plot</span>}
-                            </div>
-                            <div className="box-price d-flex align-items-center">
-                                {propertyData.property.listing_type === "sale" ? (
-                                    <>
-                                        <h4>{formatCurrency(propertyData.pricing.expected_price)}</h4>
-                                        <span className="body-1 text-variant-1"></span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <h4>{formatCurrency(propertyData.pricing.expected_rent)}</h4>
-                                        <span className="body-1 text-variant-1">/month</span>
-                                    </>
-                                )}
-                            </div>
+                        <div className="box-name">
+                            <span
+                                className="flag-tag primary"
+                                style={{ marginLeft: "5px" }}
+                            >
+                                {propertyData.property.listing_type}
+                            </span>
+                            <h4 className="title link"style={{marginTop:"20px"}}>{propertyData.property.title}</h4>
+                            {isPlot && <span className="badge bg-secondary ms-2">Plot</span>}
 
+                            {/* Location displayed below */}
+                              <div className="info-box" style={{marginTop :"-10px"}}></div>
+                            <div className="info-box d-flex align-items-center mt-2" >
+                                <span className="icon icon-mapPin me-2"  style={{ color: 'red', fontSize: '18px' }} ></span>
+                                <p className="meta-item mb-0" style={{ fontWeight: '700', fontSize: '16px' }}>
+                                    {propertyData.location.address}, {propertyData.location.location}
+                                </p>
+                            </div>
                         </div>
-                        <div className="content-bottom">
+
+                        <div className="content-bottom" style={{marginTop:"25px"}}>
                             <div className="info-box">
                                 <div className="label">FEATURES:</div>
                                 <ul className="meta">
@@ -664,13 +655,7 @@ const Properties = () => {
                                     ))}
                                 </ul>
                             </div>
-                            <div className="info-box">
-                                <div className="label">LOCATION:</div>
-                                <p className="meta-item">
-                                    <span className="icon icon-mapPin"></span>
-                                    {propertyData.location.address}, {propertyData.location.location}
-                                </p>
-                            </div>
+
                             <ul className="icon-box" >
                                 <li>
                                     <a href="#" className="item" onClick={toggleFavorite}>
@@ -1126,10 +1111,10 @@ const Properties = () => {
                                             ).map((rev) => (
                                                 <li className="list-review-item" key={rev.id}>
                                                     <div className="avatar avt-60 round">
-                                                        <img 
-                                                        // src={download} 
-                                                        src={rev?.profile ? `${api.imageUrl}${rev.profile}` : download}
-                                                        alt="avatar" />
+                                                        <img
+                                                            // src={download} 
+                                                            src={rev?.profile ? `${api.imageUrl}${rev.profile}` : download}
+                                                            alt="avatar" />
 
                                                     </div>
                                                     <div className="content">

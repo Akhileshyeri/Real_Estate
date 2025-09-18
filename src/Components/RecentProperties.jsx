@@ -87,12 +87,12 @@ const RecentProperties = () => {
             ]
         },
         {
-            label: 'My Properties', className: 'dropdown3',
+            label: 'Recent activity', className: 'dropdown3',
             submenu: [
                 { text: 'My Profile', onClick: () => navigate('/myprofile') },
                 { text: 'Dashboard', onClick: () => navigate('/dashboard') },
                 { text: 'My Favorites', onClick: () => navigate('/myfavorites') },
-                { text: 'Recent Properties', onClick: () => navigate('/recent') },
+                { text: 'My Properties', onClick: () => navigate('/myproperties') },
 
                 // { text: 'Reviews', onClick: () => navigate('/reviews') },
             ]
@@ -151,7 +151,7 @@ const RecentProperties = () => {
 
     // With this useEffect:
     useEffect(() => {
-        // Get recent properties from localStorage
+        // Get Recent activity from localStorage
         const storedRecentProperties = localStorage.getItem("recentProperties");
         if (storedRecentProperties) {
             setRecentProperties(JSON.parse(storedRecentProperties));
@@ -229,7 +229,7 @@ const RecentProperties = () => {
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                                                        <ul className="navigation clearfix">
+                                                        <ul className="navigation clearfix" style={{ marginLeft: "228px" }}>
                                                             <li className="home ms-4">
                                                                 <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</a>
                                                             </li>
@@ -286,18 +286,18 @@ const RecentProperties = () => {
                                                     <div
                                                         className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}
                                                         style={{
-                                                                position: "absolute",
-                                                                top: "100%",
-                                                                right: 0,
-                                                                zIndex: 1000,
-                                                                marginTop: "0.5rem",
-                                                                display: dropdownOpen ? "block" : "none",
-                                                                background: "#fff",
-                                                                border: "1px solid #ddd",
-                                                                borderRadius: "6px",
-                                                                boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
-                                                                minWidth: "180px",
-                                                            }}
+                                                            position: "absolute",
+                                                            top: "100%",
+                                                            right: 0,
+                                                            zIndex: 1000,
+                                                            marginTop: "0.5rem",
+                                                            display: dropdownOpen ? "block" : "none",
+                                                            background: "#fff",
+                                                            border: "1px solid #ddd",
+                                                            borderRadius: "6px",
+                                                            boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
+                                                            minWidth: "180px",
+                                                        }}
                                                     >
                                                         <a className="dropdown-item" onClick={() => navigate('/myprofile')}>My Profile</a>
                                                         <a className="dropdown-item" onClick={() => navigate("/dashboard")}>
@@ -490,9 +490,9 @@ const RecentProperties = () => {
                                         <span className="icon icon-heart"></span> My Favorites
                                     </a>
                                 </li>
-                                  <li className="nav-menu-item">
+                                <li className="nav-menu-item">
                                     <a className="nav-menu-link" href="" onClick={(e) => { e.preventDefault(); navigate('/recent'); }}>
-                                        <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i>  Recent Properties
+                                        <i class="fa-solid fa-clock-rotate-left" style={{ color: "#a3abb0" }}></i>  Recent activity
                                     </a>
                                 </li>
                                 {/* <li className="nav-menu-item">
@@ -543,14 +543,13 @@ const RecentProperties = () => {
 
 
                                 <div className="widget-box-2 wd-listing mt-3">
-                                    <h6 className="title">Recent Properties</h6>
+                                    <h6 className="title">Recent Activity</h6>
                                     <div className="wrap-table">
                                         <div className="table-responsive">
                                             <table>
                                                 <thead>
                                                     <tr>
-                                                        <th>Title</th>
-
+                                                        <th>Listing Title</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
@@ -561,105 +560,100 @@ const RecentProperties = () => {
                                                             <tr key={property.id}>
                                                                 <td>
                                                                     <div
-                                                                        style={{
-                                                                            display: "flex",
-                                                                            alignItems: "flex-start",
-                                                                            gap: "20px",
-                                                                            padding: "15px",
-
-
-                                                                            marginBottom: "15px",
-                                                                            transition: "transform 0.2s",
-                                                                        }}
-
+                                                                        className="listing-box"
+                                                                        style={{ cursor: "pointer" }}
+                                                                        onClick={() => navigate(`/property/${property.id}`)}
                                                                     >
-                                                                        <img
-                                                                            src={`${api.imageUrl}${property.image}`}
-                                                                            alt={property.name}
-                                                                            style={{
-                                                                                width: "160px",
-                                                                                height: "160px",
-                                                                                objectFit: "cover",
-                                                                                borderRadius: "8px",
-                                                                                flexShrink: 0,
-                                                                            }}
-                                                                        />
-                                                                        <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
-                                                                            {/* Title + Status */}
-                                                                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                                                                <span style={{ fontSize: "18px", fontWeight: 600, color: "#333" }}>
-                                                                                    <span style={{ marginRight: "10px" }}>{property.name}</span>
+                                                                        <div className="images">
+                                                                            <img
+                                                                                src={
+                                                                                    property.image
+                                                                                        ? `${api.imageUrl}${property.image}`
+                                                                                        : "https://themesflat.co/html/homzen/images/home/house-1.jpg"
+                                                                                }
+                                                                                alt={property.name}
+                                                                            />
+                                                                        </div>
 
+                                                                        <div className="content">
+                                                                            {/* Title + Status */}
+                                                                            <div className="content">
+                                                                                {/* Title */}
+                                                                                <div className="title">{property.name}</div>
+
+                                                                                {/* Listing Badge */}
+                                                                                <div className="listing-type" >
                                                                                     <span
-                                                                                        style={{
-                                                                                            backgroundColor: property.for === "sale" ? "#4CAF50" : "#2196F3",
-                                                                                            color: "#fff",
-                                                                                            padding: "4px 10px",
-                                                                                            borderRadius: "20px",
-                                                                                            fontSize: "10px",
-                                                                                            textTransform: "uppercase",
-                                                                                            fontWeight: 500,
-                                                                                        }}
-                                                                                    >
+                                                                                        className={` ${property.for === "sale" ? "success" : "style-1"
+                                                                                            }`}
+                                                                                    >  <span className="fw-6">Listing Type:</span>{" "}
                                                                                         {property.for}
                                                                                     </span>
-                                                                                </span>
-
+                                                                                </div>
                                                                             </div>
 
-                                                                            {/* Location & Price */}
-                                                                            <span style={{ fontSize: "14px", color: "#555" }}>
-                                                                                <strong>Location:</strong> {property.location || "N/A"}
-                                                                            </span>
-                                                                            <span style={{ fontSize: "14px", color: "#555" }}>
-                                                                                <strong>Price:</strong> ₹{Number(property.priceValue).toLocaleString()} {property.priceUnit}
-                                                                            </span>
+                                                                            {/* Location */}
+                                                                            <div className="" > 
+                                                                                <span className="fw-6">Location:</span>{" "}
+                                                                                {property.location || "N/A"}
+                                                                            </div>
+
+                                                                            {/* Price */}
+                                                                            <div className="text-1 fw-7">
+                                                                                <span className="fw-6">Price:</span>{" "}
+                                                                                ₹{Number(property.priceValue).toLocaleString()}{" "}
+                                                                                {property.priceUnit}
+                                                                            </div>
 
                                                                             {/* Type */}
-                                                                            <span style={{ fontSize: "14px", color: "#555" }}>
-                                                                                <strong>Type:</strong> {property.subType}
-                                                                            </span>
-
-                                                                            {/* Meta Info */}
-
+                                                                            <div className="listing-type">
+                                                                                <span className="fw-6">Type:</span> {property.subType}
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-
-
                                                                 </td>
+
                                                                 <td>
-                                                                    <button
-                                                                        onClick={() => navigate(`/property/${property.id}`)}
-                                                                        style={{
-                                                                            backgroundColor: "#4CAF50", // green background
-                                                                            color: "#fff",              // white text
-                                                                            padding: "6px 14px",
-                                                                            border: "none",
-                                                                            borderRadius: "6px",
-                                                                            cursor: "pointer",
-                                                                            fontWeight: "500",
-                                                                            transition: "all 0.3s ease"
-                                                                        }}
-                                                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#45a049"}
-                                                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#4CAF50"}
-                                                                    >
-                                                                        View
-                                                                    </button>
-                                                                </td>
+                                                                    <ul className="list-action">
+                                                                       <li style={{ display: "flex", justifyContent: "center" }}>
+  <button
+    type="button"
+    className="remove-file item flex items-center gap-1"
+    onClick={() => navigate(`/property/${property.id}`)}
+    style={{
+      backgroundColor: "#ed2027",
+      color: "#fff", // makes text white
+      padding: "8px 16px",
+      border: "none",
+      borderRadius: "6px",
+      cursor: "pointer",
+      fontSize: "14px",
+      fontWeight: 600,
+      transition: "all 0.3s ease",
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+    }}
+    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c91a21")}
+    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ed2027")}
+  >
+    <i className="fi fi-rs-eye" style={{ color: "#fff",marginTop:"5px" }}></i> View
+  </button>
+</li>
 
+
+                                                                    </ul>
+                                                                </td>
                                                             </tr>
                                                         ))
                                                     ) : (
                                                         <tr>
-                                                            <td colSpan={2} style={{ textAlign: "center" }}>
-                                                                No recent properties found.
+                                                            <td colSpan={2} className="text-center">
+                                                                No Recent Activity found.
                                                             </td>
                                                         </tr>
                                                     )}
                                                 </tbody>
-
-
-
                                             </table>
                                         </div>
                                     </div>
@@ -673,11 +667,7 @@ const RecentProperties = () => {
 
                             <div className="overlay-dashboard"></div>
 
-                            <div className="progress-wrap">
-                                <svg className="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
-                                    <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98" style={{ transition: 'stroke-dashoffset 10ms linear 0s', strokeDasharray: '307.919, 307.919', strokeDashoffset: '286.138' }}></path>
-                                </svg>
-                            </div>
+                        
                         </div>
 
                         {/* {showModal && (

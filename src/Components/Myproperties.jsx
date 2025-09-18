@@ -92,7 +92,7 @@ const Myproperties = () => {
                 { text: 'My Profile', onClick: () => navigate('/myprofile') },
                 { text: 'Dashboard', onClick: () => navigate('/dashboard') },
                 { text: 'My Favorites', onClick: () => navigate('/myfavorites') },
-                { text: 'Recent Properties', onClick: () => navigate('/recent') },
+                { text: 'Recent activity', onClick: () => navigate('/recent') },
 
                 // { text: 'Reviews', onClick: () => navigate('/reviews') },
             ]
@@ -274,7 +274,7 @@ const Myproperties = () => {
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                                                        <ul className="navigation clearfix">
+                                                        <ul className="navigation clearfix" style={{marginLeft:"228px"}}>
                                                             <li className="home ms-4">
                                                                 <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</a>
                                                             </li>
@@ -352,7 +352,7 @@ const Myproperties = () => {
                                                       
                                                         <a className="dropdown-item" onClick={() => navigate('/myfavorites')}>My Favorites</a>
                                                         {/* <a className="dropdown-item" onClick={() => navigate('/reviews')}>Reviews</a> */}
-                                                        <a className="dropdown-item" onClick={() => navigate('/recent')}>Recent Properties</a>
+                                                        <a className="dropdown-item" onClick={() => navigate('/recent')}>Recent activity</a>
 
                                                         <a className="dropdown-item" onClick={(e) => {
                                                             e.preventDefault();
@@ -538,7 +538,7 @@ const Myproperties = () => {
                                 </li>
                                  <li className="nav-menu-item">
                                     <a className="nav-menu-link" href="" onClick={(e) => { e.preventDefault(); navigate('/recent'); }}>
-                                        <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i>  Recent Properties
+                                        <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i>  Recent activity
                                     </a>
                                 </li>
                                 {/* <li className="nav-menu-item">
@@ -855,7 +855,7 @@ const Myproperties = () => {
                                                     ) : (
                                                         <tr>
                                                             <td colSpan={4} className="text-center">
-                                                                No recent properties found.
+                                                                No Recent activity found.
                                                             </td>
                                                         </tr>
                                                     )}
