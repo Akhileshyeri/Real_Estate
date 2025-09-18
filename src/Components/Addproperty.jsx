@@ -1895,6 +1895,46 @@ const AddProperty = () => {
                 {/* City Select */}
                 <div className="form-group">
                   <label>State</label>
+
+                  <select
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    className="select-field"
+                     style={{
+                            padding: "10px 14px",
+                            borderRadius: "8px",
+                            border: "1px solid #ccc",
+                            fontSize: "15px",
+                            color: "#333",
+                            backgroundColor: "#fff",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                            outline: "none",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            height: "55px"
+                          }}
+                  >
+                    <option value="">Select State</option>
+                    {states.map((s) => (
+                      <option key={s.id} value={s.name}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+
+                </div>
+
+
+
+                <div className="form-group">
+                  <label>City</label>
+                  <input
+                    type="text"
+                    placeholder="Enter Location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="input-field"
+                  />
                   {loading ? (
                     <div style={{ height: "55px", display: "flex", alignItems: "center" }}>
                       Loading states...
@@ -2248,7 +2288,19 @@ const AddProperty = () => {
                       className="select-field input-field p-2"
                       value={roadUnit}
                       onChange={(e) => setRoadUnit(e.target.value)}
-                      style={{ height: "55px" }}
+                       style={{
+                            padding: "10px 14px",
+                            borderRadius: "8px",
+                            border: "1px solid #ccc",
+                            fontSize: "15px",
+                            color: "#333",
+                            backgroundColor: "#fff",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                            outline: "none",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            height: "55px"
+                          }}
                     >
                       <option value="">Select</option>
                       <option value="feet">Feet</option>
@@ -2297,7 +2349,7 @@ const AddProperty = () => {
                 </div>
 
                 {/* Continue button */}
-                {city && selectedOwnership && location && (
+                { selectedOwnership && location && (
                   <button onClick={handleLocationContinue} className="continue-btn">
                     Continue
                   </button>

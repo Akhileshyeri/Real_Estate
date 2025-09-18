@@ -830,15 +830,20 @@ const Header = ({ showSearch }) => {
 
 
                 {/* login/register */}
-                <div className="header-account d-flex align-items-center justify-content-end">
+                <div
+                  className="header-account d-flex align-items-center justify-content-end"
+                  style={{ marginTop: showSearch ? "6px" : "0px" }}
+                >
+
                   {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
                     <>
                       {/* Login/Register */}
-                      <div className="register">
+                      <div className="register" style={{ marginTop: showSearch ? "9px" : "0px"}}>
                         <ul className="d-flex">
                           <li>
                             <a
                               href="#"
+                               style={{ margin: "0px 10px 0px 10px" }}
                               onClick={(e) => {
                                 e.preventDefault();
                                 setShowRegister(true);
@@ -851,7 +856,7 @@ const Header = ({ showSearch }) => {
                       </div>
 
                       {/* Add property button */}
-                      <div className="flat-bt-top">
+                      <div className="flat-bt-top"  style={{ marginTop: showSearch ? "9px" : "0px"}}>
                         <a
                           className="tf-btn primary"
                           href="#"
@@ -859,6 +864,7 @@ const Header = ({ showSearch }) => {
                             e.preventDefault();
                             setShowRegister(true); // Open login modal if not logged in
                           }}
+                         
                         >
                           Add property
                         </a>
@@ -934,6 +940,11 @@ const Header = ({ showSearch }) => {
                           Add property
                         </a>
                       </div>
+                      {!showSearch && (
+                        <div className="header-toggle" style={{ height: "57px", width: "47px", marginTop: "10px" }} ref={toggleRef}>
+
+                        </div>
+                      )}
 
                       {/* Menu toggle */}
                       {showSearch && (
