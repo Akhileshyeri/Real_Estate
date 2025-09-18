@@ -1878,7 +1878,19 @@ const AddProperty = () => {
                     value={state}
                     onChange={(e) => setState(e.target.value)}
                     className="select-field"
-                    style={{ height: "55px" }}
+                     style={{
+                            padding: "10px 14px",
+                            borderRadius: "8px",
+                            border: "1px solid #ccc",
+                            fontSize: "15px",
+                            color: "#333",
+                            backgroundColor: "#fff",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                            outline: "none",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            height: "55px"
+                          }}
                   >
                     <option value="">Select State</option>
                     {states.map((s) => (
@@ -2211,7 +2223,19 @@ const AddProperty = () => {
                       className="select-field input-field p-2"
                       value={roadUnit}
                       onChange={(e) => setRoadUnit(e.target.value)}
-                      style={{ height: "55px" }}
+                       style={{
+                            padding: "10px 14px",
+                            borderRadius: "8px",
+                            border: "1px solid #ccc",
+                            fontSize: "15px",
+                            color: "#333",
+                            backgroundColor: "#fff",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                            outline: "none",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease",
+                            height: "55px"
+                          }}
                     >
                       <option value="">Select</option>
                       <option value="feet">Feet</option>
@@ -2260,7 +2284,7 @@ const AddProperty = () => {
                 </div>
 
                 {/* Continue button */}
-                {city && selectedOwnership && location && (
+                { selectedOwnership && location && (
                   <button onClick={handleLocationContinue} className="continue-btn">
                     Continue
                   </button>
