@@ -163,17 +163,17 @@ const Header = ({ showSearch }) => {
   const [timer, setTimer] = useState(30); // countdown seconds
   const [canResend, setCanResend] = useState(false);
 
-const [isToggled, setIsToggled] = useState(() => {
-  return localStorage.getItem("country") === "101";
-});
-// Save country whenever toggled
-useEffect(() => {
-  if (isToggled) {
-    localStorage.setItem("country", "101");
-  } else {
-    localStorage.setItem("country", "229");
-  }
-}, [isToggled]);
+  const [isToggled, setIsToggled] = useState(() => {
+    return localStorage.getItem("country") === "101";
+  });
+  // Save country whenever toggled
+  useEffect(() => {
+    if (isToggled) {
+      localStorage.setItem("country", "101");
+    } else {
+      localStorage.setItem("country", "229");
+    }
+  }, [isToggled]);
 
 
 
@@ -677,15 +677,15 @@ useEffect(() => {
     zIndex: 2,
   });
 
-// Toggle handler with reload
-const handleToggle = () => {
-  setIsToggled((prev) => !prev);
+  // Toggle handler with reload
+  const handleToggle = () => {
+    setIsToggled((prev) => !prev);
 
-  // reload AFTER localStorage is updated
-  setTimeout(() => {
-    window.location.reload();
-  }, 150);
-};
+    // reload AFTER localStorage is updated
+    setTimeout(() => {
+      window.location.reload();
+    }, 150);
+  };
 
   return (
     <>
@@ -829,15 +829,20 @@ const handleToggle = () => {
 
 
                 {/* login/register */}
-                <div className="header-account d-flex align-items-center justify-content-end">
+                <div
+                  className="header-account d-flex align-items-center justify-content-end"
+                  style={{ marginTop: showSearch ? "6px" : "0px" }}
+                >
+
                   {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
                     <>
                       {/* Login/Register */}
-                      <div className="register">
+                      <div className="register" style={{ marginTop: showSearch ? "9px" : "0px"}}>
                         <ul className="d-flex">
                           <li>
                             <a
                               href="#"
+                               style={{ margin: "0px 10px 0px 10px" }}
                               onClick={(e) => {
                                 e.preventDefault();
                                 setShowRegister(true);
@@ -850,7 +855,7 @@ const handleToggle = () => {
                       </div>
 
                       {/* Add property button */}
-                      <div className="flat-bt-top">
+                      <div className="flat-bt-top"  style={{ marginTop: showSearch ? "9px" : "0px"}}>
                         <a
                           className="tf-btn primary"
                           href="#"
@@ -858,6 +863,7 @@ const handleToggle = () => {
                             e.preventDefault();
                             setShowRegister(true); // Open login modal if not logged in
                           }}
+                         
                         >
                           Add property
                         </a>
@@ -881,7 +887,7 @@ const handleToggle = () => {
                             >
                               <div style={toggleHandleStyle}>
                                 {/* Background flag images */}
-                                
+
                                 <img
                                   src="/images/logo/flag (1).png"
                                   alt="Dubai"
@@ -933,6 +939,11 @@ const handleToggle = () => {
                           Add property
                         </a>
                       </div>
+                      {!showSearch && (
+                        <div className="header-toggle" style={{ height: "57px", width: "47px", marginTop: "10px" }} ref={toggleRef}>
+
+                        </div>
+                      )}
 
                       {/* Menu toggle */}
                       {showSearch && (
