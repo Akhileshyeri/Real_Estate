@@ -201,7 +201,7 @@ const MyFavorites = () => {
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                                                        <ul className="navigation clearfix" style={{marginLeft:"228px"}}>
+                                                        <ul className="navigation clearfix" style={{marginLeft:"180px"}}>
                                                             <li className="home ms-4">
                                                                 <Link to="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</Link>
                                                             </li>

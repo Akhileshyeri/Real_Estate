@@ -94,6 +94,37 @@ const Listing = () => {
     }, [navState]);
 
 
+    const getPagination = (totalPages, currentPage) => {
+        const pages = [];
+
+        if (totalPages <= 5) {
+            // If total pages are small, show all
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            // Always show first two
+            pages.push(1, 2);
+
+            if (currentPage > 4) {
+                pages.push("..."); // Ellipsis before current page
+            }
+
+            // Show current page -1, current, current +1 (if in range)
+            for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                if (i > 2 && i < totalPages - 1) {
+                    pages.push(i);
+                }
+            }
+
+            if (currentPage < totalPages - 3) {
+                pages.push("..."); // Ellipsis after current page
+            }
+
+            // Always show last two
+            pages.push(totalPages - 1, totalPages);
+        }
+
+        return pages;
+    };
 
 
 
@@ -345,12 +376,12 @@ const Listing = () => {
                                         </li>
                                         <li className="nav-tab-item">
 
-                                              <a
+                                            <a
                                                 href="#forRent"
                                                 className={`nav-link-item ${selectedListingType === "rent" ? "active" : ""}`}
                                                 onClick={e => { e.preventDefault(); setSelectedListingType("rent"); setSelectedType("All"); }}
                                             >For Rent</a>
-                                          
+
                                         </li>
                                     </ul>
                                     <div className="tab-content">
@@ -459,8 +490,8 @@ const Listing = () => {
                                                                     {["Flat / Apartment", "Independent House / Villa", "Farmhouse", "Serviced Apartment", "1 RK / Studio Apartment", "Independent Floor"].includes(selectedType) && (
                                                                         <>
                                                                             <div style={{ marginBottom: "20px", }}>
-                                                                               <label className="title-select mb-3">BHK Type</label>
-                                                                               <br />
+                                                                                <label className="title-select mb-3">BHK Type</label>
+                                                                                <br />
                                                                                 {["1 BHK", "2 BHK", "3 BHK", "4 BHK", "4+ BHK"].map(bhk => {
                                                                                     const bhkNumber = bhk.split(" ")[0]; // "1", "2", "3", "4", "4+"
                                                                                     return (
@@ -491,7 +522,7 @@ const Listing = () => {
 
                                                                             <div style={{ marginBottom: "20px" }}>
                                                                                 <label className="title-select mb-3">Bedrooms</label>
-                                                                                   <br />
+                                                                                <br />
                                                                                 {["1", "2", "3", "4", "4+"].map(bed => (
                                                                                     <button
                                                                                         key={bed}
@@ -517,7 +548,7 @@ const Listing = () => {
 
                                                                             <div>
                                                                                 <label className="title-select mb-3">Bathrooms</label>
-                                                                                   <br />
+                                                                                <br />
                                                                                 {["1", "2", "3", "4", "4+"].map(bath => (
                                                                                     <button
                                                                                         key={bath}
@@ -543,7 +574,7 @@ const Listing = () => {
                                                                     {selectedType === "Plot / Land" && (
                                                                         <div>
                                                                             <label className="title-select">Plot Size</label>
-                                                                               <br />
+                                                                            <br />
                                                                             <Slider range min={500} max={10000} step={100} defaultValue={[1000, 5000]} />
                                                                             <h6>Facing</h6>
                                                                             {["East", "West", "North", "South"].map(dir => (
@@ -555,7 +586,7 @@ const Listing = () => {
                                                                     {(selectedType === "Office" || selectedType === "Retail") && (
                                                                         <div>
                                                                             <label className="title-select">Carpet Area (sq.ft)</label>
-                                                                               <br />
+                                                                            <br />
                                                                             <Slider range min={200} max={10000} step={100} defaultValue={[500, 5000]} />
                                                                         </div>
                                                                     )}
@@ -696,20 +727,25 @@ const Listing = () => {
 
                                     {/* Pagination */}
                                     <ul className="justify-content-center wd-navigation">
-                                        {[...Array(totalPages)].map((_, i) => (
+                                        {getPagination(totalPages, page).map((p, i) => (
                                             <li key={i}>
-                                                <button
-                                                    style={{ border: "none" }}
-                                                    onClick={() => {
-                                                        setPage(i + 1);
-                                                        window.scrollTo({ top: 0, left: 0, behavior: "instant" }); // ✅ scroll here
-                                                    }}
-                                                    className={`nav-item ${page === i + 1 ? "active" : ""}`}
-                                                >
-                                                    {i + 1}
-                                                </button>
+                                                {p === "..." ? (
+                                                    <span className="nav-item">…</span>
+                                                ) : (
+                                                    <button
+                                                        style={{ border: "none" }}
+                                                        onClick={() => {
+                                                            setPage(p);
+                                                            window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                                                        }}
+                                                        className={`nav-item ${page === p ? "active" : ""}`}
+                                                    >
+                                                        {p}
+                                                    </button>
+                                                )}
                                             </li>
                                         ))}
+
                                         <li>
                                             <button
                                                 style={{ border: "none" }}

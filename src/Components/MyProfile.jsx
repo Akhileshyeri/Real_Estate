@@ -575,7 +575,7 @@ const MyProfile = () => {
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                                                        <ul className="navigation clearfix" style={{marginLeft:"225px"}}>
+                                                        <ul className="navigation clearfix" style={{marginLeft:"180px"}}>
                                                             <li className="home ms-4">
                                                                 <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</a>
                                                             </li>
