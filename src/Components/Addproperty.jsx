@@ -947,19 +947,19 @@ const AddProperty = () => {
 
     });
 
-    try {
-      const response = await api.post("properties/prop1", fd);
-      console.log("ee", response)
-      if (response.data.success) {
-        toast.success(response.data.message)
-        navigate("/home")
-      } else {
-        toast.error(response.data.message)
-      }
-    }
-    catch (err) {
-      console.log(err)
-    }
+    // try {
+    //   const response = await api.post("properties/prop1", fd);
+    //   console.log("ee", response)
+    //   if (response.data.success) {
+    //     toast.success(response.data.message)
+    //     navigate("/home")
+    //   } else {
+    //     toast.error(response.data.message)
+    //   }
+    // }
+    // catch (err) {
+    //   console.log(err)
+    // }
 
   }
 
