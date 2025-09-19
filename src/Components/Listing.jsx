@@ -34,6 +34,9 @@ const Listing = () => {
     const [selectedBedroom, setSelectedBedroom] = useState("");
     const [selectedCity, setSelectedCity] = useState("");
 
+    const [searchTerm, setSearchTerm] = useState("");
+
+
     const [states, setStates] = useState([]);
     const [selectedState, setSelectedState] = useState(null);
 
@@ -54,6 +57,10 @@ const Listing = () => {
         const bathrooms = query.get("bathrooms") || "";
         const bedrooms = query.get("bedrooms") || "";
         const city = query.get("city") || "";
+        const state = query.get("state") || ""; // ✅ new
+
+        const searchQuery = query.get("search") || "";
+
 
         const priceMin = query.get("priceMin");
         const priceMax = query.get("priceMax");
@@ -66,8 +73,11 @@ const Listing = () => {
         setSelectedBathroom(bathrooms);
         setSelectedBedroom(bedrooms);
         setSelectedCity(city);
+        setSelectedState(state); // ✅ set here
+        setSearchTerm(searchQuery);
 
-        let filters = { listingType, type, bhk, bathrooms, bedrooms, city, priceRange, rentRange };
+
+        let filters = { listingType, type, bhk, bathrooms, bedrooms, city, priceRange, rentRange, state, searchTerm };
 
         if (listingType === "rent" && rentMin && rentMax) {
             const range = [+rentMin, +rentMax];
@@ -147,8 +157,11 @@ const Listing = () => {
             bhk: selectedBHK,
             bathrooms: selectedBathroom,
             bedrooms: selectedBedroom,
+            state: selectedState,
             city: selectedCity,
-            city: searchCity, 
+            city: searchCity,
+
+            searchTerm,   // ✅ fix here
             priceRange,
             rentRange
         };
@@ -159,6 +172,15 @@ const Listing = () => {
         if (appliedFilters.bathrooms) fd.append("bathrooms", appliedFilters.bathrooms);
         if (appliedFilters.bhk) fd.append("apartment_bhk", appliedFilters.bhk);
         if (appliedFilters.bedrooms) fd.append("bedrooms", appliedFilters.bedrooms);
+
+        if (appliedFilters.state) fd.append("state", appliedFilters.state);
+
+        if (appliedFilters.city) fd.append("city", appliedFilters.city);
+
+
+        if (appliedFilters.searchTerm) fd.append("searchTerm", appliedFilters.searchTerm);
+
+
 
         // ✅ Add country dynamically
         const countryCode = localStorage.getItem("country");
@@ -414,6 +436,18 @@ const Listing = () => {
                                                                     </div>
                                                                 </div>
                                                             </div> */}
+
+                                                            <div className="form-style">
+                                                                <label className="title-select">Search Properties</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control"
+                                                                    placeholder="Search properties"
+                                                                    value={searchTerm}
+                                                                    onChange={(e) => setSearchTerm(e.target.value)} // ✅ fixed
+                                                                />
+                                                            </div>
+
 
                                                             <div className="form-style">
                                                                 <label className="title-select">State</label>
@@ -717,15 +751,10 @@ const Listing = () => {
                                                                     </ul>
 
                                                                 </div>
-                                                                <div className="d-flex justify-content-between align-items-center archive-bottom">
+                                                                <div className="d-flex justify-content-between align-items-center archive-bottom" style={{borderTop:"none"}}>
                                                                     <div className="d-flex gap-8 align-items-center">
-                                                                        <div className="avatar avt-40 round">
-                                                                            <img
-                                                                                src="https://themesflat.co/html/homzen/images/avatar/avt-9.jpg"
-                                                                                alt="avt"
-                                                                            />
-                                                                        </div>
-                                                                        <span>{property.agentName}</span>
+                                                                      
+                                                                        <span style={{ fontWeight: "bold", fontSize: "18px" }}>{property.agentName}</span>
                                                                     </div>
                                                                     <div className="d-flex align-items-center">
                                                                         <div className="h7 fw-7">

@@ -59,6 +59,11 @@ const HomePage = () => {
     const [selectedBathroom, setSelectedBathroom] = useState("");
     const [selectedBedrooms, setSelectedBedrooms] = useState("");
 
+    const [states, setStates] = useState([]);
+    const [selectedState, setSelectedState] = useState("Select State");
+    const [searchQuery, setSearchQuery] = useState("");
+
+
 
     const handleOpenAdvanced = () => setShowAdvanced(true);
     const handleCloseAdvanced = () => setShowAdvanced(false);
@@ -529,6 +534,26 @@ const HomePage = () => {
         localStorage.setItem("recentProperties", JSON.stringify(latest));
     };
 
+    const fetchStates = async () => {
+        const fd = new FormData();
+        fd.append("programType", "getStateListOnChangeOfCountry");
+        fd.append("authToken", localStorage.getItem("authToken"));
+        fd.append("country", localStorage.getItem("country"));
+
+        try {
+            const response = await api.post("properties/preRequirements", fd);
+            if (response.data?.success) {
+                setStates(response.data.data); // 👈 store states
+            }
+        } catch (error) {
+            console.error("State fetch error:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchStates();
+    }, []);
+
 
 
 
@@ -678,17 +703,38 @@ const HomePage = () => {
                                                                 <div className="inner-group">
                                                                     <div className="form-group-1 search-form form-style">
                                                                         <label>Search</label>
-                                                                        <input type="text" className="form-control" placeholder="Search Properties" title="Search for" required="" />
+                                                                        <input
+                                                                            type="text"
+                                                                            className="form-control"
+                                                                            placeholder="Search Properties"
+                                                                            title="Search for"
+                                                                            value={searchQuery}
+                                                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                                                            required
+                                                                        />
+
                                                                     </div>
                                                                     <div className="form-group-2 form-style">
-                                                                        <label>Location</label>
+                                                                        <label>State</label>
                                                                         <div className="group-select">
                                                                             <div className="nice-select" tabIndex="0">
-                                                                                <span className="current">Select Location</span>
+                                                                                <span className="current">{selectedState}</span>
                                                                                 <ul className="list">
-
-                                                                                    <li data-value="india" className="option">India</li>
-                                                                                    <li data-value="dubai" className="option">Dubai</li>
+                                                                                    {states.length > 0 ? (
+                                                                                        states.map((state) => (
+                                                                                            <li
+                                                                                                key={state.id}
+                                                                                                data-value={state.id}
+                                                                                                className={`option ${selectedState === state.name ? "selected" : ""
+                                                                                                    }`}
+                                                                                                onClick={() => setSelectedState(state.name)}
+                                                                                            >
+                                                                                                {state.name}
+                                                                                            </li>
+                                                                                        ))
+                                                                                    ) : (
+                                                                                        <li className="option disabled">No states found</li>
+                                                                                    )}
                                                                                 </ul>
                                                                             </div>
                                                                         </div>
@@ -738,6 +784,7 @@ const HomePage = () => {
                                                                     onClick={() => {
                                                                         // build query params
                                                                         const queryParams = new URLSearchParams({
+                                                                            state: selectedState,   // 👈 add state here
                                                                             listingType: selectedListingType,
                                                                             type: selectedType,
                                                                             priceMin: priceRange[0],
@@ -747,6 +794,7 @@ const HomePage = () => {
                                                                             bhk: selectedBHK,
                                                                             bedrooms: selectedBedrooms,
                                                                             bathrooms: selectedBathroom,
+                                                                             search: searchQuery,   // 👈 add search text here
                                                                         });
 
                                                                         navigate(`/listing?${queryParams.toString()}`);
@@ -1023,6 +1071,7 @@ const HomePage = () => {
                                                                         onClick={() => {
                                                                             // build query params
                                                                             const queryParams = new URLSearchParams({
+                                                                                 state: selectedState,   // 👈 add state here
                                                                                 listingType: selectedListingType,
                                                                                 type: selectedType,
                                                                                 priceMin: priceRange[0],
@@ -1032,6 +1081,7 @@ const HomePage = () => {
                                                                                 bhk: selectedBHK,
                                                                                 bedrooms: selectedBedrooms,
                                                                                 bathrooms: selectedBathroom,
+                                                                                   search: searchQuery,   // 👈 add search text here
                                                                             });
 
                                                                             navigate(`/listing?${queryParams.toString()}`);
@@ -1178,13 +1228,8 @@ const HomePage = () => {
                                                             </div>
                                                             <div className="archive-bottom d-flex justify-content-between align-items-center">
                                                                 <div className="d-flex gap-8 align-items-center">
-                                                                    <div className="avatar avt-40 round">
-                                                                        <img
-                                                                            src="https://themesflat.co/html/homzen/images/avatar/avt-7.jpg"
-                                                                            alt="avt"
-                                                                        />
-                                                                    </div>
-                                                                    <span>{item.agentName}</span>
+                                                                    
+                                                                   <span style={{ fontWeight: "bold", fontSize: "18px" }}>{item.agentName}</span>
                                                                 </div>
                                                                 <div className="d-flex align-items-center">
                                                                     <h6>₹{item.priceValue}</h6>
@@ -1527,16 +1572,8 @@ const HomePage = () => {
                                                             {/* Bottom Price & Agent */}
                                                             <div className="archive-bottom d-flex justify-content-between align-items-center">
                                                                 <div className="d-flex gap-8 align-items-center">
-                                                                    <div className="avatar avt-40 round">
-                                                                        <img
-                                                                            src={
-                                                                                property.agentImage ||
-                                                                                "https://themesflat.co/html/homzen/images/avatar/avt-7.jpg"
-                                                                            }
-                                                                            alt="agent"
-                                                                        />
-                                                                    </div>
-                                                                    <span>{property.agentName || "Agent"}</span>
+                                                                   
+                                                                    <span style={{ fontWeight: "bold", fontSize: "18px" }}>{property.agentName || "Agent"}</span>
                                                                 </div>
                                                                 <div className="d-flex align-items-center">
                                                                     <h6>₹{Number(property.priceValue).toLocaleString()}</h6>

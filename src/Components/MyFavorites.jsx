@@ -203,7 +203,7 @@ const MyFavorites = () => {
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
 
                                                       
-=======
+
                                                         <ul className="navigation clearfix" style={{marginLeft:"180px"}}>
 
                                                             <li className="home ms-4">

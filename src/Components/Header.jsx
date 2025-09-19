@@ -16,7 +16,6 @@ const Header = ({ showSearch }) => {
 
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("Rent");
   const [showSearchAnimated, setShowSearchAnimated] = useState(false);
 
   const [loginWithEmail, setLoginWithEmail] = useState(false);
@@ -24,6 +23,26 @@ const Header = ({ showSearch }) => {
 
   const [requireMobile, setRequireMobile] = useState(false);
   const [fallbackMobile, setFallbackMobile] = useState("");
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
+
+  const [selectedOption, setSelectedOption] = useState("rent"); // lowercase by default
+
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      toast.error("Please enter a search term");
+      return;
+    }
+
+    navigate(
+      `/listing?listingType=${encodeURIComponent(selectedOption)}&search=${encodeURIComponent(searchTerm)}`
+    );
+
+  };
+
+
 
 
 
@@ -33,9 +52,10 @@ const Header = ({ showSearch }) => {
   const dropdownRef = useRef(null);
 
   const handleOptionSelect = (option) => {
-    setSelectedOption(option);
+    const normalized = option.toLowerCase(); // "rent" / "sale" / "joint venture"
+    setSelectedOption(normalized);
     setDropdownOpen(false);
-  };;
+  };
 
   // ✅ Close dropdown on outside click
   useEffect(() => {
@@ -253,7 +273,7 @@ const Header = ({ showSearch }) => {
         setOtpSent(response.data.data.otp);
         setShowOtpModal(true);
         setShowRegister(false)
-        
+
         toast.success(response.data.message);
       } else if (response.data.message === "Please Enter Mobile No") {
         // ✅ Ask user for phone number
@@ -269,6 +289,7 @@ const Header = ({ showSearch }) => {
 
 
   // ---- Verify OTP API ----
+  // ---- Verify OTP API ----
   const verifyOtp = async () => {
     const enteredOtp = otp.join("");
     if (enteredOtp.length < 4) {
@@ -280,29 +301,41 @@ const Header = ({ showSearch }) => {
 
     const fd = new FormData();
     fd.append("programType", "verifyOTP");
-    fd.append("username", countryCode + phoneNumber);
     fd.append("otp", enteredOtp);
 
+    if (loginWithEmail) {
+      fd.append("username", email);
+      fd.append("type", "email")
+
+
+      // if (requireMobile && fallbackMobile) {
+      //   fd.append("username", countryCode + fallbackMobile);
+      // }
+    } else {
+      fd.append("username", countryCode + phoneNumber);
+      fd.append("type", "mobile")
+    }
+
+    console.log("Submitting form data:");
+    for (let pair of fd.entries()) {
+      console.log(pair[0], pair[1]);
+    }
 
     try {
       const response = await api.post("/customers/customer", fd);
       console.log("OTP Verify Response:", response.data);
 
-
       if (response.data.success) {
-        toast.success(response.data.message)
-
+        toast.success(response.data.message);
 
         localStorage.setItem("authToken", response.data.data.authToken || "Guest");
-
-
         localStorage.setItem("mobile", response.data.data.mobile);
         localStorage.setItem("name", response.data.data.firstName);
         localStorage.setItem("email", response.data.data.email);
         localStorage.setItem("photo", response.data.data.profile);
         localStorage.setItem("usertype", "customer");
 
-        setIsLoggedIn(true);   // ✅ mark user logged in
+        setIsLoggedIn(true);
         setShowOtpModal(false);
         setShowRegister(false);
         resetFormFields();
@@ -315,6 +348,7 @@ const Header = ({ showSearch }) => {
       setLoadingButton(prev => ({ ...prev, verifyOtp: false }));
     }
   };
+
 
 
   const resendOtp = async () => {
@@ -356,24 +390,48 @@ const Header = ({ showSearch }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // ✅ Check if terms are agreed
     if (!agreedToTerms) {
       toast.error("Please agree to Terms and Conditions");
       return;
     }
 
-     if (loginWithEmail) {
-    // ✅ Email validation regex
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim()) {
-      toast.error("Please enter your Email Address");
-      return;
-    }
-    if (!emailRegex.test(email)) {
-      toast.error("Please enter a valid Email Address");
-      return;
-    }
-  }
+    if (!loginWithEmail) {
+      // ✅ Phone number validations
+      const phoneToCheck = requireMobile && fallbackMobile ? fallbackMobile : phoneNumber;
+      if (!phoneToCheck.trim()) {
+        toast.error("Please enter your phone number");
+        return;
+      }
+      if (phoneToCheck.trim().length !== 10) {
+        toast.error("Phone number must be 10 digits");
+        return;
+      }
+    } else {
+      // ✅ Email validations
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email.trim()) {
+        toast.error("Please enter your Email Address");
+        return;
+      }
+      if (!emailRegex.test(email)) {
+        toast.error("Please enter a valid Email Address");
+        return;
+      }
 
+      // If login with email requires mobile
+      if (requireMobile) {
+        if (!fallbackMobile.trim()) {
+          toast.error("Please enter your phone number");
+          return;
+        }
+        if (fallbackMobile.trim().length !== 10) {
+          toast.error("Phone number must be 10 digits");
+          return;
+        }
+      }
+    }
 
     setLoadingButton(prev => ({ ...prev, continue: true }));
 
@@ -383,6 +441,7 @@ const Header = ({ showSearch }) => {
       setLoadingButton(prev => ({ ...prev, continue: false }));
     }
   };
+
   const resetFormFields = () => {
     setLoginWithEmail(false);
     setEmail("");
@@ -770,8 +829,9 @@ const Header = ({ showSearch }) => {
                             className="dropdown-slider-display"
                             onClick={() => setDropdownOpen(!dropdownOpen)} style={{ height: "10px", }}
                           >
-                            <span style={{ fontWeight: "bold" }}>{selectedOption}</span>
-                            <img
+                            <span style={{ fontWeight: "bold" }}>
+                              {capitalizeFirstLetter(selectedOption)}
+                            </span>                            <img
                               src={Arrow}
                               alt="dropdown icon"
                               className="dropdown-icon"
@@ -786,15 +846,10 @@ const Header = ({ showSearch }) => {
                             className={`dropdown-slider-options drd ${dropdownOpen ? "open" : ""}`}
 
                           >
-                            <div className="slider-option" onClick={() => handleOptionSelect("Rent")}>
-                              Rent
-                            </div>
-                            <div className="slider-option" onClick={() => handleOptionSelect("Sale")}>
-                              Sale
-                            </div>
-                            <div className="slider-option" onClick={() => handleOptionSelect("Joint Venture")}>
-                              Joint Venture
-                            </div>
+                            <div className="slider-option" onClick={() => handleOptionSelect("Rent")}>Rent</div>
+                            <div className="slider-option" onClick={() => handleOptionSelect("Sale")}>Sale</div>
+                            <div className="slider-option" onClick={() => handleOptionSelect("Joint Venture")}>Joint Venture</div>
+
                           </div>
 
                           {/* Hidden select for form submission if needed */}
@@ -807,16 +862,29 @@ const Header = ({ showSearch }) => {
 
                         {/* Input field */}
                         {/* Input field */}
-                        <input type="text" placeholder="Search properties..."
+                        <input
+                          type="text"
+                          placeholder="Search properties..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
                           style={{
                             width: "100%",
-                            padding: "8px 40px 8px 180px", // ✅ right padding adjusted for icon 
-                            border: "1px solid #ccc", borderRadius: "6px", outline: "none",
-                          }} />
+                            padding: "8px 40px 8px 180px",
+                            border: "1px solid #ccc",
+                            borderRadius: "6px",
+                            outline: "none",
+                          }}
+                        />
 
 
                         {/* ✅ Custom imported search icon */}
-                        <img src={Search} alt="search" className="search-icon" />
+                        <img
+                          src={Search}
+                          alt="search"
+                          className="search-icon"
+                          onClick={handleSearch}   // ✅ attach
+                          style={{ cursor: "pointer" }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1199,7 +1267,7 @@ const Header = ({ showSearch }) => {
                     </a>
                   </div>)}
 
-                {/* ✅ Center - Search */}
+
                 {/* ✅ Center - Search */}
                 {showSearch && (
                   <div
@@ -1214,22 +1282,12 @@ const Header = ({ showSearch }) => {
                       background: "#fff",
                       position: "relative",
                       width: "100%",
-                      maxWidth: "100%", // full width on mobile
+                      maxWidth: "100%",
                       margin: "0 auto",
-                      flexWrap: "nowrap", // keep items in a row
-                      // overflow: "hidden",
                     }}
                   >
-                    {/* 🔽 Dropdown inside search */}
-                    <div
-                      ref={dropdownRef}
-                      style={{
-                        position: "relative",
-                        marginRight: "6px",
-                        cursor: "pointer",
-                        flex: "0 0 auto", // prevent shrinking
-                      }}
-                    >
+                    {/* Dropdown */}
+                    <div ref={dropdownRef} style={{ position: "relative", marginRight: "6px", cursor: "pointer", flex: "0 0 auto" }}>
                       <div
                         onClick={() => setDropdownOpen(!dropdownOpen)}
                         style={{
@@ -1245,10 +1303,9 @@ const Header = ({ showSearch }) => {
                           minWidth: "60px",
                           justifyContent: "center",
                           height: "45px",
-                          marginLeft: "-10px"
                         }}
                       >
-                        {selectedOption}
+                        {capitalizeFirstLetter(selectedOption)}
                         <span style={{ fontSize: "8px", color: "#ED2027" }}>▼</span>
                       </div>
 
@@ -1267,19 +1324,17 @@ const Header = ({ showSearch }) => {
                             listStyle: "none",
                             margin: 0,
                             padding: "6px 0",
-                            zIndex: 9999, // ✅ make it very high
+                            zIndex: 9999,
                           }}
                         >
-                          {["Sell", "Rent", "Joint Venture"].map((option) => (
+                          {["Sale", "Rent", "Joint Venture"].map((option) => (
                             <li
                               key={option}
-                              onClick={() => handleOptionSelect(option)}
-                              style={{
-                                padding: "6px 10px",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                                color: "#333",
+                              onClick={() => {
+                                handleOptionSelect(option);
+                                setDropdownOpen(false); // ✅ ensure closes
                               }}
+                              style={{ padding: "6px 10px", cursor: "pointer", fontSize: "12px", color: "#333" }}
                               onMouseEnter={(e) => (e.target.style.background = "#f2f2f2")}
                               onMouseLeave={(e) => (e.target.style.background = "transparent")}
                             >
@@ -1288,29 +1343,29 @@ const Header = ({ showSearch }) => {
                           ))}
                         </ul>
                       )}
-
                     </div>
 
                     {/* Text input */}
                     <input
                       type="text"
-                      placeholder="Search..."
-                      className="search-input"
+                      placeholder="Search properties..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                       style={{
                         flex: 1,
                         border: "none",
                         outline: "none",
                         fontSize: "12px",
-                        minWidth: "0", // important for flexbox on mobile
+                        minWidth: 0,
                       }}
                     />
 
-                    {/* Search Icon */}
+                    {/* Mobile Search Icon */}
                     <img
                       src={Search}
                       alt="search"
-                      className="search-icon"
-                      style={{ width: "14px", height: "auto", marginLeft: "6px", cursor: "pointer" }}
+                      onClick={handleSearch} // ✅ attach handler
+                      style={{ width: "18px", height: "18px", marginLeft: "6px", cursor: "pointer" }}
                     />
                   </div>
                 )}

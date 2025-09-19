@@ -257,6 +257,8 @@ const MyProfile = () => {
                 const updatedName = customer.firstName || "Guest User";
                 localStorage.setItem("name", updatedName);
                 setName(updatedName);
+            }else{
+                toast.error(response.data.message)
             }
 
         } catch (error) {
