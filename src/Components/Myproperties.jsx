@@ -586,10 +586,10 @@ const Myproperties = () => {
                                 {/* <div className="button-show-hide show-mb" onClick={toggleDashboard}>
                                     <span className="body-1">Show Dashboard</span>
                                 </div> */}
-                                <div className="row">
+                                {/* <div className="row">
                                     <div className="wd-filter">
 
-                                        {/* From Date */}
+                                      
                                         <div style={{ position: "relative" }}>
                                             <label
                                                 htmlFor="datepicker1"
@@ -616,7 +616,7 @@ const Myproperties = () => {
                                             />
                                         </div>
 
-                                        {/* To Date */}
+                                       
                                         <div style={{ position: "relative" }}>
                                             <label
                                                 htmlFor="datepicker2"
@@ -643,7 +643,7 @@ const Myproperties = () => {
                                             />
                                         </div>
 
-                                        {/* Filter Button */}
+                                      
                                         <button
                                             type="button"
                                             className="tf-btn primary flex items-center gap-2"
@@ -657,7 +657,7 @@ const Myproperties = () => {
                                             Filter
                                         </button>
                                     </div>
-                                </div>
+                                </div> */}
 
 
                                 <div className="widget-box-2 wd-listing mt-3">

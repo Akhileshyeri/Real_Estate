@@ -7,7 +7,8 @@ import { Modal, Slider } from 'antd'; // Import only for functionality, not styl
 import "./Listing.css";
 import nodata from "../assets/nodata.png"
 import { Select } from "antd";
-const { Option } = Select;
+
+
 
 
 const Listing = () => {
@@ -333,6 +334,7 @@ const Listing = () => {
     }, []);
 
 
+
     return (
 
         <div>
@@ -357,6 +359,9 @@ const Listing = () => {
                                     <li data-value="3" className="option selected">12 Per Page</li>
                                 </ul>
                             </div> */}
+
+                            {properties.length > 0 && (
+  <>
                             <div className="nice-select list-page" tabIndex="0">
                                 <span className="current">{limit} Per Page</span>
                                 <ul className="list">
@@ -391,6 +396,8 @@ const Listing = () => {
                                     <li data-value="old" className="option">Oldest</li>
                                 </ul>
                             </div>
+                            </>
+                            )}
                         </div>
                     </div>
                     <div className="row">
@@ -399,22 +406,39 @@ const Listing = () => {
                                 <div className="flat-tab flat-tab-form widget-filter-search widget-box bg-surface mb-4" style={{ background: "#f7f7f7" }}>
                                     <div className="h7 title fw-7">Search</div>
                                     <ul className="nav-tab-form" role="tablist">
-                                        <li className="nav-tab-item">
-                                            <a
-                                                href="#forSale"
-                                                className={`nav-link-item ${selectedListingType === "sale" ? "active" : ""}`}
-                                                onClick={e => { e.preventDefault(); setSelectedListingType("sale"); setSelectedType("All"); }}
-                                            >For Sale</a>
-                                        </li>
+
                                         <li className="nav-tab-item">
 
                                             <a
                                                 href="#forRent"
                                                 className={`nav-link-item ${selectedListingType === "rent" ? "active" : ""}`}
                                                 onClick={e => { e.preventDefault(); setSelectedListingType("rent"); setSelectedType("All"); }}
-                                            >For Rent</a>
+                                            >Buy</a>
 
                                         </li>
+                                        <li className="nav-tab-item">
+                                            <a
+                                                href="#forSale"
+                                                className={`nav-link-item ${selectedListingType === "sale" ? "active" : ""}`}
+                                                onClick={e => { e.preventDefault(); setSelectedListingType("sale"); setSelectedType("All"); }}
+                                            >Sale</a>
+                                        </li>
+                                        
+                                        <li className='nav-tab-item'>
+                                            <a
+                                                href="#forjointventure"
+                                                className={`nav-link-item ${selectedListingType === "joint venture" ? "active" : ""}`}
+
+                                                onClick={e => {
+                                                    e.preventDefault();
+
+                                                    setSelectedListingType("joint venture"); // ✅ match case
+                                                    setSelectedType("All");
+                                                }}
+
+                                            >Joint</a>
+                                        </li>
+
                                     </ul>
                                     <div className="tab-content">
                                         <div className="tab-pane fade active show" role="tabpanel">
@@ -751,9 +775,9 @@ const Listing = () => {
                                                                     </ul>
 
                                                                 </div>
-                                                                <div className="d-flex justify-content-between align-items-center archive-bottom" style={{borderTop:"none"}}>
+                                                                <div className="d-flex justify-content-between align-items-center archive-bottom" style={{ borderTop: "none" }}>
                                                                     <div className="d-flex gap-8 align-items-center">
-                                                                      
+
                                                                         <span style={{ fontWeight: "bold", fontSize: "18px" }}>{property.agentName}</span>
                                                                     </div>
                                                                     <div className="d-flex align-items-center">
@@ -773,39 +797,42 @@ const Listing = () => {
                                     </div>
 
                                     {/* Pagination */}
-                                    <ul className="justify-content-center wd-navigation">
-                                        {getPagination(totalPages, page).map((p, i) => (
-                                            <li key={i}>
-                                                {p === "..." ? (
-                                                    <span className="nav-item">…</span>
-                                                ) : (
-                                                    <button
-                                                        style={{ border: "none" }}
-                                                        onClick={() => {
-                                                            setPage(p);
-                                                            window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-                                                        }}
-                                                        className={`nav-item ${page === p ? "active" : ""}`}
-                                                    >
-                                                        {p}
-                                                    </button>
-                                                )}
-                                            </li>
-                                        ))}
+                                    {properties.length > 0 && (
+                                        <ul className="justify-content-center wd-navigation">
+                                            {getPagination(totalPages, page).map((p, i) => (
+                                                <li key={i}>
+                                                    {p === "..." ? (
+                                                        <span className="nav-item">…</span>
+                                                    ) : (
+                                                        <button
+                                                            style={{ border: "none" }}
+                                                            onClick={() => {
+                                                                setPage(p);
+                                                                window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                                                            }}
+                                                            className={`nav-item ${page === p ? "active" : ""}`}
+                                                        >
+                                                            {p}
+                                                        </button>
+                                                    )}
+                                                </li>
+                                            ))}
 
-                                        <li>
-                                            <button
-                                                style={{ border: "none" }}
-                                                onClick={() => {
-                                                    setPage((prev) => Math.min(prev + 1, totalPages));
-                                                    window.scrollTo({ top: 0, left: 0, behavior: "instant" }); // ✅ scroll here too
-                                                }}
-                                                className="nav-item"
-                                            >
-                                                <i className="icon icon-arr-r"></i>
-                                            </button>
-                                        </li>
-                                    </ul>
+                                            <li>
+                                                <button
+                                                    style={{ border: "none" }}
+                                                    onClick={() => {
+                                                        setPage((prev) => Math.min(prev + 1, totalPages));
+                                                        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+                                                    }}
+                                                    className="nav-item"
+                                                >
+                                                    <i className="icon icon-arr-r"></i>
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    )}
+
 
                                 </div>
                             </div>

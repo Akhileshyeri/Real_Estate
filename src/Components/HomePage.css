@@ -102,3 +102,72 @@
   font-weight: bold;
   margin-bottom:10px ;  
 }
+
+
+.card-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 80%;       /* 80% width */
+  margin: 0 auto;   /* center container with equal margin on both sides */
+}
+
+.card {
+  background-color: #fff;
+  width: 23%;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 20px;
+
+}
+
+.card p {
+  color: #555;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .card {
+    width: 48%;
+  }
+}
+
+@media (max-width: 600px) {
+  .card {
+    width: 100%;
+  }
+}
+
+
+.property-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;   /* limit to 1 line */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  max-height: 1.5em; /* height for 1 line */
+}
+
+/* On hover → allow 2 lines */
+.property-name:hover {
+  -webkit-line-clamp: 2; 
+  max-height: 3em; /* height for 2 lines */
+  white-space: normal;
+}

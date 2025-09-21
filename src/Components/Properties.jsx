@@ -9,8 +9,12 @@ import Footer from "./Footer";
 import api from "../api/api";
 import toast from "react-hot-toast";
 import download from '/src/assets/download.png'
+import { decryptId } from "../utils/crypto";
 
 const Properties = () => {
+
+    const { id: encryptedId } = useParams();
+    const id = decryptId(encryptedId);
 
     const [rating, setRating] = useState(0); // selected rating
     const [hovers, setHovers] = useState(0);   // hover preview
@@ -32,7 +36,6 @@ const Properties = () => {
 
 
 
-    const { id } = useParams();
     const navigate = useNavigate()
     const [propertyData, setPropertyData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -626,20 +629,20 @@ const Properties = () => {
                             >
                                 {propertyData.property.listing_type}
                             </span>
-                            <h4 className="title link"style={{marginTop:"20px"}}>{propertyData.property.title}</h4>
+                            <h4 className="title link" style={{ marginTop: "20px" }}>{propertyData.property.title}</h4>
                             {isPlot && <span className="badge bg-secondary ms-2">Plot</span>}
 
                             {/* Location displayed below */}
-                              <div className="info-box" style={{marginTop :"-10px"}}></div>
+                            <div className="info-box" style={{ marginTop: "-10px" }}></div>
                             <div className="info-box d-flex align-items-center mt-2" >
-                                <span className="icon icon-mapPin me-2"  style={{ color: 'red', fontSize: '18px' }} ></span>
+                                <span className="icon icon-mapPin me-2" style={{ color: 'red', fontSize: '18px' }} ></span>
                                 <p className="meta-item mb-0" style={{ fontWeight: '700', fontSize: '16px' }}>
                                     {propertyData.location.address}, {propertyData.location.location}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="content-bottom" style={{marginTop:"25px"}}>
+                        <div className="content-bottom" style={{ marginTop: "25px" }}>
                             <div className="info-box">
                                 <div className="label">FEATURES:</div>
                                 <ul className="meta">
