@@ -13,6 +13,7 @@ import nodata from "../assets/nodata.png"
 import Dub from "../assets/du.jpg"
 import { encryptId } from '../utils/crypto';
 import { slugify } from '../utils/slugify';
+import gps from "../assets/gps.png"
 
 
 
@@ -64,6 +65,11 @@ const HomePage = () => {
     const [states, setStates] = useState([]);
     const [selectedState, setSelectedState] = useState("Select State");
     const [searchQuery, setSearchQuery] = useState("");
+
+    const [detectedCity, setDetectedCity] = useState("");
+    const [detectedState, setDetectedState] = useState("");
+    const [detectedCountry, setDetectedCountry] = useState("");
+
 
 
 
@@ -213,6 +219,51 @@ const HomePage = () => {
     const [rentRange, setRentRange] = useState([0, 200000]); // ✅ separate rent range
 
 
+    const handleDetectLocation = () => {
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+
+                try {
+                    // ✅ Use OpenStreetMap Nominatim API (Free, no key required)
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+                    );
+                    const data = await response.json();
+
+                    const city =
+                        data.address.city ||
+                        data.address.town ||
+                        data.address.village ||
+                        "";
+                    const state = data.address.state || "";
+                    const country = data.address.country || "";
+
+                    setDetectedCity(city);
+                    setDetectedState(state);
+                    setDetectedCountry(country);
+
+                    // ✅ Also update your state selector
+                    if (state) setSelectedState(state);
+
+                    
+
+                    console.log("Detected Location:", city, state, country);
+                } catch (error) {
+                    console.error("Error fetching location details:", error);
+                }
+            },
+            (error) => {
+                console.error("Geolocation error:", error);
+                alert("Unable to fetch location. Please enable GPS.");
+            }
+        );
+    };
 
 
 
@@ -767,6 +818,37 @@ const HomePage = () => {
                                                                         </div>
                                                                     </div>
 
+                                                                    {/* ✅ GPS Icon */}
+
+                                                                    <span
+                                                                        type="button"
+                                                                        onClick={handleDetectLocation}
+                                                                        style={{
+                                                                            padding:"20px",
+                                                                            backgroundColor: "#F0F4FF", // light background
+                                                                            border: "none",
+                                                                            marginRight: "20px",
+                                                                            cursor: "pointer",
+                                                                            color: "#5D87FF",
+                                                                            borderRadius: "50%", // makes it circular
+                                                                            display: "flex",
+                                                                            alignItems: "center",
+                                                                            justifyContent: "center"
+                                                                        }}
+                                                                        title="Detect my location"
+                                                                    >
+                                                                        <img src={gps} alt="gps" width="80px" height="80px" />
+                                                                    </span>
+
+                                                                    {/* Show detected location */}
+                                                                    {/* {detectedCity && (
+                                                                        <p style={{ marginTop: "5px", fontSize: "12px", color: "#555" }}>
+                                                                            {detectedCity}, {detectedState}, {detectedCountry}
+                                                                        </p>
+                                                                    )} */}
+
+
+
                                                                     <div className="form-group-4 box-filter">
                                                                         <span
                                                                             className="filter-advanced pull-right"
@@ -784,6 +866,9 @@ const HomePage = () => {
                                                                     onClick={() => {
                                                                         // build query params
                                                                         const queryParams = new URLSearchParams({
+                                                                            country: detectedCountry || "",   // 👈 add country
+                                                                            state: detectedState || "",       // 👈 add state
+                                                                            city: detectedCity || "",         // 👈 add city
                                                                             state: selectedState,   // 👈 add state here
                                                                             listingType: selectedListingType,
                                                                             type: selectedType,
@@ -1071,6 +1156,9 @@ const HomePage = () => {
                                                                         onClick={() => {
                                                                             // build query params
                                                                             const queryParams = new URLSearchParams({
+                                                                                country: detectedCountry || "",   // 👈 add country
+                                                                                state: detectedState || "",       // 👈 add state
+                                                                                city: detectedCity || "",         // 👈 add city
                                                                                 state: selectedState,   // 👈 add state here
                                                                                 listingType: selectedListingType,
                                                                                 type: selectedType,
@@ -1983,81 +2071,83 @@ const HomePage = () => {
 
 
                     {/* TESTIMONIALS */}
-                    {reviewSlides.length > 0 && (
-                        <section className="flat-section-v3 bg-surface flat-testimonial">
-                            <div className="cus-layout-1">
-                                <div className="row align-items-center">
-                                    <div className="col-lg-3">
-                                        <div className="box-title">
-                                            <div className="text-subtitle text-primary">Top Properties</div>
-                                            <h4 className="mt-4">What’s people say’s</h4>
+                    {
+                        reviewSlides.length > 0 && (
+                            <section className="flat-section-v3 bg-surface flat-testimonial">
+                                <div className="cus-layout-1">
+                                    <div className="row align-items-center">
+                                        <div className="col-lg-3">
+                                            <div className="box-title">
+                                                <div className="text-subtitle text-primary">Top Properties</div>
+                                                <h4 className="mt-4">What’s people say’s</h4>
+                                            </div>
+                                            <p className="text-variant-1 p-16">
+                                                Our seasoned team excels in real estate with years of successful market
+                                                navigation, offering informed decisions and optimal results.
+                                            </p>
                                         </div>
-                                        <p className="text-variant-1 p-16">
-                                            Our seasoned team excels in real estate with years of successful market
-                                            navigation, offering informed decisions and optimal results.
-                                        </p>
-                                    </div>
 
-                                    <div className="col-lg-9">
-                                        <Swiper
-                                            modules={[Navigation, Autoplay]}
-                                            autoplay={{ delay: 3000, disableOnInteraction: false }}
-                                            loop={true}
-                                            spaceBetween={30}
-                                            slidesPerView={1}
-                                            breakpoints={{
-                                                768: { slidesPerView: 2, spaceBetween: 20 },
-                                                1024: { slidesPerView: 2, spaceBetween: 30 },
-                                            }}
-                                            className="tf-sw-testimonial"
-                                        >
-                                            {Array.isArray(reviews) &&
-                                                reviews.map((property) =>
-                                                    Array.isArray(property.review) &&
-                                                    property.review.map((rev) => (
-                                                        <SwiperSlide key={rev.reviewId}>
-                                                            <div className="box-tes-item">
-                                                                {/* ⭐ Dynamic stars */}
-                                                                <ul className="list-star">
-                                                                    {Array.from({ length: 5 }).map((_, i) => (
-                                                                        <li
-                                                                            key={i}
-                                                                            className={`icon icon-star ${i < parseInt(rev.star) ? "text-warning" : ""
-                                                                                }`}
-                                                                        ></li>
-                                                                    ))}
-                                                                </ul>
+                                        <div className="col-lg-9">
+                                            <Swiper
+                                                modules={[Navigation, Autoplay]}
+                                                autoplay={{ delay: 3000, disableOnInteraction: false }}
+                                                loop={true}
+                                                spaceBetween={30}
+                                                slidesPerView={1}
+                                                breakpoints={{
+                                                    768: { slidesPerView: 2, spaceBetween: 20 },
+                                                    1024: { slidesPerView: 2, spaceBetween: 30 },
+                                                }}
+                                                className="tf-sw-testimonial"
+                                            >
+                                                {Array.isArray(reviews) &&
+                                                    reviews.map((property) =>
+                                                        Array.isArray(property.review) &&
+                                                        property.review.map((rev) => (
+                                                            <SwiperSlide key={rev.reviewId}>
+                                                                <div className="box-tes-item">
+                                                                    {/* ⭐ Dynamic stars */}
+                                                                    <ul className="list-star">
+                                                                        {Array.from({ length: 5 }).map((_, i) => (
+                                                                            <li
+                                                                                key={i}
+                                                                                className={`icon icon-star ${i < parseInt(rev.star) ? "text-warning" : ""
+                                                                                    }`}
+                                                                            ></li>
+                                                                        ))}
+                                                                    </ul>
 
-                                                                {/* 📝 Review text */}
-                                                                <p className="note body-1">"{rev.message}"</p>
+                                                                    {/* 📝 Review text */}
+                                                                    <p className="note body-1">"{rev.message}"</p>
 
-                                                                {/* 👤 User info */}
-                                                                <div className="box-avt d-flex align-items-center gap-12">
-                                                                    <div className="avatar avt-60 round">
+                                                                    {/* 👤 User info */}
+                                                                    <div className="box-avt d-flex align-items-center gap-12">
+                                                                        <div className="avatar avt-60 round">
 
-                                                                        <img
-                                                                            src={rev?.profile ? `${api.imageUrl}${rev.profile}` : "images/avatar/avt-7.jpg"}
-                                                                            alt="avatar"
-                                                                            onError={(e) => { e.currentTarget.src = { download } }}
-                                                                        />
+                                                                            <img
+                                                                                src={rev?.profile ? `${api.imageUrl}${rev.profile}` : "images/avatar/avt-7.jpg"}
+                                                                                alt="avatar"
+                                                                                onError={(e) => { e.currentTarget.src = { download } }}
+                                                                            />
 
-                                                                    </div>
-                                                                    <div className="info">
-                                                                        <div className="h7 fw-7">{rev.user_name}</div>
-                                                                        <p className="text-variant-1 mt-4">{rev.userType}</p>
+                                                                        </div>
+                                                                        <div className="info">
+                                                                            <div className="h7 fw-7">{rev.user_name}</div>
+                                                                            <p className="text-variant-1 mt-4">{rev.userType}</p>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        </SwiperSlide>
-                                                    ))
-                                                )}
-                                        </Swiper>
+                                                            </SwiperSlide>
+                                                        ))
+                                                    )}
+                                            </Swiper>
 
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </section>
-                    )}
+                            </section>
+                        )
+                    }
                     {/* AGENTS */}
                     {/* <section className="flat-section flat-agents">
                         <div className="container">
@@ -2107,37 +2197,41 @@ const HomePage = () => {
                         </div>
                     </section> */}
 
-                    {footerBannerUrl && (
-                        <div className="footer-banner text-center">
-                            <img
-                                src={`${api.imageUrl}${footerBannerUrl}`}
-                                alt="Footer Banner"
-                                style={{
-                                    maxWidth: "100%",   // fills container width responsively
-                                    height: "auto",     // maintains aspect ratio
-                                }}
-                            />
-                        </div>
-                    )}
+                    {
+                        footerBannerUrl && (
+                            <div className="footer-banner text-center">
+                                <img
+                                    src={`${api.imageUrl}${footerBannerUrl}`}
+                                    alt="Footer Banner"
+                                    style={{
+                                        maxWidth: "100%",   // fills container width responsively
+                                        height: "auto",     // maintains aspect ratio
+                                    }}
+                                />
+                            </div>
+                        )
+                    }
 
 
 
 
                     {/* ✅ Popup Banner Modal */}
-                    {showPopup && popupBanner && (
-                        <div className="popup-overlay">
-                            <div className="popup-container">
-                                <button className="popup-close" style={{ zIndex: "999" }} onClick={() => setShowPopup(false)}>
-                                    ✖
-                                </button>
-                                <img
-                                    src={`${api.imageUrl}${popupBanner}`}
-                                    alt="Popup Banner"
-                                    className="popup-img"
-                                />
+                    {
+                        showPopup && popupBanner && (
+                            <div className="popup-overlay">
+                                <div className="popup-container">
+                                    <button className="popup-close" style={{ zIndex: "999" }} onClick={() => setShowPopup(false)}>
+                                        ✖
+                                    </button>
+                                    <img
+                                        src={`${api.imageUrl}${popupBanner}`}
+                                        alt="Popup Banner"
+                                        className="popup-img"
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )
+                    }
 
                     <style>{`
         .popup-overlay {
@@ -2197,48 +2291,50 @@ const HomePage = () => {
       `}</style>
 
 
-                    {showSticky && stickyBanner && (
-                        <div
-                            style={{
-                                position: "fixed",
-                                bottom: "20px",
-                                left: "20px",
-                                zIndex: 9999,
-                            }}
-                        >
+                    {
+                        showSticky && stickyBanner && (
                             <div
                                 style={{
-                                    position: "relative",
-                                    background: "#fff",
-                                    borderRadius: "12px",
-                                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                                    overflow: "hidden",
-                                    maxWidth: "280px",
-                                    animation: "slideUp 0.5s ease-out",
+                                    position: "fixed",
+                                    bottom: "20px",
+                                    left: "20px",
+                                    zIndex: 9999,
                                 }}
                             >
-                                {/* Close Button */}
-                                <button className="popup-close" style={{ zIndex: "999" }} onClick={() => {
-                                    setShowSticky(false);
-                                    localStorage.setItem("hasSeenSticky", "true"); // mark dismissed
-                                }}>
-                                    ✖
-                                </button>
-
-                                {/* Banner Image */}
-                                <img
-                                    src={`${api.imageUrl}${stickyBanner}`}
-                                    alt="Sticky Banner"
+                                <div
                                     style={{
-                                        display: "block",
-                                        width: "100%",
-                                        height: "auto",
+                                        position: "relative",
+                                        background: "#fff",
                                         borderRadius: "12px",
+                                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                                        overflow: "hidden",
+                                        maxWidth: "280px",
+                                        animation: "slideUp 0.5s ease-out",
                                     }}
-                                />
+                                >
+                                    {/* Close Button */}
+                                    <button className="popup-close" style={{ zIndex: "999" }} onClick={() => {
+                                        setShowSticky(false);
+                                        localStorage.setItem("hasSeenSticky", "true"); // mark dismissed
+                                    }}>
+                                        ✖
+                                    </button>
+
+                                    {/* Banner Image */}
+                                    <img
+                                        src={`${api.imageUrl}${stickyBanner}`}
+                                        alt="Sticky Banner"
+                                        style={{
+                                            display: "block",
+                                            width: "100%",
+                                            height: "auto",
+                                            borderRadius: "12px",
+                                        }}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )
+                    }
 
 
 
@@ -2253,9 +2349,9 @@ const HomePage = () => {
                         </svg>
                     </div> */}
 
-                </div>
-            </div>
-        </div>
+                </div >
+            </div >
+        </div >
     );
 };
 
