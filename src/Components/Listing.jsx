@@ -9,6 +9,8 @@ import nodata from "../assets/nodata.png"
 import { Select } from "antd";
 import { encryptId } from '../utils/crypto';
 import { slugify } from '../utils/slugify';
+import { AutoComplete } from "antd"; // Add this at the top
+
 
 
 
@@ -42,6 +44,7 @@ const Listing = () => {
 
     const [states, setStates] = useState([]);
     const [selectedState, setSelectedState] = useState(null);
+const [cityOptions, setCityOptions] = useState([]);
 
 
 
@@ -51,51 +54,51 @@ const Listing = () => {
     // 🔹 Track when initial filters are ready
     const [filtersReady, setFiltersReady] = useState(false);
 
-    useEffect(() => {
-        const query = new URLSearchParams(search);
+useEffect(() => {
+    const query = new URLSearchParams(search);
 
-        const listingType = query.get("listingType") || "sale";
-        const type = query.get("type") || "All";
-        const bhk = query.get("bhk") || "";
-        const bathrooms = query.get("bathrooms") || "";
-        const bedrooms = query.get("bedrooms") || "";
-        const city = query.get("city") || "";
-        const state = query.get("state") || ""; // ✅ new
+    const listingType = query.get("listingType") || "sale";
+    const type = query.get("type") || "All";
+    const bhk = query.get("bhk") || "";
+    const bathrooms = query.get("bathrooms") || "";
+    const bedrooms = query.get("bedrooms") || "";
+    const city = query.get("city") || "";       // 👈 get city from query
+    const state = query.get("state") || "";     
+    const searchQuery = query.get("search") || "";
 
-        const searchQuery = query.get("search") || "";
+    const priceMin = query.get("priceMin");
+    const priceMax = query.get("priceMax");
+    const rentMin = query.get("rentMin");
+    const rentMax = query.get("rentMax");
 
+    setSelectedListingType(listingType);
+    setSelectedType(type);
+    setSelectedBHK(bhk);
+    setSelectedBathroom(bathrooms);
+    setSelectedBedroom(bedrooms);
+    setSelectedCity(city);
+    setSelectedState(state);
+    setSearchTerm(searchQuery);
 
-        const priceMin = query.get("priceMin");
-        const priceMax = query.get("priceMax");
-        const rentMin = query.get("rentMin");
-        const rentMax = query.get("rentMax");
+    // ✅ Set the input value for Search City
+    setSearchCity(city);
 
-        setSelectedListingType(listingType);
-        setSelectedType(type);
-        setSelectedBHK(bhk);
-        setSelectedBathroom(bathrooms);
-        setSelectedBedroom(bedrooms);
-        setSelectedCity(city);
-        setSelectedState(state); // ✅ set here
-        setSearchTerm(searchQuery);
+    let filters = { listingType, type, bhk, bathrooms, bedrooms, city, priceRange, rentRange, state, searchTerm };
 
+    if (listingType === "rent" && rentMin && rentMax) {
+        const range = [+rentMin, +rentMax];
+        setRentRange(range);
+        filters.rentRange = range;
+    } else if (listingType === "sale" && priceMin && priceMax) {
+        const range = [+priceMin, +priceMax];
+        setPriceRange(range);
+        filters.priceRange = range;
+    }
 
-        let filters = { listingType, type, bhk, bathrooms, bedrooms, city, priceRange, rentRange, state, searchTerm };
+    setFiltersReady(true);
+    fetchList(1, filters);
+}, [search]);
 
-        if (listingType === "rent" && rentMin && rentMax) {
-            const range = [+rentMin, +rentMax];
-            setRentRange(range);
-            filters.rentRange = range;
-        } else if (listingType === "sale" && priceMin && priceMax) {
-            const range = [+priceMin, +priceMax];
-            setPriceRange(range);
-            filters.priceRange = range;
-        }
-
-        // ✅ Mark filters ready and fetch page 1
-        setFiltersReady(true);
-        fetchList(1, filters);
-    }, [search]);
 
     // 🔹 Handle pagination AFTER filters are ready
     useEffect(() => {
@@ -150,9 +153,6 @@ const Listing = () => {
         fd.append("authToken", localStorage.getItem("authToken"));
         fd.append("page", pageNumber);
         fd.append("limit", limit);
-        fd.append("state", selectedState);
-
-        console.log(selectedState);
 
         const appliedFilters = filters || {
             listingType: selectedListingType,
@@ -162,55 +162,29 @@ const Listing = () => {
             bedrooms: selectedBedroom,
             state: selectedState,
             city: selectedCity,
-            city: searchCity,
-
-            searchTerm,   // ✅ fix here
+            searchCity,
+            searchTerm,
             priceRange,
             rentRange
         };
 
         if (appliedFilters.listingType) fd.append("listing_type", appliedFilters.listingType);
         if (appliedFilters.type && appliedFilters.type !== "All") fd.append("sub_property_type", appliedFilters.type);
-        if (appliedFilters.city) fd.append("city", appliedFilters.city);
-        if (appliedFilters.bathrooms) fd.append("bathrooms", appliedFilters.bathrooms);
-        if (appliedFilters.bhk) fd.append("apartment_bhk", appliedFilters.bhk);
-        if (appliedFilters.bedrooms) fd.append("bedrooms", appliedFilters.bedrooms);
-
         if (appliedFilters.state) fd.append("state", appliedFilters.state);
-
         if (appliedFilters.city) fd.append("city", appliedFilters.city);
+        if (appliedFilters.searchCity) fd.append("searchCity", appliedFilters.searchCity);
 
-
-        if (appliedFilters.searchTerm) fd.append("searchTerm", appliedFilters.searchTerm);
-
-
-
-        // ✅ Add country dynamically
         const countryCode = localStorage.getItem("country");
-        if (countryCode === "101") {
-            fd.append("country", "India");
-        } else if (countryCode === "229") {
-            fd.append("country", "Dubai");
-        }
-
-        if (appliedFilters.listingType === "rent" && appliedFilters.rentRange) {
-            fd.append("priceStart", appliedFilters.rentRange[0]);
-            fd.append("priceEnd", appliedFilters.rentRange[1]);
-        } else if (appliedFilters.listingType === "sale" && appliedFilters.priceRange) {
-            fd.append("priceStart", appliedFilters.priceRange[0]);
-            fd.append("priceEnd", appliedFilters.priceRange[1]);
-        }
-
-        console.log("Submitting form data:");
-        for (let pair of fd.entries()) {
-            console.log(pair[0], pair[1]); // Logs each key-value pair
-        }
+        if (countryCode === "101") fd.append("country", "India");
+        else if (countryCode === "229") fd.append("country", "Dubai");
 
         try {
             const response = await api.post("/properties/property", fd);
-            console.log(response);
-
             const { properties, page, limit } = response.data.data;
+
+            // Extract unique city names for suggestions
+            const cities = [...new Set(properties.map(p => p.location))].map(c => ({ value: c }));
+            setCityOptions(cities);
             const mapped = properties.map((item) => {
                 let priceValue = "N/A";
                 let priceUnit = "";
@@ -497,14 +471,19 @@ const Listing = () => {
                                                             </div>
                                                             <div className="form-style">
                                                                 <label className="title-select">Search City</label>
-                                                                <input
-                                                                    type="text"
-                                                                    className="form-control"
-                                                                    placeholder="Search city"
+                                                                <AutoComplete
+                                                                    options={cityOptions}
+                                                                    style={{ width: "100%" }}
                                                                     value={searchCity}
-                                                                    onChange={(e) => setSearchCity(e.target.value)}
+                                                                    placeholder="Search city"
+                                                                    onSelect={(value) => setSearchCity(value)}
+                                                                    onChange={(value) => setSearchCity(value)}
+                                                                    filterOption={(inputValue, option) =>
+                                                                        option.value.toLowerCase().includes(inputValue.toLowerCase())
+                                                                    }
                                                                 />
                                                             </div>
+
 
 
 
@@ -704,6 +683,8 @@ const Listing = () => {
                             </div>
 
                         </div>
+
+
                         <div className="col-xl-8 col-lg-7">
                             <div className="tab-content">
 
