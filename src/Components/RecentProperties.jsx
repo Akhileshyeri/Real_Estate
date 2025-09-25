@@ -6,6 +6,9 @@ import "./Myproperties.css"
 import easy from "../assets/easy.png"
 import toast from 'react-hot-toast';
 import Arrow from '../assets/Arrow.png'
+import { encryptId } from '../utils/crypto';
+import { slugify } from "../utils/slugify";
+
 
 
 
@@ -562,7 +565,12 @@ const RecentProperties = () => {
                                                                     <div
                                                                         className="listing-box"
                                                                         style={{ cursor: "pointer" }}
-                                                                        onClick={() => navigate(`/property/${property.id}`)}
+                                                                        onClick={() => {
+                                                                            const encryptedId = encryptId(property.id)
+                                                                               const slug = slugify(property.name);
+                                                                            navigate(`/property/${encryptedId}&slug=${slug}`)
+                                                                        }}
+
                                                                     >
                                                                         <div className="images">
                                                                             <img
@@ -587,7 +595,9 @@ const RecentProperties = () => {
                                                                                         className={` ${property.for === "sale" ? "success" : "style-1"}`}
                                                                                     >
                                                                                         <span className="fw-6">Listing Type:</span>{" "}
-                                                                                        {property.for.charAt(0).toUpperCase() + property.for.slice(1)}
+                                                                                        {property.for
+                                                                                            ? property.for.charAt(0).toUpperCase() + property.for.slice(1)
+                                                                                            : "N/A"}
                                                                                     </span>
                                                                                 </div>
 
@@ -620,7 +630,11 @@ const RecentProperties = () => {
                                                                             <button
                                                                                 type="button"
                                                                                 className="remove-file item flex items-center gap-1"
-                                                                                onClick={() => navigate(`/property/${property.id}`)}
+                                                                                onClick={() => {
+                                                                                    const encryptedId = encryptId(property.id)
+                                                                                    navigate(`/property/${encryptedId}`)
+                                                                                }
+                                                                                }
                                                                                 style={{
                                                                                     backgroundColor: "#ed2027",
                                                                                     color: "#fff", // makes text white

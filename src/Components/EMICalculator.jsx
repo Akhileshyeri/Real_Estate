@@ -54,26 +54,7 @@ const EMICalculator = () => {
 
       <div className="emi-calculator">
         <div className="container">
-          <button
-              style={{
-                display: "flex",
-                justifyContent: "flex-start",
-                background: "#ED2027",
-                color: "#fff",
-                // optional, to keep background clear
-                border: "none", // optional, remove default button border
-                cursor: "pointer", // optional, pointer on hover
-                fontSize: "16px", // optional, adjust text size
-                padding: "5px 10px",
-                borderRadius: "5px", 
-                
-              }}
-              onClick={() => {
-                navigate("/home");
-              }}
-            >
-              Back
-            </button>
+       
           {/* Header */}
           <div className="header"
           >

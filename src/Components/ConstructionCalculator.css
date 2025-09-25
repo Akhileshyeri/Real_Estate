@@ -7,6 +7,7 @@
     padding: 30px;
 }
 
+/* Header */
 .calculator-header {
     text-align: center;
     margin-bottom: 30px;
@@ -20,8 +21,16 @@
     margin-bottom: 10px;
 }
 
-h2 {
+.calculator-header p {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.6;
+    margin: 0 auto;
+    max-width: 700px;
+}
 
+/* Sections */
+h2 {
     font-size: 22px;
     margin: 25px 0 15px;
     padding-bottom: 8px;
@@ -29,16 +38,17 @@ h2 {
 }
 
 h3 {
-    
     font-size: 18px;
     margin: 20px 0 15px;
 }
 
+/* Components */
 .components-container {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
     margin: 20px 0;
+    gap: 10px;
 }
 
 .component-item {
@@ -47,7 +57,6 @@ h3 {
     border-radius: 6px;
     font-weight: 600;
     color: #2c7da0;
-    margin: 5px;
     flex: 1;
     min-width: 120px;
     text-align: center;
@@ -66,21 +75,25 @@ h3 {
     margin: 25px 0;
 }
 
+/* Form */
 .calculator-form {
     background: #f8f9fa;
     padding: 25px;
     border-radius: 8px;
     border: 1px solid #e1e4e8;
+    overflow-x: auto;
 }
 
 .dimensions-table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
+    min-width: 400px;
 }
 
-.dimensions-table th, .dimensions-table td {
-    padding: 15px;
+.dimensions-table th,
+.dimensions-table td {
+    padding: 12px;
     text-align: left;
     border-bottom: 1px solid #e1e4e8;
 }
@@ -91,25 +104,7 @@ h3 {
     font-weight: 600;
 }
 
-input[type="text"] {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.options-container {
-    display: flex;
-    justify-content: space-between;
-    margin: 20px 0;
-}
-
-.option-item {
-    flex: 1;
-    padding: 0 15px;
-}
-
+input[type="text"],
 select {
     width: 100%;
     padding: 12px;
@@ -119,35 +114,69 @@ select {
     background: white;
 }
 
+/* Options */
+.options-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.option-item {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Checkbox */
 .checkbox-container {
     margin: 20px 0;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    font-size: 15px;
 }
 
 .checkbox-container input {
     margin-right: 10px;
-    transform: scale(1.3);
+    transform: scale(1.2);
+}
+
+/* Buttons */
+.calculate-button,
+.download-button {
+    border: none;
+    cursor: pointer;
+    display: block;
+    margin: 30px auto 0;
+    font-weight: 600;
+    transition: background-color 0.3s;
+    border-radius: 6px;
 }
 
 .calculate-button {
     background-color: #2c7da0;
     color: white;
-    border: none;
     padding: 14px 28px;
     font-size: 18px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: block;
-    margin: 30px auto;
-    font-weight: 600;
-    transition: background-color 0.3s;
 }
 
 .calculate-button:hover {
     background-color: #1a5d7a;
 }
 
+.download-button {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 24px;
+    font-size: 16px;
+}
+
+.download-button:hover {
+    background-color: #218838;
+}
+
+/* Standards */
 .standards-container {
     background: #e6f2f8;
     padding: 20px;
@@ -180,7 +209,7 @@ select {
     font-size: 20px;
 }
 
-/* Results Section Styles */
+/* Results */
 .results-container {
     margin-top: 30px;
     padding: 25px;
@@ -193,29 +222,36 @@ select {
     margin-bottom: 25px;
 }
 
-.result-grid {
+.result-grid,
+.summary-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 15px;
     margin-top: 15px;
 }
 
-.result-item {
+.result-item,
+.summary-item {
     display: flex;
     justify-content: space-between;
     padding: 12px 15px;
     background: white;
     border-radius: 6px;
-    border-left: 4px solid #2c7da0;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.result-label {
+.result-item {
+    border-left: 4px solid #2c7da0;
+}
+
+.result-label,
+.summary-label {
     font-weight: 600;
     color: #555;
 }
 
-.result-value {
+.result-value,
+.summary-value {
     font-weight: 600;
     color: #2c7da0;
 }
@@ -227,69 +263,68 @@ select {
     margin: 20px 0;
 }
 
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
-}
+/* Mobile Responsive */
+@media (max-width: 992px) {
+    .calculator-container {
+        padding: 20px;
+    }
 
-.summary-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 15px;
-    background: white;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.summary-label {
-    font-weight: 600;
-    color: #555;
-}
-
-.summary-value {
-    font-weight: 600;
-    color: #2c7da0;
-}
-
-.download-button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    font-size: 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: block;
-    margin: 20px auto 0;
-    font-weight: 600;
-    transition: background-color 0.3s;
-}
-
-.download-button:hover {
-    background-color: #218838;
+    .calculator-header h1 {
+        font-size: 24px;
+    }
 }
 
 @media (max-width: 768px) {
     .components-container {
         flex-direction: column;
     }
-    
+
     .component-item {
         margin-bottom: 10px;
     }
-    
+
     .options-container {
         flex-direction: column;
     }
-    
+
     .option-item {
         margin-bottom: 15px;
     }
-    
-    .result-grid,
-    .summary-grid {
-        grid-template-columns: 1fr;
+
+    .dimensions-table {
+        font-size: 14px;
+    }
+
+    .calculate-button {
+        width: 100%;
+    }
+
+    .download-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .calculator-header h1 {
+        font-size: 20px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    h3 {
+        font-size: 16px;
+    }
+
+    .component-item {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    input[type="text"],
+    select {
+        font-size: 14px;
+        padding: 10px;
     }
 }

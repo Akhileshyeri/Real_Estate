@@ -864,16 +864,16 @@ const Header = ({ showSearch }) => {
                             className={`dropdown-slider-options drd ${dropdownOpen ? "open" : ""}`}
 
                           >
+                            <div className="slider-option" onClick={() => handleOptionSelect("Rent")}>Rent</div>
                             <div className="slider-option" onClick={() => handleOptionSelect("Buy")}>Buy</div>
-                            <div className="slider-option" onClick={() => handleOptionSelect("Sale")}>Sale</div>
                             <div className="slider-option" onClick={() => handleOptionSelect("Joint Venture")}>Joint Venture</div>
 
                           </div>
 
                           {/* Hidden select for form submission if needed */}
                           <select className="hidden-select" value={selectedOption} readOnly>
-                            <option value="Rent">Buy</option>
-                            <option value="Sale">Sale</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Buy">Buy</option>
                             <option value="Joint Venture">Joint Venture</option>
                           </select>
                         </div>
@@ -1986,6 +1986,8 @@ const Header = ({ showSearch }) => {
             justifyContent: "center",
             alignItems: "center",
             zIndex: 3000,
+            backdropFilter: "blur(6px)",   // blur background
+            backgroundColor: "rgba(0,0,0,0.3)", // semi-transparent dark overlay
           }}
         >
           <div style={containerStyle1}>
@@ -2054,7 +2056,9 @@ const Header = ({ showSearch }) => {
               {otp.map((digit, i) => (
                 <input
                   key={i}
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength="1"
                   value={digit}
                   onChange={(e) => handleOtpChange(e.target.value, i)}
@@ -2084,6 +2088,7 @@ const Header = ({ showSearch }) => {
                     borderRadius: "5px",
                   }}
                 />
+
               ))}
             </div>
 
@@ -2284,6 +2289,8 @@ const Header = ({ showSearch }) => {
             justifyContent: "center",
             alignItems: "center",
             zIndex: 3000,
+            backdropFilter: "blur(6px)",   // blur background
+            backgroundColor: "rgba(0,0,0,0.3)", // semi-transparent dark overlay
           }}
         >
           <div style={containerStyle1}>
@@ -2340,7 +2347,7 @@ const Header = ({ showSearch }) => {
               {otp.map((digit, i) => (
                 <input
                   key={i}
-                  type="text"
+                  type="tel"
                   maxLength="1"
                   value={digit}
                   onChange={(e) => handleOtpChange(e.target.value, i)}

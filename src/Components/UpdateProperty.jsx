@@ -6,9 +6,24 @@ import "react-circular-progressbar/dist/styles.css";
 import api from "../api/api";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
+import { decryptId } from "../utils/crypto";
 
 const UpdateProperty = () => {
-  const { id } = useParams()
+  
+      const { id: rawParam } = useParams();
+  
+      let encryptedId = rawParam;
+      let slug = "";
+  
+      if (rawParam.includes("&slug=")) {
+          const [enc, s] = rawParam.split("&slug=");
+          encryptedId = enc;
+          slug = s; // you can use slug if needed
+      }
+  
+      const id = decryptId(encryptedId);
+
+
   const [percentage, setPercentage] = useState(0);
   const [listingType, setListingType] = useState("Sell");
   const [ownerPercentage, setOwnerPercentage] = useState("");
@@ -136,9 +151,10 @@ const UpdateProperty = () => {
   };
 
   const fetchProperty = async () => {
+    const decryptedId = decryptId(encryptedId);
     const fd = new FormData();
     fd.append("programType", "propertyOverView");
-    fd.append("id", id);
+    fd.append("id", decryptedId);
     fd.append("authToken", localStorage.getItem("authToken"));
 
     try {
@@ -360,7 +376,7 @@ const UpdateProperty = () => {
 
   // Location step states
   const [title, setTitle] = useState("");
-//   const [keyword, setKeyword] = useState("");
+  //   const [keyword, setKeyword] = useState("");
 
   const [city, setCity] = useState("");
   const [location, setLocation] = useState("");
@@ -686,7 +702,7 @@ const UpdateProperty = () => {
       subPropertyType,
       subPropertyQuestionOption,
       title,
-    //   keyword,
+      //   keyword,
       city,
       selectedOwnership,
       location,
@@ -804,7 +820,7 @@ const UpdateProperty = () => {
       setSubPropertyQuestionOption(parsed.subPropertyQuestionOption || "");
       setCity(parsed.city || "");
       setTitle(parsed.title || "");
-    //   setKeyword(parsed.keyword || "");
+      //   setKeyword(parsed.keyword || "");
 
       setAddress(parsed.address || "");
       setPostalCode(parsed.postalCode || "");
@@ -2274,7 +2290,7 @@ const UpdateProperty = () => {
                             Continue
                           </button>
 
-                      
+
                         </div>
 
                       );

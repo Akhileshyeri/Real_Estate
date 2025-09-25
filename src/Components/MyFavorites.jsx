@@ -7,6 +7,9 @@ import easy from "../assets/easy.png"
 import toast from 'react-hot-toast';
 import Arrow from '../assets/Arrow.png'
 import Trash from '../assets/delete.png'
+import { encryptId } from '../utils/crypto';
+import { slugify } from "../utils/slugify";
+
 
 
 
@@ -202,9 +205,9 @@ const MyFavorites = () => {
                                                 <nav className="main-menu show navbar-expand-md">
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
 
-                                                      
 
-                                                        <ul className="navigation clearfix" style={{marginLeft:"180px"}}>
+
+                                                        <ul className="navigation clearfix" style={{ marginLeft: "180px" }}>
 
                                                             <li className="home ms-4">
                                                                 <Link to="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</Link>
@@ -568,11 +571,13 @@ const MyFavorites = () => {
                                                                     <div
                                                                         className="listing-box"
                                                                         style={{ cursor: "pointer" }}
-                                                                        onClick={() =>
-                                                                            navigate(`/property/${fav.id}`, {
+                                                                        onClick={() => {
+                                                                            const encryptedId = encryptId(fav.id);
+                                                                               const slug = slugify(fav.title);
+                                                                            navigate(`/property/${encryptedId}&slug=${slug}`), {
                                                                                 state: { fromFavorites: true },
-                                                                            })
-                                                                        }
+                                                                            }
+                                                                        }}
                                                                     >
                                                                         <div className="images">
 
@@ -711,6 +716,7 @@ const MyFavorites = () => {
                             </div> */}
                         </div>
                     </div>
+                    
                 </div>
             </div>
         </div>

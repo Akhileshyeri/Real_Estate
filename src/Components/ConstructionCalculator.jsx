@@ -73,26 +73,7 @@ const ConstructionCalculator = () => {
             <Header />
             <div className="calculator-container">
                 <header className="calculator-header">
-                    <button
-                        style={{
-                            display: "flex",
-                            justifyContent: "flex-start",
-                           background:"#ED2027",
-                           color:"#fff",
-                             // optional, to keep background clear
-                            border: "none", // optional, remove default button border
-                            cursor: "pointer", // optional, pointer on hover
-                            fontSize: "16px", // optional, adjust text size
-                            padding: "5px 10px",
-                            borderRadius:"5px" // optional, spacing
-                        }}
-                        onClick={() => {
-                            navigate("/home");
-                        }}
-                    >
-                        Back
-                    </button>
-
+                  
                     <h1>Detailed Construction Material Calculator</h1>
                     <p>Calculate each construction component separately with precise individual inputs. Based on Indian IS codes and international standards.</p>
                 </header>

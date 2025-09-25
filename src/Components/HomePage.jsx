@@ -11,7 +11,8 @@ import "./HomePage.css"
 import { Modal, Slider } from "antd"; // ✅ Import Modal
 import nodata from "../assets/nodata.png"
 import Dub from "../assets/du.jpg"
-
+import { encryptId } from '../utils/crypto';
+import { slugify } from '../utils/slugify';
 
 
 
@@ -74,24 +75,21 @@ const HomePage = () => {
         let recent = JSON.parse(localStorage.getItem("recentProperties")) || [];
 
         // normalize property shape
-        const normalized = {
-            id: property.id,
-            title: property.title || property.name || "Untitled",
-            image: property.image || property.image_path || null,
-            location: property.location || "Unknown Location",
+        const parsed = JSON.parse(storedRecent).map(p => ({
+            id: p.id,
+            title: p.title || p.name || "Untitled",
+            image: p.image || null,
+            location: p.location || "Unknown Location",
+            price: p.price || "Price on Request",
+            priceValue: p.priceValue || 0,
+            priceUnit: p.priceUnit || "",
+            status: p.status || "N/A",
+            subType: p.subType || "N/A",
+            meta: p.meta || [],
+            agentName: p.agentName || "Agent", // ✅ add this line
+            createdAt: p.createdAt || new Date().toISOString(),
+        }));
 
-            price: property.price || "Price on Request",
-            priceValue: property.priceValue || 0,
-            priceUnit: property.priceUnit || "",
-
-            status: property.status || property.for || "N/A",
-            subType: property.subType || "N/A",
-
-            // 👇 preserve meta (bed, bath, sqft)
-            meta: property.meta || [],
-
-            createdAt: new Date().toISOString(),
-        };
 
         // remove duplicate if already exists
         recent = recent.filter((p) => p.id !== normalized.id);
@@ -134,6 +132,7 @@ const HomePage = () => {
 
                 // 👇 keep meta array intact
                 meta: p.meta || [],
+                agentName: p.agentName || "Agent",
 
                 createdAt: p.createdAt || new Date().toISOString(),
             }));
@@ -505,13 +504,9 @@ const HomePage = () => {
     }, []);
 
     const addToRecentProperties = (property) => {
-        // Get existing Recent activity from localStorage
         const recent = JSON.parse(localStorage.getItem("recentProperties")) || [];
-
-        // Remove the property if it already exists (avoid duplicates)
         const filtered = recent.filter((p) => p.id !== property.id);
 
-        // Add the new property at the beginning
         filtered.unshift({
             id: property.id,
             name: property.name,
@@ -520,7 +515,7 @@ const HomePage = () => {
             location: property.location,
             priceValue: property.priceValue,
             priceUnit: property.priceUnit,
-            agentName: property.agentName,
+            agentName: property.agentName,  // ✅ okay here
             meta: property.meta,
             featured: property.featured,
             type: property.type,
@@ -528,10 +523,7 @@ const HomePage = () => {
             for: property.for,
         });
 
-        // Keep only the latest 4
         const latest = filtered.slice(0, 4);
-
-        // Save back to localStorage
         localStorage.setItem("recentProperties", JSON.stringify(latest));
     };
 
@@ -671,7 +663,7 @@ const HomePage = () => {
                                                             setSelectedType("All"); // reset
                                                         }}
                                                     >
-                                                        For Buy
+                                                        For Rent
                                                     </a>
                                                 </li>
                                                 <li className="nav-tab-item">
@@ -684,7 +676,7 @@ const HomePage = () => {
                                                             setSelectedType("All"); // reset
                                                         }}
                                                     >
-                                                        For Sale
+                                                        For Buy
                                                     </a>
                                                 </li>
                                                 <li className="nav-tab-item">
@@ -830,7 +822,7 @@ const HomePage = () => {
                                                                 <div className="filter-section" style={{ marginBottom: "25px" }}>
                                                                     <h6 className="filter-title">Listing Type</h6>
                                                                     <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                                                                        {["Rent", "Sale", "Joint Venture"].map((type) => (
+                                                                        {["Rent", "Buy", "Joint Venture"].map((type) => (
                                                                             <button
                                                                                 key={type}
                                                                                 onClick={() => setSelectedListingType(type.toLowerCase())}
@@ -1168,7 +1160,7 @@ const HomePage = () => {
                                                 <div className="col-12 text-center py-5">
                                                     <div className="col-12 text-center py-5 mt-3">
                                                         <img
-                                                            src={nodata} // 👈 replace with your own image path
+                                                            src={nodata}
                                                             alt="No Property Found"
                                                             style={{ maxWidth: "280px", marginBottom: "20px" }}
                                                         />
@@ -1182,15 +1174,12 @@ const HomePage = () => {
                                                     <div key={item.id} className="col-xl-4 col-lg-6 col-md-6">
                                                         <div className="homeya-box">
                                                             <div className="archive-top">
-                                                                <a onClick={() => {
-                                                                    addToRecentProperties(item); // ✅ Add to recent
-                                                                    navigate(`/property/${item.id}`);
-                                                                }}
-
-
-
-
-                                                                    className="images-group">
+                                                                {/* ✅ Image clickable using Link with encrypted ID */}
+                                                                <Link
+                                                                    to={`/property/${encryptId(item.id)}&slug=${slugify(item.name)}`}
+                                                                    onClick={() => addToRecentProperties(item)}
+                                                                    className="images-group"
+                                                                >
                                                                     <div className="images-style">
                                                                         <img
                                                                             src={
@@ -1199,45 +1188,44 @@ const HomePage = () => {
                                                                                     : "https://themesflat.co/html/homzen/images/home/house-2.jpg"
                                                                             }
                                                                             alt={item.name}
-                                                                            style={{ width: "100%", height: "200px", objectFit: "cover", borderRadius: "8px" }}
+                                                                            style={{
+                                                                                width: "100%",
+                                                                                height: "200px",
+                                                                                objectFit: "cover",
+                                                                                borderRadius: "8px",
+                                                                            }}
                                                                         />
                                                                     </div>
 
                                                                     <div className="top">
                                                                         <ul className="d-flex gap-8">
-                                                                            {/* {item.featured && <li className="flag-tag success">Featured</li>} */}
                                                                             <li className="flag-tag style-1">{item.for}</li>
                                                                         </ul>
                                                                     </div>
                                                                     <div className="bottom">
                                                                         <span className="flag-tag style-2">{item.type}</span>
                                                                     </div>
-                                                                </a>
+                                                                </Link>
+
                                                                 <div className="content" style={{ background: "#fff" }}>
                                                                     <div className="h7 text-capitalize fw-7">
                                                                         <div className="h7 text-capitalize fw-7">
-                                                                            <a
-                                                                                onClick={() => {
-                                                                                    addToRecentProperties(item);
-                                                                                    navigate(`/property/${item.id}`);
-                                                                                }}
+                                                                            {/* ✅ Property name clickable using Link with encrypted ID */}
+                                                                            <Link
+                                                                                to={`/property/${encryptId(item.id)}`}
+                                                                                onClick={() => addToRecentProperties(item)}
                                                                                 className="property-name"
                                                                             >
                                                                                 {item.name}
-                                                                            </a>
+                                                                            </Link>
                                                                         </div>
-
-
-
-
-
-
-
                                                                     </div>
+
                                                                     <div className="desc">
                                                                         <i className="fs-16 icon icon-mapPin"></i>
                                                                         <p>{item.location}</p>
                                                                     </div>
+
                                                                     <ul className="meta-list">
                                                                         {item.meta.map((m, idx) => (
                                                                             <li className="item" key={idx}>
@@ -1248,9 +1236,9 @@ const HomePage = () => {
                                                                     </ul>
                                                                 </div>
                                                             </div>
+
                                                             <div className="archive-bottom d-flex justify-content-between align-items-center">
                                                                 <div className="d-flex gap-8 align-items-center">
-
                                                                     <span style={{ fontWeight: "bold", fontSize: "18px" }}>{item.agentName}</span>
                                                                 </div>
                                                                 <div className="d-flex align-items-center">
@@ -1274,6 +1262,7 @@ const HomePage = () => {
                                         )}
                                     </div>
                                 </div>
+
 
                             </div>
 
@@ -1521,8 +1510,10 @@ const HomePage = () => {
                                                                 <div className="archive-top">
                                                                     <a
                                                                         onClick={() => {
+                                                                            const encryptedId = encryptId(property.id)
+                                                                            const slug = slugify(property.title);
                                                                             addToRecent(property);
-                                                                            navigate(`/property/${property.id}`);
+                                                                            navigate(`/property/${encryptedId}&slug=${slug}`);
                                                                         }}
                                                                         className="images-group"
                                                                         style={{ cursor: "pointer" }}
@@ -1634,21 +1625,21 @@ const HomePage = () => {
 
 
 
-                    <div class="card-container">
+                    <div className="card-container">
                         <div
                             className="card"
                             onClick={() => {
                                 navigate("/emi");
                             }}
-                            style={{ background: "#fff", cursor: "pointer", padding: "20px", borderRadius: "10px" }}
+
                         >
                             <img
                                 src="images/logo/schedule.png"
                                 alt="EMI"
                                 style={{ width: "65px", height: "60px", marginBottom: "10px" }}
                             />
-                            <h2>EMI</h2>
-                            <h6>EMI calculator</h6>
+                            <h2  >EMI Calculator</h2>
+                            <div className="card-subtitle" style={{ color: '#ED2027' }}>Calculate your loan EMI with ease</div>
                         </div>
 
                         <div
@@ -1656,38 +1647,50 @@ const HomePage = () => {
                             onClick={() => {
                                 navigate("/calc");
                             }}
-                            style={{ background: "#fff", cursor: "pointer", padding: "20px", borderRadius: "10px" }}
+
                         >
                             <img
                                 src="images/logo/calculator.png"
-                                alt="Calculator"
+                                alt="Construction Calculator"
                                 style={{ width: "50px", height: "50px", marginBottom: "10px" }}
                             />
-                            <h2>Calculator</h2>
-                            <h6>Construction Calculator</h6>
+                            <h2 >Construction Calculator</h2>
+                            <div className="card-subtitle" style={{ color: '#ED2027' }}>Estimate construction costs</div>
                         </div>
 
-                        <div className="card" style={{ background: "#fff", padding: "20px", borderRadius: "10px" }}>
+                        <div
+                            className="card"
+                            onClick={() => {
+                                navigate("/area");
+                            }}
+
+                        >
                             <img
                                 src="images/logo/size.png"
-                                alt="Area Unit"
+                                alt="Area Unit Calculator"
                                 style={{ width: "50px", height: "50px", marginBottom: "10px" }}
                             />
-                            <h2>Area Unit</h2>
-                            <h6>Area unit Calculator</h6>
+                            <h2 >Area Unit Calculator</h2>
+                            <div className="card-subtitle" style={{ color: '#ED2027' }}>Convert area measurements</div>
                         </div>
 
-                        <div className="card" style={{ background: "#fff", padding: "20px", borderRadius: "10px" }}>
+                        <div
+                            className="card"
+                            onClick={() => {
+                                navigate("/rent");
+                            }}
+
+                        >
                             <img
                                 src="images/logo/contract.png"
-                                alt="Rent and Buy"
+                                alt="Rent vs Buy"
                                 style={{ width: "50px", height: "50px", marginBottom: "10px" }}
                             />
-                            <h2>Rent and buy</h2>
-                            <h6>Rent and buy Calculator</h6>
+                            <h2>Rent vs Buy </h2>
+                            <div className="card-subtitle" style={{ color: '#ED2027' }}>Compare renting and buying costs</div>
                         </div>
-
                     </div>
+
                     {/* <!-- Service & Counter  -->  */}
                     <section className="flat-section">
                         <div className="container">
@@ -1814,7 +1817,11 @@ const HomePage = () => {
                                             <div className="col-lg-4 col-md-6" key={blog.blogId}>
                                                 <div
                                                     className="flat-blog-item hover-img"
-                                                    onClick={() => navigate(`/blogoverview/${blog.blogId}`)}
+                                                    onClick={() => {
+                                                        const encryptedId = encryptId(blog.blogId);
+
+                                                        navigate(`/blogoverview/${encryptedId}`);
+                                                    }}
                                                     style={{ cursor: "pointer" }}
                                                 >
                                                     <div className="img-style">
@@ -1849,12 +1856,11 @@ const HomePage = () => {
                                             View More
                                         </button>
                                     </div>
-
                                 </div>
                             </div>
-
                         </section>
                     </div>
+
 
 
                     {/* <!-- End Benefit -->

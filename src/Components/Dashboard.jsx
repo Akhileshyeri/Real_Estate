@@ -16,6 +16,7 @@ import Arrow from '../assets/Arrow.png'
 import Edit from '../assets/edit.png'
 import Delete from '../assets/delete.png';
 import { encryptId } from "../utils/crypto";
+import { slugify } from "../utils/slugify";
 
 
 
@@ -864,13 +865,15 @@ const Dashboard = () => {
                                                                                 <div
                                                                                     className="listing-box"
                                                                                     style={{ cursor: "pointer" }}
-                                                                                    
+
 
 
                                                                                     onClick={() => {
                                                                                         const encryptedId = encryptId(property.id);
-                                                                                        navigate(`/property/${encryptedId}`);
+                                                                                        const slug = slugify(property.title);
+                                                                                        navigate(`/property/${encryptedId}&slug=${slug}`);
                                                                                     }}
+
                                                                                 >
                                                                                     <div className="images">
                                                                                         <img
@@ -884,23 +887,18 @@ const Dashboard = () => {
 
                                                                                     </div>
                                                                                     <div className="content">
-                                                                                        <div className="title">
-                                                                                            <a href="" className="link">
-                                                                                                {property.title}
-                                                                                            </a>
+                                                                                        <div className="title" style={{ margin: 0 }}>
+                                                                                            <a href="" className="link">{property.title}</a>
                                                                                         </div>
-                                                                                        <div className="listing-type" style={{ marginTop: "4px" }}>
+
+                                                                                        <div className="listing-type" style={{ margin: 0 }}>
                                                                                             <span className="fw-6">Listing Type:</span>{" "}
                                                                                             <span>{property.listing_type}</span>
                                                                                         </div>
-                                                                                        <div className="text-date">
-                                                                                            <p className="fw-5">
-                                                                                                <span className="fw-4 text-variant-1">
-                                                                                                    Posting date:
-                                                                                                </span>{" "}
 
-
-
+                                                                                        <div className="text-date" style={{ margin: 0 }}>
+                                                                                            <p className="fw-5" style={{ margin: 0 }}>
+                                                                                                <span className="fw-6" style={{ margin: 0 }}>Posting date:</span>{" "}
                                                                                                 {property.created_at
                                                                                                     ? (() => {
                                                                                                         const d = new Date(property.created_at);
@@ -912,8 +910,13 @@ const Dashboard = () => {
                                                                                                     : "-----"}
                                                                                             </p>
                                                                                         </div>
-                                                                                        <div className="text-1 fw-7">{property.property_type}</div>
+
+                                                                                        <div className="text-1 fw-6" style={{ margin: 0 }}>
+                                                                                            <span className="fw-6" style={{ fontSize: "15px", margin: 0 }}>Property Type:</span>
+                                                                                            <span style={{ fontSize: "15px", margin: 0 }}>{property.property_type}</span>
+                                                                                        </div>
                                                                                     </div>
+
                                                                                 </div>
                                                                             </td>
                                                                             <td>
@@ -928,7 +931,12 @@ const Dashboard = () => {
                                                                                     <li style={{ listStyle: "none", display: "flex", gap: 11 }}>
                                                                                         {/* Edit Button */}
                                                                                         <button
-                                                                                            onClick={() => navigate(`/edit-property/${property.id}`)}
+                                                                                            onClick={() => {
+                                                                                                const encryptedId = encryptId(property.id)
+                                                                                                 const slug = slugify(property.title);
+                                                                                            
+                                                                                                navigate(`/edit-property/${encryptedId}&slug=${slug}`)
+                                                                                            }}
                                                                                             style={{
                                                                                                 display: "flex",
                                                                                                 alignItems: "center",

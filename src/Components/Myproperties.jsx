@@ -6,6 +6,9 @@ import "./Myproperties.css"
 import easy from "../assets/easy.png"
 import toast from 'react-hot-toast';
 import Arrow from '../assets/Arrow.png'
+import { encryptId } from "../utils/crypto";
+import { slugify } from "../utils/slugify";
+
 
 
 
@@ -274,7 +277,7 @@ const Myproperties = () => {
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent">
-                                                        <ul className="navigation clearfix" style={{marginLeft:"180px"}}>
+                                                        <ul className="navigation clearfix" style={{ marginLeft: "180px" }}>
                                                             <li className="home ms-4">
                                                                 <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</a>
                                                             </li>
@@ -330,26 +333,26 @@ const Myproperties = () => {
                                                     <p className="name" style={{ cursor: "pointer" }}> {name}<span className="icon icon-arr-down"></span></p>
                                                     <div
                                                         className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}
-                                                       style={{
-                                                                position: "absolute",
-                                                                top: "100%",
-                                                                right: 0,
-                                                                zIndex: 1000,
-                                                                marginTop: "0.5rem",
-                                                                display: dropdownOpen ? "block" : "none",
-                                                                background: "#fff",
-                                                                border: "1px solid #ddd",
-                                                                borderRadius: "6px",
-                                                                boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
-                                                                minWidth: "180px",
-                                                            }}
+                                                        style={{
+                                                            position: "absolute",
+                                                            top: "100%",
+                                                            right: 0,
+                                                            zIndex: 1000,
+                                                            marginTop: "0.5rem",
+                                                            display: dropdownOpen ? "block" : "none",
+                                                            background: "#fff",
+                                                            border: "1px solid #ddd",
+                                                            borderRadius: "6px",
+                                                            boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
+                                                            minWidth: "180px",
+                                                        }}
                                                     >
                                                         <a className="dropdown-item" onClick={() => navigate('/myprofile')}>My Profile</a>
                                                         <a className="dropdown-item" onClick={() => navigate("/dashboard")}>
                                                             Dashboard
                                                         </a>
                                                         {/* <a className="dropdown-item" onClick={() => navigate('/myproperties')}>My Properties</a> */}
-                                                      
+
                                                         <a className="dropdown-item" onClick={() => navigate('/myfavorites')}>My Favorites</a>
                                                         {/* <a className="dropdown-item" onClick={() => navigate('/reviews')}>Reviews</a> */}
                                                         <a className="dropdown-item" onClick={() => navigate('/recent')}>Recent activity</a>
@@ -536,9 +539,9 @@ const Myproperties = () => {
                                         <span className="icon icon-heart"></span> My Favorites
                                     </a>
                                 </li>
-                                 <li className="nav-menu-item">
+                                <li className="nav-menu-item">
                                     <a className="nav-menu-link" href="" onClick={(e) => { e.preventDefault(); navigate('/recent'); }}>
-                                        <i class="fa-solid fa-clock-rotate-left" style={{color:"#a3abb0"}}></i>  Recent activity
+                                        <i class="fa-solid fa-clock-rotate-left" style={{ color: "#a3abb0" }}></i>  Recent activity
                                     </a>
                                 </li>
                                 {/* <li className="nav-menu-item">
@@ -735,7 +738,7 @@ const Myproperties = () => {
                                                                 : defaultImg;
 
 
-                                                         
+
 
 
                                                             return (
@@ -744,11 +747,26 @@ const Myproperties = () => {
                                                                         <div
                                                                             className="listing-box"
                                                                             style={{ cursor: "pointer" }}
-                                                                            onClick={() =>
-                                                                                navigate(`/property/${property.id}`, {
+                                                                            onClick={() => {
+                                                                                const encryptedId = encryptId(property.id);
+                                                                                const slug = slugify(property.title);
+                                                                                navigate(`/property/${encryptedId}&slug=${slug}`, {
                                                                                     state: { fromMyProperties: true },
-                                                                                })
-                                                                            }
+                                                                                });
+                                                                            }}
+
+
+
+
+
+
+
+
+
+
+
+
+
                                                                         >
                                                                             <div className="images">
                                                                                 {/* <img src={imageUrl} alt={property.title} /> */}
@@ -808,10 +826,10 @@ const Myproperties = () => {
                                                                                     </p>
                                                                                 </div>
 
-                                                                                
-                                                                                 <div className="text-1 fw-7">
-                                                                                            <span style={{ fontWeight: "600",fontSize:"15px" }}> Property Type: </span><span style={{ fontWeight: "400" }}>{property.property_type}</span>
-                                                                                        </div>
+
+                                                                                <div className="text-1 fw-7">
+                                                                                    <span style={{ fontWeight: "600", fontSize: "15px" }}> Property Type: </span><span style={{ fontWeight: "400" }}>{property.property_type}</span>
+                                                                                </div>
 
                                                                             </div>
                                                                         </div>
@@ -832,7 +850,12 @@ const Myproperties = () => {
                                                                         <ul className="list-action">
                                                                             <li>
                                                                                 <div className="remove-file item btn-wrapper">
-                                                                                    <button className="btn edit-btn" onClick={() => navigate(`/edit-property/${property.id}`)}>Edit</button>
+                                                                                    <button className="btn edit-btn" onClick={() => {
+                                                                                        const encryptedId = encryptId(property.id)
+                                                                                         const slug = slugify(property.title);
+                                                                                        navigate(`/edit-property/${encryptedId}&slug=${slug}`)
+                                                                                    }}
+                                                                                    >Edit</button>
                                                                                     <button
                                                                                         className="btn inquiry-btn"
                                                                                         onClick={() =>
@@ -876,7 +899,7 @@ const Myproperties = () => {
                             </div>
 
                             <div className="overlay-dashboard"></div>
-{/* 
+                            {/* 
                             <div className="progress-wrap">
                                 <svg className="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
                                     <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98" style={{ transition: 'stroke-dashoffset 10ms linear 0s', strokeDasharray: '307.919, 307.919', strokeDashoffset: '286.138' }}></path>

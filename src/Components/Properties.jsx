@@ -10,11 +10,31 @@ import api from "../api/api";
 import toast from "react-hot-toast";
 import download from '/src/assets/download.png'
 import { decryptId } from "../utils/crypto";
+import { useSearchParams } from "react-router-dom";
+
 
 const Properties = () => {
 
-    const { id: encryptedId } = useParams();
+
+
+
+    const { id: rawParam } = useParams();
+
+    let encryptedId = rawParam;
+    let slug = "";
+
+    if (rawParam.includes("&slug=")) {
+        const [enc, s] = rawParam.split("&slug=");
+        encryptedId = enc;
+        slug = s; // you can use slug if needed
+    }
+
     const id = decryptId(encryptedId);
+
+
+
+
+
 
     const [rating, setRating] = useState(0); // selected rating
     const [hovers, setHovers] = useState(0);   // hover preview
@@ -288,12 +308,14 @@ const Properties = () => {
 
                 // ✅ Create a new review object (mimic backend structure)
                 const newReview = {
-                    id: Date.now(), // temporary unique id
+                    id: Date.now(),
                     user_name: profileName || "Guest",
+                    profile: profileImg.startsWith("http") ? profileImg : `${api.imageUrl}${profileImg}`,
                     star: rating,
                     message: review,
                     created_at: new Date().toISOString(),
                 };
+
 
                 // ✅ Update propertyData state immediately
                 setPropertyData((prev) => ({
@@ -1115,9 +1137,9 @@ const Properties = () => {
                                                 <li className="list-review-item" key={rev.id}>
                                                     <div className="avatar avt-60 round">
                                                         <img
-                                                            // src={download} 
-                                                            src={rev?.profile ? `${api.imageUrl}${rev.profile}` : download}
-                                                            alt="avatar" />
+                                                            src={rev?.profile || download}
+                                                            alt="avatar"
+                                                        />
 
                                                     </div>
                                                     <div className="content">
