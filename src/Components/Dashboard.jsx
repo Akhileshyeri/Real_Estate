@@ -14,7 +14,9 @@ import Save from '/src/assets/save.png'
 import Star from '/src/assets/star.png'
 import Arrow from '../assets/Arrow.png'
 import Edit from '../assets/edit.png'
-
+import Delete from '../assets/delete.png';
+import { encryptId } from "../utils/crypto";
+import { slugify } from "../utils/slugify";
 
 
 
@@ -238,6 +240,34 @@ const Dashboard = () => {
         dashboardList();
     }, []);
 
+
+
+
+
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [propertyToDelete, setPropertyToDelete] = useState(null);
+
+
+    const deleteproperty = async (id) => {
+        const fd = new FormData();
+        fd.append("programType", "deletePropertyFromCustomer");
+        fd.append("authToken", localStorage.getItem("authToken"));
+
+        fd.append("propertyId", id);
+        console.log(id)
+
+
+        try {
+
+            const response = await api.post("properties/property", fd);
+            console.log("dealte", response)
+        } catch (error) {
+            console.error("Delete fetch error:", error);
+        }
+    };
+
+
     // ================= Status Mapping =================
     const getStatusText = (status) => {
         if (status === 0) return "Pending";
@@ -252,6 +282,9 @@ const Dashboard = () => {
         if (status === 2) return "btn-status rejected";
         return "btn-status";
     };
+
+
+
 
 
 
@@ -283,11 +316,9 @@ const Dashboard = () => {
                                             <div className="nav-outer">
                                                 {/* <!-- Main Menu --> */}
                                                 <nav className="main-menu show navbar-expand-md">
-
-                                                   
                                                     <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent" >
-                                                        <ul className="navigation clearfix ss" style={{marginLeft:"180px"}}>
-                                           <li className="home ms-4">
+                                                        <ul className="navigation clearfix ss" style={{ marginLeft: "180px" }}>
+                                                            <li className="home ms-4">
                                                                 <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>Home</a>
                                                             </li>
 
@@ -412,7 +443,7 @@ const Dashboard = () => {
                                     </div>
                                     <div className="bottom-canvas">
                                         <div className="menu-outer">
-                                            <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent" style={{marginRight:"50px"}}>
+                                            <div className="navbar-collapse collapse clearfix" id="navbarSupportedContent" style={{ marginRight: "50px" }}>
 
                                                 <ul className="navigation clearfix bb">
                                                     {menuItems.map((item, index) => (
@@ -693,7 +724,7 @@ const Dashboard = () => {
                                 </div>
                                 <div className="wrapper-content row">
                                     <div className="col-xl-9">
-                                        <div className="widget-box-2 wd-listing" style={{ marginBottom: "-50px" }}>
+                                        <div className="widget-box-2 wd-listing" style={{ marginBottom: "-0px" }}>
                                             <div className="wd-filter">
 
                                                 {/* From Date */}
@@ -834,7 +865,15 @@ const Dashboard = () => {
                                                                                 <div
                                                                                     className="listing-box"
                                                                                     style={{ cursor: "pointer" }}
-                                                                                    onClick={() => navigate(`/property/${property.id}`)}
+
+
+
+                                                                                    onClick={() => {
+                                                                                        const encryptedId = encryptId(property.id);
+                                                                                        const slug = slugify(property.title);
+                                                                                        navigate(`/property/${encryptedId}&slug=${slug}`);
+                                                                                    }}
+
                                                                                 >
                                                                                     <div className="images">
                                                                                         <img
@@ -848,24 +887,18 @@ const Dashboard = () => {
 
                                                                                     </div>
                                                                                     <div className="content">
-                                                                                        <div className="title">
-                                                                                            <a href="" className="link">
-                                                                                                {property.title}
-                                                                                            </a>
+                                                                                        <div className="title" style={{ margin: 0 }}>
+                                                                                            <a href="" className="link">{property.title}</a>
                                                                                         </div>
-                                                                                       <div className="listing-type" style={{ marginTop: "4px" }}>
-  <span className="fw-6">Listing Type:</span>{" "}
-  <span>
-    {property.listing_type
-      ? property.listing_type.trim().charAt(0).toUpperCase() + property.listing_type.trim().slice(1)
-      : ""}
-  </span>
-</div>
 
-                                                                                        <div className="text-date m-0">
-                                                                                            <p className="fw-5">
-                                                                                                <span className="fw-6 text-variant-1 " style={{ color: "#161E2D" }}>Posting date:</span>
-                                                                                                {" "}
+                                                                                        <div className="listing-type" style={{ margin: 0 }}>
+                                                                                            <span className="fw-6">Listing Type:</span>{" "}
+                                                                                            <span>{property.listing_type}</span>
+                                                                                        </div>
+
+                                                                                        <div className="text-date" style={{ margin: 0 }}>
+                                                                                            <p className="fw-5" style={{ margin: 0 }}>
+                                                                                                <span className="fw-6" style={{ margin: 0 }}>Posting date:</span>{" "}
                                                                                                 {property.created_at
                                                                                                     ? (() => {
                                                                                                         const d = new Date(property.created_at);
@@ -877,11 +910,13 @@ const Dashboard = () => {
                                                                                                     : "-----"}
                                                                                             </p>
                                                                                         </div>
-                                                                                        <div className="text-1 fw-7">
-                                                                                            <span style={{ fontWeight: "600",fontSize:"15px" }}> Property Type: </span><span style={{ fontWeight: "400" }}>{property.property_type}</span>
-                                                                                        </div>
 
+                                                                                        <div className="text-1 fw-6" style={{ margin: 0 }}>
+                                                                                            <span className="fw-6" style={{ fontSize: "15px", margin: 0 }}>Property Type:</span>
+                                                                                            <span style={{ fontSize: "15px", margin: 0 }}>{property.property_type}</span>
+                                                                                        </div>
                                                                                     </div>
+
                                                                                 </div>
                                                                             </td>
                                                                             <td>
@@ -892,43 +927,141 @@ const Dashboard = () => {
                                                                                 </div>
                                                                             </td>
                                                                             <td>
-                                                                                <ul className="list-action">
-                                                                                    <li>
-                                                                                        <a className="remove-file item">
-                                                                                            <button
-                                                                                                onClick={() => navigate(`/edit-property/${property.id}`)}
+                                                                                <ul className="list-action" style={{ display: "flex", alignItems: "center", gap: "10px", padding: 0, margin: 0 }}>
+                                                                                    <li style={{ listStyle: "none", display: "flex", gap: 11 }}>
+                                                                                        {/* Edit Button */}
+                                                                                        <button
+                                                                                            onClick={() => {
+                                                                                                const encryptedId = encryptId(property.id)
+                                                                                                 const slug = slugify(property.title);
+                                                                                            
+                                                                                                navigate(`/edit-property/${encryptedId}&slug=${slug}`)
+                                                                                            }}
+                                                                                            style={{
+                                                                                                display: "flex",
+                                                                                                alignItems: "center",
+                                                                                                gap: "6px",
+                                                                                                padding: "6px 12px",
+                                                                                                backgroundColor: "#f5f5f5",
+                                                                                                border: "1px solid #ddd",
+                                                                                                borderRadius: "6px",
+                                                                                                cursor: "pointer",
+                                                                                                fontSize: "14px",
+                                                                                                fontWeight: "500",
+                                                                                                color: "#333",
+                                                                                                transition: "all 0.2s ease-in-out",
+                                                                                            }}
+                                                                                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#e9e9e9")}
+                                                                                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#f5f5f5")}
+                                                                                        >
+
+                                                                                            <img src={Edit} alt="Edit" style={{ width: "16px", height: "16px" }} />
+                                                                                            Edit
+                                                                                        </button>
+
+                                                                                        {/* Delete Button (icon only) */}
+                                                                                        <button
+                                                                                            onClick={() => {
+                                                                                                setPropertyToDelete(property.id);
+                                                                                                setShowDeleteModal(true);
+                                                                                            }}
+
+
+                                                                                            style={{
+                                                                                                display: "flex",
+                                                                                                alignItems: "center",
+                                                                                                justifyContent: "center",
+                                                                                                padding: "6px",
+                                                                                                backgroundColor: "#f5f5f5",
+                                                                                                border: "1px solid #ddd",
+                                                                                                borderRadius: "6px",
+                                                                                                cursor: "pointer",
+                                                                                                transition: "all 0.2s ease-in-out",
+                                                                                            }}
+                                                                                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#e9e9e9")}
+                                                                                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#f5f5f5")}
+                                                                                        >
+
+                                                                                            <img src={Delete} alt="Delete" style={{ width: "16px", height: "16px" }} />
+                                                                                        </button>
+
+                                                                                        {/* Delete Confirmation Modal */}
+                                                                                        {showDeleteModal && (
+                                                                                            <div
                                                                                                 style={{
+                                                                                                    position: "fixed",
+                                                                                                    top: 0,
+                                                                                                    left: 0,
+                                                                                                    width: "100%",
+                                                                                                    height: "100%",
+                                                                                                    backgroundColor: "rgba(0,0,0,0.5)",
                                                                                                     display: "flex",
+                                                                                                    justifyContent: "center",
                                                                                                     alignItems: "center",
-                                                                                                    gap: "6px",
-                                                                                                    padding: "6px 12px",
-                                                                                                    backgroundColor: "#f5f5f5",
-                                                                                                    border: "1px solid #ddd",
-                                                                                                    borderRadius: "6px",
-                                                                                                    cursor: "pointer",
-                                                                                                    fontSize: "14px",
-                                                                                                    fontWeight: "500",
-                                                                                                    color: "#333",
-                                                                                                    transition: "all 0.2s ease-in-out",
-                                                                                                    marginLeft: "20px"
+                                                                                                    zIndex: 1000,
                                                                                                 }}
-                                                                                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#e9e9e9"}
-                                                                                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#f5f5f5"}
                                                                                             >
-                                                                                                <img
-                                                                                                    src={Edit}
-                                                                                                    alt="Edit"
-                                                                                                    style={{ width: "16px", height: "16px" }}
-                                                                                                />
-                                                                                                Edit
-                                                                                            </button>
+                                                                                                <div
+                                                                                                    style={{
+                                                                                                        backgroundColor: "#fff",
+                                                                                                        padding: "30px 35px",
+                                                                                                        borderRadius: "10px",
+                                                                                                        width: "350px",
+                                                                                                        maxWidth: "90%",
+                                                                                                        textAlign: "center",
+                                                                                                        boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                                                                                                        wordWrap: "break-word",
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <h3 style={{ marginBottom: "20px", fontSize: "18px", fontWeight: 500 }}>
+                                                                                                        Are you sure you want to delete?
+                                                                                                    </h3>
+                                                                                                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                                                                                                        <button
+                                                                                                            onClick={() => setShowDeleteModal(false)}
+                                                                                                            style={{
+                                                                                                                padding: "6px 12px",
+                                                                                                                borderRadius: "6px",
+                                                                                                                border: "1px solid #ddd",
+                                                                                                                backgroundColor: "#f5f5f5",
+                                                                                                                cursor: "pointer",
+                                                                                                                fontSize: "14px",
+                                                                                                            }}
+                                                                                                        >
+                                                                                                            Cancel
+                                                                                                        </button>
+                                                                                                        <button
+                                                                                                            onClick={async () => {
+                                                                                                                if (propertyToDelete) {
+                                                                                                                    await deleteproperty(propertyToDelete);
+                                                                                                                    setShowDeleteModal(false);
+                                                                                                                    setPropertyToDelete(null);
+                                                                                                                }
+                                                                                                            }}
+                                                                                                            style={{
+                                                                                                                padding: "6px 12px",
+                                                                                                                borderRadius: "6px",
+                                                                                                                border: "none",
+                                                                                                                backgroundColor: "#ED2027",
+                                                                                                                hover: "#CD380F",
+                                                                                                                color: "#fff",
+                                                                                                                cursor: "pointer",
+                                                                                                                fontSize: "14px",
+                                                                                                            }}
+                                                                                                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#CD380F")}
+                                                                                                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                                                                                                        >
 
-
-
-                                                                                        </a>
+                                                                                                            Delete
+                                                                                                        </button>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        )}
                                                                                     </li>
                                                                                 </ul>
                                                                             </td>
+
                                                                         </tr>
                                                                     );
                                                                 })
@@ -1039,11 +1172,11 @@ const Dashboard = () => {
                             </div>
                             <div className="overlay-dashboard"></div>
 
-                            <div className="progress-wrap">
+                            {/* <div className="progress-wrap">
                                 <svg className="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
                                     <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98" style={{ transition: 'stroke-dashoffset 10ms linear 0s', strokeDasharray: '307.919, 307.919', strokeDashoffset: '286.138' }}></path>
                                 </svg>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </div>

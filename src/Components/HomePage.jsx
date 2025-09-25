@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -11,6 +11,8 @@ import "./HomePage.css"
 import { Modal, Slider } from "antd"; // ✅ Import Modal
 import nodata from "../assets/nodata.png"
 import Dub from "../assets/du.jpg"
+import { encryptId } from '../utils/crypto';
+import { slugify } from '../utils/slugify';
 
 
 
@@ -73,24 +75,21 @@ const HomePage = () => {
         let recent = JSON.parse(localStorage.getItem("recentProperties")) || [];
 
         // normalize property shape
-        const normalized = {
-            id: property.id,
-            title: property.title || property.name || "Untitled",
-            image: property.image || property.image_path || null,
-            location: property.location || "Unknown Location",
+        const parsed = JSON.parse(storedRecent).map(p => ({
+            id: p.id,
+            title: p.title || p.name || "Untitled",
+            image: p.image || null,
+            location: p.location || "Unknown Location",
+            price: p.price || "Price on Request",
+            priceValue: p.priceValue || 0,
+            priceUnit: p.priceUnit || "",
+            status: p.status || "N/A",
+            subType: p.subType || "N/A",
+            meta: p.meta || [],
+            agentName: p.agentName || "Agent", // ✅ add this line
+            createdAt: p.createdAt || new Date().toISOString(),
+        }));
 
-            price: property.price || "Price on Request",
-            priceValue: property.priceValue || 0,
-            priceUnit: property.priceUnit || "",
-
-            status: property.status || property.for || "N/A",
-            subType: property.subType || "N/A",
-
-            // 👇 preserve meta (bed, bath, sqft)
-            meta: property.meta || [],
-
-            createdAt: new Date().toISOString(),
-        };
 
         // remove duplicate if already exists
         recent = recent.filter((p) => p.id !== normalized.id);
@@ -133,6 +132,7 @@ const HomePage = () => {
 
                 // 👇 keep meta array intact
                 meta: p.meta || [],
+                agentName: p.agentName || "Agent",
 
                 createdAt: p.createdAt || new Date().toISOString(),
             }));
@@ -504,13 +504,9 @@ const HomePage = () => {
     }, []);
 
     const addToRecentProperties = (property) => {
-        // Get existing Recent activity from localStorage
         const recent = JSON.parse(localStorage.getItem("recentProperties")) || [];
-
-        // Remove the property if it already exists (avoid duplicates)
         const filtered = recent.filter((p) => p.id !== property.id);
 
-        // Add the new property at the beginning
         filtered.unshift({
             id: property.id,
             name: property.name,
@@ -519,7 +515,7 @@ const HomePage = () => {
             location: property.location,
             priceValue: property.priceValue,
             priceUnit: property.priceUnit,
-            agentName: property.agentName,
+            agentName: property.agentName,  // ✅ okay here
             meta: property.meta,
             featured: property.featured,
             type: property.type,
@@ -527,10 +523,7 @@ const HomePage = () => {
             for: property.for,
         });
 
-        // Keep only the latest 4
         const latest = filtered.slice(0, 4);
-
-        // Save back to localStorage
         localStorage.setItem("recentProperties", JSON.stringify(latest));
     };
 
@@ -553,6 +546,13 @@ const HomePage = () => {
     useEffect(() => {
         fetchStates();
     }, []);
+
+
+    // flatten reviews into a single array of review objects
+    const reviewSlides = useMemo(() => {
+        if (!Array.isArray(reviews)) return [];
+        return reviews.flatMap(prop => Array.isArray(prop.review) ? prop.review : []);
+    }, [reviews]);
 
 
 
@@ -676,7 +676,7 @@ const HomePage = () => {
                                                             setSelectedType("All"); // reset
                                                         }}
                                                     >
-                                                        For Sale
+                                                        For Buy
                                                     </a>
                                                 </li>
                                                 <li className="nav-tab-item">
@@ -794,7 +794,7 @@ const HomePage = () => {
                                                                             bhk: selectedBHK,
                                                                             bedrooms: selectedBedrooms,
                                                                             bathrooms: selectedBathroom,
-                                                                             search: searchQuery,   // 👈 add search text here
+                                                                            search: searchQuery,   // 👈 add search text here
                                                                         });
 
                                                                         navigate(`/listing?${queryParams.toString()}`);
@@ -822,7 +822,7 @@ const HomePage = () => {
                                                                 <div className="filter-section" style={{ marginBottom: "25px" }}>
                                                                     <h6 className="filter-title">Listing Type</h6>
                                                                     <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                                                                        {["Rent", "Sale", "Joint Venture"].map((type) => (
+                                                                        {["Rent", "Buy", "Joint Venture"].map((type) => (
                                                                             <button
                                                                                 key={type}
                                                                                 onClick={() => setSelectedListingType(type.toLowerCase())}
@@ -1071,7 +1071,7 @@ const HomePage = () => {
                                                                         onClick={() => {
                                                                             // build query params
                                                                             const queryParams = new URLSearchParams({
-                                                                                 state: selectedState,   // 👈 add state here
+                                                                                state: selectedState,   // 👈 add state here
                                                                                 listingType: selectedListingType,
                                                                                 type: selectedType,
                                                                                 priceMin: priceRange[0],
@@ -1081,7 +1081,7 @@ const HomePage = () => {
                                                                                 bhk: selectedBHK,
                                                                                 bedrooms: selectedBedrooms,
                                                                                 bathrooms: selectedBathroom,
-                                                                                   search: searchQuery,   // 👈 add search text here
+                                                                                search: searchQuery,   // 👈 add search text here
                                                                             });
 
                                                                             navigate(`/listing?${queryParams.toString()}`);
@@ -1160,7 +1160,7 @@ const HomePage = () => {
                                                 <div className="col-12 text-center py-5">
                                                     <div className="col-12 text-center py-5 mt-3">
                                                         <img
-                                                            src={nodata} // 👈 replace with your own image path
+                                                            src={nodata}
                                                             alt="No Property Found"
                                                             style={{ maxWidth: "280px", marginBottom: "20px" }}
                                                         />
@@ -1174,11 +1174,12 @@ const HomePage = () => {
                                                     <div key={item.id} className="col-xl-4 col-lg-6 col-md-6">
                                                         <div className="homeya-box">
                                                             <div className="archive-top">
-                                                                <a onClick={() => {
-                                                                    addToRecentProperties(item); // ✅ Add to recent
-                                                                    navigate(`/property/${item.id}`);
-                                                                }}
-                                                                    className="images-group">
+                                                                {/* ✅ Image clickable using Link with encrypted ID */}
+                                                                <Link
+                                                                    to={`/property/${encryptId(item.id)}&slug=${slugify(item.name)}`}
+                                                                    onClick={() => addToRecentProperties(item)}
+                                                                    className="images-group"
+                                                                >
                                                                     <div className="images-style">
                                                                         <img
                                                                             src={
@@ -1187,35 +1188,44 @@ const HomePage = () => {
                                                                                     : "https://themesflat.co/html/homzen/images/home/house-2.jpg"
                                                                             }
                                                                             alt={item.name}
-                                                                            style={{ width: "100%", height: "200px", objectFit: "cover", borderRadius: "8px" }}
+                                                                            style={{
+                                                                                width: "100%",
+                                                                                height: "200px",
+                                                                                objectFit: "cover",
+                                                                                borderRadius: "8px",
+                                                                            }}
                                                                         />
                                                                     </div>
 
                                                                     <div className="top">
                                                                         <ul className="d-flex gap-8">
-                                                                            {item.featured && <li className="flag-tag success">Featured</li>}
                                                                             <li className="flag-tag style-1">{item.for}</li>
                                                                         </ul>
                                                                     </div>
                                                                     <div className="bottom">
                                                                         <span className="flag-tag style-2">{item.type}</span>
                                                                     </div>
-                                                                </a>
+                                                                </Link>
+
                                                                 <div className="content" style={{ background: "#fff" }}>
                                                                     <div className="h7 text-capitalize fw-7">
-                                                                        <a
-                                                                            onClick={() => {
-                                                                                addToRecentProperties(item); // ✅ Add to recent
-                                                                                navigate(`/property/${item.id}`);
-                                                                            }}
-                                                                            style={{ cursor: "pointer" }}>
-                                                                            {item.name}
-                                                                        </a>
+                                                                        <div className="h7 text-capitalize fw-7">
+                                                                            {/* ✅ Property name clickable using Link with encrypted ID */}
+                                                                            <Link
+                                                                                to={`/property/${encryptId(item.id)}`}
+                                                                                onClick={() => addToRecentProperties(item)}
+                                                                                className="property-name"
+                                                                            >
+                                                                                {item.name}
+                                                                            </Link>
+                                                                        </div>
                                                                     </div>
+
                                                                     <div className="desc">
                                                                         <i className="fs-16 icon icon-mapPin"></i>
                                                                         <p>{item.location}</p>
                                                                     </div>
+
                                                                     <ul className="meta-list">
                                                                         {item.meta.map((m, idx) => (
                                                                             <li className="item" key={idx}>
@@ -1226,10 +1236,10 @@ const HomePage = () => {
                                                                     </ul>
                                                                 </div>
                                                             </div>
+
                                                             <div className="archive-bottom d-flex justify-content-between align-items-center">
                                                                 <div className="d-flex gap-8 align-items-center">
-                                                                    
-                                                                   <span style={{ fontWeight: "bold", fontSize: "18px" }}>{item.agentName}</span>
+                                                                    <span style={{ fontWeight: "bold", fontSize: "18px" }}>{item.agentName}</span>
                                                                 </div>
                                                                 <div className="d-flex align-items-center">
                                                                     <h6>₹{item.priceValue}</h6>
@@ -1252,6 +1262,7 @@ const HomePage = () => {
                                         )}
                                     </div>
                                 </div>
+
 
                             </div>
 
@@ -1369,7 +1380,7 @@ const HomePage = () => {
                                                 className="title"
                                                 style={{ fontSize: "18px", margin: 0, fontWeight: "600" }}
                                             >
-                                                Dubai, United Kingdom
+                                                Dubai, United Arab Emirates
                                             </h6>
                                         </div>
                                     </div>
@@ -1437,95 +1448,98 @@ const HomePage = () => {
                                 </div>
                             </div>
                         </section>
-                        <div className="container" style={{ marginTop: "30px" }}>
-                            <div
-                                className="text-center wow fadeInUpSmall"
-                                data-wow-delay=".2s"
-                                data-wow-duration="2000ms"
-                            >
-                                <div className="text-subtitle text-primary">Properties</div>
-                                <h4 className="mt-4">Recent Activity</h4>
-                            </div>
+                        {!loading && recentProperties.length > 0 && (
+                            <div className="container" style={{ marginTop: "30px" }}>
+                                <div
+                                    className="text-center wow fadeInUpSmall"
+                                    data-wow-delay=".2s"
+                                    data-wow-duration="2000ms"
+                                >
+                                    <div className="text-subtitle text-primary">Properties</div>
+                                    <h4 className="mt-4">Recent Activity</h4>
+                                </div>
 
-                            <div
-                                className="flat-tab-recommended wow fadeInUpSmall"
-                                data-wow-delay=".2s"
-                                data-wow-duration="2000ms"
-                            >
-                                <div className="tab-content" style={{ marginTop: "50px" }}>
-                                    <div className="tab-pane fade active show" role="tabpanel">
-                                        <div className={`row ${recentProperties.length <= 2 && !loading ? "justify-content-center" : ""
-                                            }`}>
-                                            {loading ? (
-                                                // 🔹 Skeleton Loader (same as home page)
-                                                [...Array(6)].map((_, i) => (
-                                                    <div
-                                                        key={i}
-                                                        className="col-xl-4 col-lg-6 col-md-6 mb-4"
-                                                    >
-                                                        <div className="homeya-box p-3">
-                                                            <div className="skeleton skeleton-img mb-3"></div>
-                                                            <br />
-                                                            <div className="skeleton skeleton-text w-75 mb-2"></div>
-                                                            <div className="skeleton skeleton-text w-50 mb-2"></div>
-                                                            <div className="skeleton skeleton-text w-100 mb-2"></div>
-                                                            <div className="d-flex justify-content-between mt-3">
-                                                                <div className="skeleton skeleton-avatar"></div>
-                                                                <div className="skeleton skeleton-text w-25"></div>
+                                <div
+                                    className="flat-tab-recommended wow fadeInUpSmall"
+                                    data-wow-delay=".2s"
+                                    data-wow-duration="2000ms"
+                                >
+                                    <div className="tab-content" style={{ marginTop: "50px" }}>
+                                        <div className="tab-pane fade active show" role="tabpanel">
+                                            <div className={`row ${recentProperties.length <= 2 && !loading ? "justify-content-center" : ""
+                                                }`}>
+                                                {loading ? (
+                                                    // 🔹 Skeleton Loader (same as home page)
+                                                    [...Array(6)].map((_, i) => (
+                                                        <div
+                                                            key={i}
+                                                            className="col-xl-4 col-lg-6 col-md-6 mb-4"
+                                                        >
+                                                            <div className="homeya-box p-3">
+                                                                <div className="skeleton skeleton-img mb-3"></div>
+                                                                <br />
+                                                                <div className="skeleton skeleton-text w-75 mb-2"></div>
+                                                                <div className="skeleton skeleton-text w-50 mb-2"></div>
+                                                                <div className="skeleton skeleton-text w-100 mb-2"></div>
+                                                                <div className="d-flex justify-content-between mt-3">
+                                                                    <div className="skeleton skeleton-avatar"></div>
+                                                                    <div className="skeleton skeleton-text w-25"></div>
+                                                                </div>
                                                             </div>
                                                         </div>
+                                                    ))
+                                                ) : recentProperties.length === 0 ? (
+                                                    // 🔹 No Recent Activity
+                                                    <div className="col-12 text-center py-5 mt-3">
+                                                        <img
+                                                            src={nodata}
+                                                            alt="No Recent Activity"
+                                                            style={{ maxWidth: "280px", marginBottom: "20px" }}
+                                                        />
+                                                        <h5>No Recent Activity Today</h5>
+                                                        <p>Browse properties to see them appear here.</p>
                                                     </div>
-                                                ))
-                                            ) : recentProperties.length === 0 ? (
-                                                // 🔹 No Recent Activity
-                                                <div className="col-12 text-center py-5 mt-3">
-                                                    <img
-                                                        src={nodata}
-                                                        alt="No Recent Activity"
-                                                        style={{ maxWidth: "280px", marginBottom: "20px" }}
-                                                    />
-                                                    <h5>No Recent Activity Today</h5>
-                                                    <p>Browse properties to see them appear here.</p>
-                                                </div>
-                                            ) : (
-                                                // 🔹 Property Cards (same styling as home page)
-                                                recentProperties.map((property) => (
-                                                    <div
-                                                        key={property.id}
-                                                        className="col-xl-4 col-lg-6 col-md-6 mb-4"
-                                                    >
-                                                        <div className="homeya-box">
-                                                            <div className="archive-top">
-                                                                <a
-                                                                    onClick={() => {
-                                                                        addToRecent(property);
-                                                                        navigate(`/property/${property.id}`);
-                                                                    }}
-                                                                    className="images-group"
-                                                                    style={{ cursor: "pointer" }}
-                                                                >
-                                                                    <div className="images-style">
-                                                                        <img
-                                                                            src={
-                                                                                property.image
-                                                                                    ? `${api.imageUrl}${property.image}`
-                                                                                    : "https://themesflat.co/html/homzen/images/home/house-1.jpg"
-                                                                            }
-                                                                            alt={property.title}
-                                                                            style={{
-                                                                                width: "100%",
-                                                                                height: "200px",
-                                                                                objectFit: "cover",
-                                                                                borderRadius: "8px",
-                                                                            }}
-                                                                            onError={(e) => {
-                                                                                e.target.onerror = null;
-                                                                                e.target.src =
-                                                                                    "https://themesflat.co/html/homzen/images/home/house-1.jpg";
-                                                                            }}
-                                                                        />
-                                                                    </div>
-                                                                    {/* <div className="top">
+                                                ) : (
+                                                    // 🔹 Property Cards (same styling as home page)
+                                                    recentProperties.map((property) => (
+                                                        <div
+                                                            key={property.id}
+                                                            className="col-xl-4 col-lg-6 col-md-6 mb-4"
+                                                        >
+                                                            <div className="homeya-box">
+                                                                <div className="archive-top">
+                                                                    <a
+                                                                        onClick={() => {
+                                                                            const encryptedId = encryptId(property.id)
+                                                                            const slug = slugify(property.title);
+                                                                            addToRecent(property);
+                                                                            navigate(`/property/${encryptedId}&slug=${slug}`);
+                                                                        }}
+                                                                        className="images-group"
+                                                                        style={{ cursor: "pointer" }}
+                                                                    >
+                                                                        <div className="images-style">
+                                                                            <img
+                                                                                src={
+                                                                                    property.image
+                                                                                        ? `${api.imageUrl}${property.image}`
+                                                                                        : "https://themesflat.co/html/homzen/images/home/house-1.jpg"
+                                                                                }
+                                                                                alt={property.title}
+                                                                                style={{
+                                                                                    width: "100%",
+                                                                                    height: "200px",
+                                                                                    objectFit: "cover",
+                                                                                    borderRadius: "8px",
+                                                                                }}
+                                                                                onError={(e) => {
+                                                                                    e.target.onerror = null;
+                                                                                    e.target.src =
+                                                                                        "https://themesflat.co/html/homzen/images/home/house-1.jpg";
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                        {/* <div className="top">
                                                                         <ul className="d-flex gap-8">
                                                                             {property.featured && <li className="flag-tag success">Featured</li>}
                                                                             <li className="flag-tag style-1">{property.status}</li>
@@ -1537,67 +1551,68 @@ const HomePage = () => {
                                                                     </div> */}
 
 
-                                                                </a>
+                                                                    </a>
 
-                                                                {/* Content section */}
-                                                                <div className="content" style={{ background: "#fff" }}>
-                                                                    <div className="h7 text-capitalize fw-7">
-                                                                        <a
-                                                                            onClick={() => {
-                                                                                addToRecent(property);
-                                                                                navigate(`/property/${property.id}`);
-                                                                            }}
-                                                                            style={{ cursor: "pointer" }}
-                                                                        >
-                                                                            {property.title}
-                                                                        </a>
+                                                                    {/* Content section */}
+                                                                    <div className="content" style={{ background: "#fff" }}>
+                                                                        <div className="h7 text-capitalize fw-7">
+                                                                            <a
+                                                                                onClick={() => {
+                                                                                    addToRecent(property);
+                                                                                    navigate(`/property/${property.id}`);
+                                                                                }}
+                                                                                style={{ cursor: "pointer" }}
+                                                                            >
+                                                                                {property.title}
+                                                                            </a>
+                                                                        </div>
+                                                                        <div className="desc">
+                                                                            <i className="fs-16 icon icon-mapPin"></i>
+                                                                            <p>{property.location}</p>
+
+
+                                                                        </div>
+                                                                        <ul className="meta-list">
+                                                                            {property.meta && property.meta.map((m, idx) => (
+                                                                                <li className="item" key={idx}>
+                                                                                    <i className={`icon ${m.icon}`}></i>
+                                                                                    <span>{m.label}</span>
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
                                                                     </div>
-                                                                    <div className="desc">
-                                                                        <i className="fs-16 icon icon-mapPin"></i>
-                                                                        <p>{property.location}</p>
+                                                                </div>
 
+                                                                {/* Bottom Price & Agent */}
+                                                                <div className="archive-bottom d-flex justify-content-between align-items-center">
+                                                                    <div className="d-flex gap-8 align-items-center">
 
+                                                                        <span style={{ fontWeight: "bold", fontSize: "18px" }}>{property.agentName || "Agent"}</span>
                                                                     </div>
-                                                                    <ul className="meta-list">
-                                                                        {property.meta && property.meta.map((m, idx) => (
-                                                                            <li className="item" key={idx}>
-                                                                                <i className={`icon ${m.icon}`}></i>
-                                                                                <span>{m.label}</span>
-                                                                            </li>
-                                                                        ))}
-                                                                    </ul>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Bottom Price & Agent */}
-                                                            <div className="archive-bottom d-flex justify-content-between align-items-center">
-                                                                <div className="d-flex gap-8 align-items-center">
-                                                                   
-                                                                    <span style={{ fontWeight: "bold", fontSize: "18px" }}>{property.agentName || "Agent"}</span>
-                                                                </div>
-                                                                <div className="d-flex align-items-center">
-                                                                    <h6>₹{Number(property.priceValue).toLocaleString()}</h6>
-                                                                    <span className="text-variant-1">{property.priceUnit}</span>
+                                                                    <div className="d-flex align-items-center">
+                                                                        <h6>₹{Number(property.priceValue).toLocaleString()}</h6>
+                                                                        <span className="text-variant-1">{property.priceUnit}</span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                ))
-                                            )}
+                                                    ))
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* 🔹 Show button only if data exists */}
-                                {!loading && recentProperties.length > 0 && (
-                                    <div className="text-center mt-4">
-                                        <Link to="/recent" className="tf-btn primary size-1">
-                                            View All Recent Activity
-                                        </Link>
-                                    </div>
-                                )}
+                                    {/* 🔹 Show button only if data exists */}
+                                    {!loading && recentProperties.length > 0 && (
+                                        <div className="text-center mt-4">
+                                            <Link to="/recent" className="tf-btn primary size-1">
+                                                View All Recent Activity
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
 
 
@@ -1606,6 +1621,75 @@ const HomePage = () => {
 
 
 
+
+
+
+
+                    <div className="card-container">
+                        <div
+                            className="card"
+                            onClick={() => {
+                                navigate("/emi");
+                            }}
+
+                        >
+                            <img
+                                src="images/logo/schedule.png"
+                                alt="EMI"
+                                style={{ width: "65px", height: "60px", marginBottom: "10px" }}
+                            />
+                            <h2  >EMI Calculator</h2>
+                            <div className="card-subtitle" style={{ color: '#ED2027' }}>Calculate your loan EMI with ease</div>
+                        </div>
+
+                        <div
+                            className="card"
+                            onClick={() => {
+                                navigate("/calc");
+                            }}
+
+                        >
+                            <img
+                                src="images/logo/calculator.png"
+                                alt="Construction Calculator"
+                                style={{ width: "50px", height: "50px", marginBottom: "10px" }}
+                            />
+                            <h2 >Construction Calculator</h2>
+                            <div className="card-subtitle" style={{ color: '#ED2027' }}>Estimate construction costs</div>
+                        </div>
+
+                        <div
+                            className="card"
+                            onClick={() => {
+                                navigate("/area");
+                            }}
+
+                        >
+                            <img
+                                src="images/logo/size.png"
+                                alt="Area Unit Calculator"
+                                style={{ width: "50px", height: "50px", marginBottom: "10px" }}
+                            />
+                            <h2 >Area Unit Calculator</h2>
+                            <div className="card-subtitle" style={{ color: '#ED2027' }}>Convert area measurements</div>
+                        </div>
+
+                        <div
+                            className="card"
+                            onClick={() => {
+                                navigate("/rent");
+                            }}
+
+                        >
+                            <img
+                                src="images/logo/contract.png"
+                                alt="Rent vs Buy"
+                                style={{ width: "50px", height: "50px", marginBottom: "10px" }}
+                            />
+                            <h2>Rent vs Buy </h2>
+                            <div className="card-subtitle" style={{ color: '#ED2027' }}>Compare renting and buying costs</div>
+                        </div>
+                    </div>
 
                     {/* <!-- Service & Counter  -->  */}
                     <section className="flat-section">
@@ -1733,7 +1817,11 @@ const HomePage = () => {
                                             <div className="col-lg-4 col-md-6" key={blog.blogId}>
                                                 <div
                                                     className="flat-blog-item hover-img"
-                                                    onClick={() => navigate(`/blogoverview/${blog.blogId}`)}
+                                                    onClick={() => {
+                                                        const encryptedId = encryptId(blog.blogId);
+
+                                                        navigate(`/blogoverview/${encryptedId}`);
+                                                    }}
                                                     style={{ cursor: "pointer" }}
                                                 >
                                                     <div className="img-style">
@@ -1768,12 +1856,11 @@ const HomePage = () => {
                                             View More
                                         </button>
                                     </div>
-
                                 </div>
                             </div>
-
                         </section>
                     </div>
+
 
 
                     {/* <!-- End Benefit -->
@@ -1896,79 +1983,81 @@ const HomePage = () => {
 
 
                     {/* TESTIMONIALS */}
-                    <section className="flat-section-v3 bg-surface flat-testimonial">
-                        <div className="cus-layout-1">
-                            <div className="row align-items-center">
-                                <div className="col-lg-3">
-                                    <div className="box-title">
-                                        <div className="text-subtitle text-primary">Top Properties</div>
-                                        <h4 className="mt-4">What’s people say’s</h4>
+                    {reviewSlides.length > 0 && (
+                        <section className="flat-section-v3 bg-surface flat-testimonial">
+                            <div className="cus-layout-1">
+                                <div className="row align-items-center">
+                                    <div className="col-lg-3">
+                                        <div className="box-title">
+                                            <div className="text-subtitle text-primary">Top Properties</div>
+                                            <h4 className="mt-4">What’s people say’s</h4>
+                                        </div>
+                                        <p className="text-variant-1 p-16">
+                                            Our seasoned team excels in real estate with years of successful market
+                                            navigation, offering informed decisions and optimal results.
+                                        </p>
                                     </div>
-                                    <p className="text-variant-1 p-16">
-                                        Our seasoned team excels in real estate with years of successful market
-                                        navigation, offering informed decisions and optimal results.
-                                    </p>
-                                </div>
 
-                                <div className="col-lg-9">
-                                    <Swiper
-                                        modules={[Navigation, Autoplay]}
-                                        autoplay={{ delay: 3000, disableOnInteraction: false }}
-                                        loop={true}
-                                        spaceBetween={30}
-                                        slidesPerView={1}
-                                        breakpoints={{
-                                            768: { slidesPerView: 2, spaceBetween: 20 },
-                                            1024: { slidesPerView: 2, spaceBetween: 30 },
-                                        }}
-                                        className="tf-sw-testimonial"
-                                    >
-                                        {Array.isArray(reviews) &&
-                                            reviews.map((property) =>
-                                                Array.isArray(property.review) &&
-                                                property.review.map((rev) => (
-                                                    <SwiperSlide key={rev.reviewId}>
-                                                        <div className="box-tes-item">
-                                                            {/* ⭐ Dynamic stars */}
-                                                            <ul className="list-star">
-                                                                {Array.from({ length: 5 }).map((_, i) => (
-                                                                    <li
-                                                                        key={i}
-                                                                        className={`icon icon-star ${i < parseInt(rev.star) ? "text-warning" : ""
-                                                                            }`}
-                                                                    ></li>
-                                                                ))}
-                                                            </ul>
+                                    <div className="col-lg-9">
+                                        <Swiper
+                                            modules={[Navigation, Autoplay]}
+                                            autoplay={{ delay: 3000, disableOnInteraction: false }}
+                                            loop={true}
+                                            spaceBetween={30}
+                                            slidesPerView={1}
+                                            breakpoints={{
+                                                768: { slidesPerView: 2, spaceBetween: 20 },
+                                                1024: { slidesPerView: 2, spaceBetween: 30 },
+                                            }}
+                                            className="tf-sw-testimonial"
+                                        >
+                                            {Array.isArray(reviews) &&
+                                                reviews.map((property) =>
+                                                    Array.isArray(property.review) &&
+                                                    property.review.map((rev) => (
+                                                        <SwiperSlide key={rev.reviewId}>
+                                                            <div className="box-tes-item">
+                                                                {/* ⭐ Dynamic stars */}
+                                                                <ul className="list-star">
+                                                                    {Array.from({ length: 5 }).map((_, i) => (
+                                                                        <li
+                                                                            key={i}
+                                                                            className={`icon icon-star ${i < parseInt(rev.star) ? "text-warning" : ""
+                                                                                }`}
+                                                                        ></li>
+                                                                    ))}
+                                                                </ul>
 
-                                                            {/* 📝 Review text */}
-                                                            <p className="note body-1">"{rev.message}"</p>
+                                                                {/* 📝 Review text */}
+                                                                <p className="note body-1">"{rev.message}"</p>
 
-                                                            {/* 👤 User info */}
-                                                            <div className="box-avt d-flex align-items-center gap-12">
-                                                                <div className="avatar avt-60 round">
+                                                                {/* 👤 User info */}
+                                                                <div className="box-avt d-flex align-items-center gap-12">
+                                                                    <div className="avatar avt-60 round">
 
-                                                                    <img
-                                                                        src={rev?.profile ? `${api.imageUrl}${rev.profile}` : "images/avatar/avt-7.jpg"}
-                                                                        alt="avatar"
-                                                                        onError={(e) => { e.currentTarget.src = { download } }}
-                                                                    />
+                                                                        <img
+                                                                            src={rev?.profile ? `${api.imageUrl}${rev.profile}` : "images/avatar/avt-7.jpg"}
+                                                                            alt="avatar"
+                                                                            onError={(e) => { e.currentTarget.src = { download } }}
+                                                                        />
 
-                                                                </div>
-                                                                <div className="info">
-                                                                    <div className="h7 fw-7">{rev.user_name}</div>
-                                                                    <p className="text-variant-1 mt-4">{rev.userType}</p>
+                                                                    </div>
+                                                                    <div className="info">
+                                                                        <div className="h7 fw-7">{rev.user_name}</div>
+                                                                        <p className="text-variant-1 mt-4">{rev.userType}</p>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    </SwiperSlide>
-                                                ))
-                                            )}
-                                    </Swiper>
+                                                        </SwiperSlide>
+                                                    ))
+                                                )}
+                                        </Swiper>
 
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
+                        </section>
+                    )}
                     {/* AGENTS */}
                     {/* <section className="flat-section flat-agents">
                         <div className="container">
