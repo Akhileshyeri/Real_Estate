@@ -26,6 +26,10 @@ import ReviewList from "./Components/ReviewList";
 import UpdateProperty from "./Components/UpdateProperty";
 import StateList from "./Components/CityList";
 import RecentProperties from "./Components/RecentProperties";
+import EMICalculator from "./Components/EMICalculator";
+import ConstructionCalculator from "./Components/ConstructionCalculator";
+
+
 
 // ✅ Inline ScrollToTop helper
 const ScrollToTop = () => {
@@ -69,8 +73,12 @@ function App() {
         <Route exact path="/inquiries/:id" element={<Inquiries />} />
         <Route path="/reviewlist" element={<ReviewList />} />
         <Route path="/reviewlist/:id" element={<ReviewList />} />
-               <Route exact path="/edit-property/:id" element={<UpdateProperty />} />
-                              <Route exact path="/recent" element={<RecentProperties />} />
+        <Route exact path="/edit-property/:id" element={<UpdateProperty />} />
+        <Route exact path="/recent" element={<RecentProperties />} />
+        <Route exact path="/emi" element={<EMICalculator />} />
+        <Route exact path="/calc" element={<ConstructionCalculator />} />
+
+
 
       </Routes>
     </>

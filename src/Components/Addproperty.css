@@ -801,3 +801,25 @@
   }
 }
 
+.button-row {
+  display: flex;
+  justify-content: space-between; /* Continue left, Back right */
+  align-items: center;
+  gap: 10px; /* optional spacing */
+  margin-top: 15px;
+}
+
+.back-btn {
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #f8f8f8;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 550px;  /* fixed position */
+}
+
+.back-btn:hover {
+  background: #e5e5e5;
+}
+

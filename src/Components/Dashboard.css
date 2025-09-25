@@ -61,6 +61,15 @@
 
 }
 
+  .reviews-container {
+  max-height: 400px;   /* set your preferred height */
+  overflow-y: auto;    /* scrollbar only if content exceeds height */
+  padding-right: 6px;  /* prevents text cut-off with scrollbar */
+}
+
+
+
+
 
 .note {
   display: -webkit-box;
@@ -76,6 +85,9 @@
 
 .widget-box-3.recent-box {
   max-height: 512px;
+
+
+
 
 
 
@@ -173,5 +185,22 @@
     margin-top: 100px; /* adjust the space as needed */
   }
 }
+
+.wrapper-content.row {
+  display: flex; /* make row a flexbox */
+  align-items: stretch; /* stretch children to equal height */
+}
+
+.wrapper-content .col-xl-9,
+.wrapper-content .col-xl-3 {
+  display: flex;
+  flex-direction: column; /* so inner widget expands */
+}
+
+.widget-box-2,
+.widget-box-3 {
+  flex: 1; /* make them expand equally */
+}
+
 
 

@@ -943,6 +943,12 @@ const AddProperty = () => {
         fd.append("files[]", file);
       });
     });
+    const countryCode = localStorage.getItem("country");
+    if (countryCode === "101") {
+      fd.append("country", "India");
+    } else if (countryCode === "229") {
+      fd.append("country", "Dubai");
+    }
 
     fd.append("authToken", authToken);
     fd.append("programType", "addPropertyMain");
@@ -953,19 +959,19 @@ const AddProperty = () => {
 
     });
 
-    // try {
-    //   const response = await api.post("properties/prop1", fd);
-    //   console.log("ee", response)
-    //   if (response.data.success) {
-    //     toast.success(response.data.message)
-    //     navigate("/home")
-    //   } else {
-    //     toast.error(response.data.message)
-    //   }
-    // }
-    // catch (err) {
-    //   console.log(err)
-    // }
+    try {
+      const response = await api.post("properties/prop1", fd);
+      console.log("ee", response)
+      if (response.data.success) {
+        toast.success(response.data.message)
+        navigate("/home")
+      } else {
+        toast.error(response.data.message)
+      }
+    }
+    catch (err) {
+      console.log(err)
+    }
 
   }
 
@@ -1038,14 +1044,14 @@ const AddProperty = () => {
   // 🔹 Trigger search when typing
   useEffect(() => {
     if (!apartment) {
-      projectList(""); // show last 4 by default
+      // show last 4 by default
       setShowDropdown(true);
       return;
     }
 
     const delayDebounce = setTimeout(() => {
       projectList(apartment);
-      setShowDropdown(true);
+      setShowDropdown(false);
     }, 400);
 
     return () => clearTimeout(delayDebounce);
@@ -1099,6 +1105,31 @@ const AddProperty = () => {
   useEffect(() => {
     StateList();
   }, []);
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+
+
+  const containerRef = useRef();
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [setShowDropdown]);
+
 
 
 
@@ -1897,6 +1928,19 @@ const AddProperty = () => {
                       transition: "all 0.2s ease",
                       height: "55px"
                     }}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      fontSize: "15px",
+                      color: "#333",
+                      backgroundColor: "#fff",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                      outline: "none",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      height: "55px"
+                    }}
                   >
                     <option value="">Select State</option>
                     {states.map((s) => (
@@ -1907,7 +1951,6 @@ const AddProperty = () => {
                   </select>
 
                 </div>
-
 
 
                 <div className="form-group">
@@ -2110,6 +2153,7 @@ const AddProperty = () => {
                           alignItems: "center",
                           zIndex: 9999,
                           padding: "10px",
+                          padding: "10px",
                         }}
                       >
                         <div
@@ -2133,12 +2177,11 @@ const AddProperty = () => {
                           >
                             Add New Apartment/Project
                           </h3>
-
                           <input
                             type="text"
                             placeholder="Enter new apartment name"
                             value={newApartment}
-                            onChange={(e) => setNewApartment(e.target.value)}
+                            onChange={e => setNewApartment(e.target.value)}
                             style={{
                               width: "100%",
                               padding: "10px 12px",
@@ -2171,7 +2214,6 @@ const AddProperty = () => {
                                 background: "#f8f8f8",
                                 cursor: "pointer",
                                 fontSize: "14px",
-                                transition: "all 0.2s ease",
                               }}
                               onMouseOver={(e) =>
                                 (e.currentTarget.style.background = "#eee")
@@ -2305,6 +2347,19 @@ const AddProperty = () => {
                         transition: "all 0.2s ease",
                         height: "55px"
                       }}
+                      style={{
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
+                        fontSize: "15px",
+                        color: "#333",
+                        backgroundColor: "#fff",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                        outline: "none",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        height: "55px"
+                      }}
                     >
                       <option value="">Select</option>
                       <option value="feet">Feet</option>
@@ -2354,6 +2409,32 @@ const AddProperty = () => {
 
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
 
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+
+                  {/* Continue button */}
+                  {selectedOwnership && location && (
+                    <button onClick={handleLocationContinue} className="continue-btn">
+                      Continue
+                    </button>
+                  )}
+
+                  <button
+                    className="back-btn"
+                    onClick={handleBack}
+                    style={{
+                      padding: "10px 20px",
+                      border: "1px solid #ccc",
+                      borderRadius: "6px",
+                      background: "#f8f8f8",
+                      cursor: "pointer",
+                      fontSize: "14px",
+
+                    }}
+                  >
+                    Back
+                  </button>
+
+                </div>
                   {/* Continue button */}
                   {selectedOwnership && location && (
                     <button onClick={handleLocationContinue} className="continue-btn">
@@ -9387,11 +9468,28 @@ const AddProperty = () => {
                 )}
 
                 <div className="step3-continue-container" style={{ display: "flex", justifyContent: "space-between" }}>
+                <div className="step3-continue-container" style={{ display: "flex", justifyContent: "space-between" }}>
                   <button
                     onClick={() => setCurrentStep(4)}
                     className="step3-continue-btn"
                   >
                     Continue
+                  </button>
+
+                  <button
+                    className="back-btn"
+                    onClick={handleBack}
+                    style={{
+                      padding: "10px 20px",
+                      border: "1px solid #ccc",
+                      borderRadius: "6px",
+                      background: "#f8f8f8",
+                      cursor: "pointer",
+                      fontSize: "14px",
+
+                    }}
+                  >
+                    Back
                   </button>
 
                   <button
@@ -9618,27 +9716,38 @@ const AddProperty = () => {
                       background: sections.some((s) => s.files.length > 0) ? "#ED2027" : "#e9ecef",
                       color: sections.some((s) => s.files.length > 0) ? "white" : "#adb5bd",
                       border: "none",
+                      background: sections.some((s) => s.files.length > 0) ? "#ED2027" : "#e9ecef",
+                      color: sections.some((s) => s.files.length > 0) ? "white" : "#adb5bd",
+                      border: "none",
                       borderRadius: "8px",
                       fontSize: "14px",
                       fontWeight: "500",
                       cursor: sections.some((s) => s.files.length > 0) ? "pointer" : "not-allowed",
+                      cursor: sections.some((s) => s.files.length > 0) ? "pointer" : "not-allowed",
                     }}
                   >
                     Continue to Pricing
+                    Continue to Pricing
                   </button>
                   <button
+                    onClick={() => setCurrentStep(3)}
                     onClick={() => setCurrentStep(3)}
                     style={{
                       padding: "12px 24px",
                       background: "#fff",
                       border: "1px solid #d0d5dd",
+                      background: "#fff",
+                      border: "1px solid #d0d5dd",
                       borderRadius: "8px",
+                      color: "#344054",
                       color: "#344054",
                       fontSize: "14px",
                       fontWeight: "500",
                       cursor: "pointer",
+                      cursor: "pointer",
                     }}
                   >
+                    Back
                     Back
                   </button>
 
@@ -9807,6 +9916,7 @@ const AddProperty = () => {
                           </div>
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -9825,6 +9935,22 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
 
                             <button
@@ -9985,6 +10111,7 @@ const AddProperty = () => {
 
 
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
@@ -10003,6 +10130,22 @@ const AddProperty = () => {
                                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                               >
                                 Continue
+                              </button>
+
+                              <button
+                                className="back-btn"
+                                onClick={handleBack}
+                                style={{
+                                  padding: "10px 20px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "6px",
+                                  background: "#f8f8f8",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+
+                                }}
+                              >
+                                Back
                               </button>
 
                               <button
@@ -10167,6 +10310,7 @@ const AddProperty = () => {
                           </div>
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -10185,6 +10329,22 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
 
                             <button
@@ -10350,6 +10510,7 @@ const AddProperty = () => {
                           </div>
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -10368,6 +10529,22 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
 
                             <button
@@ -10530,6 +10707,7 @@ const AddProperty = () => {
                     </div>
 
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <button
                         type="button"
                         onClick={handleStep5Continue}
@@ -10548,6 +10726,22 @@ const AddProperty = () => {
                         onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                       >
                         Continue
+                      </button>
+
+                      <button
+                        className="back-btn"
+                        onClick={handleBack}
+                        style={{
+                          padding: "10px 20px",
+                          border: "1px solid #ccc",
+                          borderRadius: "6px",
+                          background: "#f8f8f8",
+                          cursor: "pointer",
+                          fontSize: "14px",
+
+                        }}
+                      >
+                        Back
                       </button>
 
                       <button
@@ -10710,6 +10904,7 @@ const AddProperty = () => {
                           </div>
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -10728,6 +10923,21 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
                             <button
                               className="back-btn"
@@ -10899,6 +11109,7 @@ const AddProperty = () => {
                           </div>
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -10917,6 +11128,21 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
                             <button
                               className="back-btn"
@@ -11080,6 +11306,7 @@ const AddProperty = () => {
                             />
                           </div>
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -11098,6 +11325,22 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
 
                             <button
@@ -11734,6 +11977,7 @@ const AddProperty = () => {
 
 
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
@@ -11752,6 +11996,22 @@ const AddProperty = () => {
                                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                               >
                                 Continue
+                              </button>
+
+                              <button
+                                className="back-btn"
+                                onClick={handleBack}
+                                style={{
+                                  padding: "10px 20px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "6px",
+                                  background: "#f8f8f8",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+
+                                }}
+                              >
+                                Back
                               </button>
 
                               <button
@@ -12104,6 +12364,7 @@ const AddProperty = () => {
 
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -12122,6 +12383,22 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
 
                             <button
@@ -12467,6 +12744,7 @@ const AddProperty = () => {
 
 
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
@@ -12485,6 +12763,21 @@ const AddProperty = () => {
                                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                               >
                                 Continue
+                              </button>
+                              <button
+                                className="back-btn"
+                                onClick={handleBack}
+                                style={{
+                                  padding: "10px 20px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "6px",
+                                  background: "#f8f8f8",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+
+                                }}
+                              >
+                                Back
                               </button>
                               <button
                                 className="back-btn"
@@ -12644,6 +12937,7 @@ const AddProperty = () => {
 
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -12662,6 +12956,22 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
 
                             <button
@@ -13007,6 +13317,7 @@ const AddProperty = () => {
 
 
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
@@ -13025,6 +13336,22 @@ const AddProperty = () => {
                                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                               >
                                 Continue
+                              </button>
+
+                              <button
+                                className="back-btn"
+                                onClick={handleBack}
+                                style={{
+                                  padding: "10px 20px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "6px",
+                                  background: "#f8f8f8",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+
+                                }}
+                              >
+                                Back
                               </button>
 
                               <button
@@ -13188,6 +13515,7 @@ const AddProperty = () => {
 
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -13206,6 +13534,21 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
                             <button
                               className="back-btn"
@@ -13555,6 +13898,7 @@ const AddProperty = () => {
 
 
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
@@ -13573,6 +13917,21 @@ const AddProperty = () => {
                                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                               >
                                 Continue
+                              </button>
+                              <button
+                                className="back-btn"
+                                onClick={handleBack}
+                                style={{
+                                  padding: "10px 20px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "6px",
+                                  background: "#f8f8f8",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+
+                                }}
+                              >
+                                Back
                               </button>
                               <button
                                 className="back-btn"
@@ -13734,6 +14093,7 @@ const AddProperty = () => {
 
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -13752,6 +14112,22 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
 
                             <button
@@ -14099,6 +14475,7 @@ const AddProperty = () => {
 
 
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
@@ -14117,6 +14494,22 @@ const AddProperty = () => {
                                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                               >
                                 Continue
+                              </button>
+
+                              <button
+                                className="back-btn"
+                                onClick={handleBack}
+                                style={{
+                                  padding: "10px 20px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "6px",
+                                  background: "#f8f8f8",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+
+                                }}
+                              >
+                                Back
                               </button>
 
                               <button
@@ -14274,6 +14667,7 @@ const AddProperty = () => {
 
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -14292,6 +14686,21 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
                             <button
                               className="back-btn"
@@ -14637,6 +15046,7 @@ const AddProperty = () => {
 
 
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
@@ -14655,6 +15065,22 @@ const AddProperty = () => {
                                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                               >
                                 Continue
+                              </button>
+
+                              <button
+                                className="back-btn"
+                                onClick={handleBack}
+                                style={{
+                                  padding: "10px 20px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "6px",
+                                  background: "#f8f8f8",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+
+                                }}
+                              >
+                                Back
                               </button>
 
                               <button
@@ -14812,6 +15238,7 @@ const AddProperty = () => {
 
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -14830,6 +15257,22 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
 
                             <button
@@ -15179,6 +15622,7 @@ const AddProperty = () => {
 
 
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
@@ -15197,6 +15641,22 @@ const AddProperty = () => {
                                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                               >
                                 Continue
+                              </button>
+
+                              <button
+                                className="back-btn"
+                                onClick={handleBack}
+                                style={{
+                                  padding: "10px 20px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "6px",
+                                  background: "#f8f8f8",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+
+                                }}
+                              >
+                                Back
                               </button>
 
                               <button
@@ -15354,6 +15814,7 @@ const AddProperty = () => {
 
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -15372,6 +15833,22 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
 
                             <button
@@ -15718,6 +16195,7 @@ const AddProperty = () => {
 
 
                             <div style={{ display: "flex", justifyContent: "space-between" }} >
+                            <div style={{ display: "flex", justifyContent: "space-between" }} >
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
@@ -15736,6 +16214,22 @@ const AddProperty = () => {
                                 onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                               >
                                 Continue
+                              </button>
+
+                              <button
+                                className="back-btn"
+                                onClick={handleBack}
+                                style={{
+                                  padding: "10px 20px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "6px",
+                                  background: "#f8f8f8",
+                                  cursor: "pointer",
+                                  fontSize: "14px",
+
+                                }}
+                              >
+                                Back
                               </button>
 
                               <button
@@ -15893,6 +16387,7 @@ const AddProperty = () => {
 
 
                           <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
                             <button
                               type="button"
                               onClick={handleStep5Continue}
@@ -15911,6 +16406,22 @@ const AddProperty = () => {
                               onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
                             >
                               Continue
+                            </button>
+
+                            <button
+                              className="back-btn"
+                              onClick={handleBack}
+                              style={{
+                                padding: "10px 20px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+
+                              }}
+                            >
+                              Back
                             </button>
 
                             <button
@@ -16413,6 +16924,31 @@ const AddProperty = () => {
                 </div>
 
                 {/* Submit */}
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <button type="button"
+                    onClick={handleSubmitPropperty}
+                    className="submit-btn" style={{ marginTop: "80px" }} >
+                    Submit Property
+                  </button>
+
+                  <button
+                    className="submit-btn"
+                    onClick={handleBack}
+                    style={{
+                      padding: "10px 20px",
+                      border: "1px solid #ccc",
+                      borderRadius: "6px",
+                      background: "#f8f8f8",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      marginTop: "80px",
+                      color: "black"
+
+                    }}
+                  >
+                    Back
+                  </button>
+                </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <button type="button"
                     onClick={handleSubmitPropperty}

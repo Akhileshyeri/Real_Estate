@@ -13,6 +13,19 @@ import Search from '../assets/Search.png'
 
 const Header = ({ showSearch }) => {
 
+  // ✅ Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (toggleRef.current && !toggleRef.current.contains(event.target)) {
+        setIsMenuToggled(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -28,7 +41,7 @@ const Header = ({ showSearch }) => {
   const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 
-  const [selectedOption, setSelectedOption] = useState("rent"); // lowercase by default
+  const [selectedOption, setSelectedOption] = useState("Buy"); // lowercase by default
 
   const handleSearch = () => {
     if (!searchTerm.trim()) {
@@ -341,6 +354,9 @@ const Header = ({ showSearch }) => {
         resetFormFields();
         navigate("/home");
       }
+      else {
+        toast.error(response.data.message)
+      }
     } catch (error) {
       console.error("Error verifying OTP:", error);
       toast.error("Failed to verify OTP. Please try again.");
@@ -580,7 +596,9 @@ const Header = ({ showSearch }) => {
         toast.success(response.data.message)
       }
       // keep OTP only inside the modal
-
+      else {
+        toast.error(response.data.message)
+      }
     } catch (error) {
       console.error('agent error:', error);
       toast.error("Failed to send OTP. Please try again.");
@@ -847,7 +865,7 @@ const Header = ({ showSearch }) => {
 
                           >
                             <div className="slider-option" onClick={() => handleOptionSelect("Rent")}>Rent</div>
-                            <div className="slider-option" onClick={() => handleOptionSelect("Sale")}>Sale</div>
+                            <div className="slider-option" onClick={() => handleOptionSelect("Buy")}>Buy</div>
                             <div className="slider-option" onClick={() => handleOptionSelect("Joint Venture")}>Joint Venture</div>
 
                           </div>
@@ -855,7 +873,7 @@ const Header = ({ showSearch }) => {
                           {/* Hidden select for form submission if needed */}
                           <select className="hidden-select" value={selectedOption} readOnly>
                             <option value="Rent">Rent</option>
-                            <option value="Sale">Sale</option>
+                            <option value="Buy">Buy</option>
                             <option value="Joint Venture">Joint Venture</option>
                           </select>
                         </div>
@@ -964,6 +982,41 @@ const Header = ({ showSearch }) => {
 
                   {!localStorage.getItem("authToken") || localStorage.getItem("authToken") === "Guest" ? (
                     <>
+
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: showSearch ? "9px" : "0px" }}>
+
+                        <div
+                          style={labelStyle}
+                          onClick={handleToggle}
+                          onKeyPress={(e) => e.key === "Enter" && handleToggle()}
+                          tabIndex={0}
+                          role="button"
+                          aria-label="Toggle between flags"
+                        >
+                          <div style={toggleHandleStyle}>
+                            {/* Background flag images */}
+                            <img
+                              src="/images/logo/flag.png"
+                              alt="flag1"
+                              style={{
+                                ...flagBackgroundStyles,
+                                opacity: isToggled ? 0 : 1,
+                              }}
+                            />
+                            <img
+                              src="/images/logo/flag (1).png"
+                              alt="flag2"
+                              style={{
+                                ...flagBackgroundStyle,
+                                opacity: isToggled ? 1 : 0,
+                              }}
+                            />
+
+                            {/* Knob */}
+                            <div style={handleKnobStyle(isToggled)}></div>
+                          </div>
+                        </div>
+                      </div>
                       {/* Login/Register */}
                       <div className="register" style={{ marginTop: showSearch ? "9px" : "0px" }}>
                         <ul className="d-flex">
@@ -1092,9 +1145,30 @@ const Header = ({ showSearch }) => {
                               <li onClick={() => navigate("/myproperties")}>
                                 My Properties
                               </li>
-                              <li onClick={() => navigate("/aboutus")}>About Us</li>
-                              <li onClick={() => navigate("/contactus")}>Contact Us</li>
-                              <li onClick={() => navigate("/FAQ")}>FAQs</li>
+                              <li
+
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  localStorage.removeItem("authToken");
+                                  localStorage.removeItem("addPropertyForm"); // clear token
+                                  localStorage.removeItem("email"); // clear token
+                                  localStorage.removeItem("hasSeenPopup"); // clear token
+                                  localStorage.removeItem("hasSeenSticky"); // clear token
+                                  localStorage.removeItem("mobile"); // clear token
+                                  localStorage.removeItem("name"); // clear token
+                                  localStorage.removeItem("photo"); // clear token
+                                  localStorage.removeItem("userEmail"); // clear token
+                                  localStorage.removeItem("userMobile"); // clear token
+                                  localStorage.removeItem("userName"); // clear token
+                                  localStorage.removeItem("userProfile"); // clear token
+                                  localStorage.removeItem("usertype");// clear token
+                                  navigate("/home"); // redirect after logout
+                                  window.location.reload(); // reload so header updates
+                                }}
+                              >
+                                <span className="icon icon-sign-out"></span> Logout
+
+                              </li>
                             </ul>
                           </div>
                         </div>
@@ -1272,7 +1346,8 @@ const Header = ({ showSearch }) => {
                 {showSearch && (
                   <div
                     ref={searchRef}
-                    className={`header-search mobile-search header-search-wrapper ${showSearchAnimated ? "animate-in" : "animate-out"}`}
+                    className={`header-search mobile-search header-search-wrapper ${showSearchAnimated ? "animate-in" : "animate-out"
+                      }`}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -1282,61 +1357,75 @@ const Header = ({ showSearch }) => {
                       background: "#fff",
                       position: "relative",
                       width: "100%",
-                      maxWidth: "100%",
+                      maxWidth: "600px", // ✅ increased width
                       margin: "0 auto",
                     }}
                   >
-                    {/* Dropdown */}
-                    <div ref={dropdownRef} style={{ position: "relative", marginRight: "6px", cursor: "pointer", flex: "0 0 auto" }}>
-                      <div
-                        onClick={() => setDropdownOpen(!dropdownOpen)}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          fontSize: "12px",
-                          color: "black",
-                          fontWeight: "500",
-                          padding: "4px 6px",
-                          borderRadius: "5px",
-                          background: "#f8f8f8",
-                          minWidth: "60px",
-                          justifyContent: "center",
-                          height: "45px",
-                        }}
-                      >
+                    {/* Dropdown inside search bar */}
+                    <div
+                      ref={dropdownRef}
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        fontSize: "12px",
+                        color: "black",
+                        fontWeight: "500",
+                        padding: "4px 6px",
+                        borderRadius: "5px",
+                        background: "#f8f8f8",
+                        cursor: "pointer",
+                        height: "40px",
+                        marginRight: "8px",
+                      }}
+                    >
+                      <span style={{ fontWeight: "bold" }}>
                         {capitalizeFirstLetter(selectedOption)}
-                        <span style={{ fontSize: "8px", color: "#ED2027" }}>▼</span>
-                      </div>
-
+                      </span>
+                      <img
+                        src={Arrow}
+                        alt="dropdown icon"
+                        style={{
+                          height: "10px",
+                          transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.2s ease",
+                        }}
+                      />
                       {dropdownOpen && (
                         <ul
                           style={{
                             position: "absolute",
-                            top: "110%",
-                            left: 0,
-                            width: "max-content",
-                            minWidth: "80px",
+                            top: "100%",
+                            left: "10px",
                             background: "#fff",
                             border: "1px solid #ddd",
                             borderRadius: "6px",
                             boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
                             listStyle: "none",
                             margin: 0,
+
                             padding: "6px 0",
                             zIndex: 9999,
                           }}
                         >
-                          {["Sale", "Rent", "Joint Venture"].map((option) => (
+                          {["Sale", "Buy", "Joint Venture"].map((option) => (
                             <li
                               key={option}
                               onClick={() => {
                                 handleOptionSelect(option);
-                                setDropdownOpen(false); // ✅ ensure closes
+                                setDropdownOpen(false);
                               }}
-                              style={{ padding: "6px 10px", cursor: "pointer", fontSize: "12px", color: "#333" }}
+                              style={{
+                                padding: "6px 10px",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                color: "#333",
+                              }}
                               onMouseEnter={(e) => (e.target.style.background = "#f2f2f2")}
-                              onMouseLeave={(e) => (e.target.style.background = "transparent")}
+                              onMouseLeave={(e) =>
+                                (e.target.style.background = "transparent")
+                              }
                             >
                               {option}
                             </li>
@@ -1345,30 +1434,39 @@ const Header = ({ showSearch }) => {
                       )}
                     </div>
 
-                    {/* Text input */}
-                    <input
-                      type="text"
-                      placeholder="Search properties..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      style={{
-                        flex: 1,
-                        border: "none",
-                        outline: "none",
-                        fontSize: "12px",
-                        minWidth: 0,
-                      }}
-                    />
-
-                    {/* Mobile Search Icon */}
-                    <img
-                      src={Search}
-                      alt="search"
-                      onClick={handleSearch} // ✅ attach handler
-                      style={{ width: "18px", height: "18px", marginLeft: "6px", cursor: "pointer" }}
-                    />
+                    {/* Input field with search icon */}
+                    <div style={{ position: "relative", flex: 1 }}>
+                      <input
+                        type="text"
+                        placeholder="Search properties..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                          width: "100%",
+                          border: "none",
+                          outline: "none",
+                          fontSize: "12px",
+                          paddingRight: "28px", // space for icon
+                        }}
+                      />
+                      <img
+                        src={Search}
+                        alt="search"
+                        onClick={handleSearch}
+                        style={{
+                          width: "18px",
+                          height: "18px",
+                          position: "absolute",
+                          right: "6px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          cursor: "pointer",
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
+
 
                 {/* ✅ Right - Hamburger */}
                 <div className="close-btn" onClick={toggleMobileMenu}>
@@ -1888,6 +1986,8 @@ const Header = ({ showSearch }) => {
             justifyContent: "center",
             alignItems: "center",
             zIndex: 3000,
+            backdropFilter: "blur(6px)",   // blur background
+            backgroundColor: "rgba(0,0,0,0.3)", // semi-transparent dark overlay
           }}
         >
           <div style={containerStyle1}>
@@ -1956,7 +2056,9 @@ const Header = ({ showSearch }) => {
               {otp.map((digit, i) => (
                 <input
                   key={i}
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength="1"
                   value={digit}
                   onChange={(e) => handleOtpChange(e.target.value, i)}
@@ -1986,6 +2088,7 @@ const Header = ({ showSearch }) => {
                     borderRadius: "5px",
                   }}
                 />
+
               ))}
             </div>
 
@@ -2186,6 +2289,8 @@ const Header = ({ showSearch }) => {
             justifyContent: "center",
             alignItems: "center",
             zIndex: 3000,
+            backdropFilter: "blur(6px)",   // blur background
+            backgroundColor: "rgba(0,0,0,0.3)", // semi-transparent dark overlay
           }}
         >
           <div style={containerStyle1}>
@@ -2242,7 +2347,7 @@ const Header = ({ showSearch }) => {
               {otp.map((digit, i) => (
                 <input
                   key={i}
-                  type="text"
+                  type="tel"
                   maxLength="1"
                   value={digit}
                   onChange={(e) => handleOtpChange(e.target.value, i)}

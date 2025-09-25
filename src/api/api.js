@@ -8,7 +8,7 @@ const IMG_URL = "https://jewellery.hisabapp.com/admin/";
 const api = axios.create({
   baseURL: "https://jewellery.hisabapp.com/admin/api/",
 
-  // baseURL: "http://192.168.1.103/projects/easyAcers/admin/api",
+  //  baseURL: "http://192.168.1.103/projects/easyAcers/admin/api",
 
 });
 

@@ -9,8 +9,32 @@ import Footer from "./Footer";
 import api from "../api/api";
 import toast from "react-hot-toast";
 import download from '/src/assets/download.png'
+import { decryptId } from "../utils/crypto";
+import { useSearchParams } from "react-router-dom";
+
 
 const Properties = () => {
+
+
+
+
+    const { id: rawParam } = useParams();
+
+    let encryptedId = rawParam;
+    let slug = "";
+
+    if (rawParam.includes("&slug=")) {
+        const [enc, s] = rawParam.split("&slug=");
+        encryptedId = enc;
+        slug = s; // you can use slug if needed
+    }
+
+    const id = decryptId(encryptedId);
+
+
+
+
+
 
     const [rating, setRating] = useState(0); // selected rating
     const [hovers, setHovers] = useState(0);   // hover preview
@@ -32,7 +56,6 @@ const Properties = () => {
 
 
 
-    const { id } = useParams();
     const navigate = useNavigate()
     const [propertyData, setPropertyData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -285,12 +308,14 @@ const Properties = () => {
 
                 // ✅ Create a new review object (mimic backend structure)
                 const newReview = {
-                    id: Date.now(), // temporary unique id
+                    id: Date.now(),
                     user_name: profileName || "Guest",
+                    profile: profileImg.startsWith("http") ? profileImg : `${api.imageUrl}${profileImg}`,
                     star: rating,
                     message: review,
                     created_at: new Date().toISOString(),
                 };
+
 
                 // ✅ Update propertyData state immediately
                 setPropertyData((prev) => ({
@@ -626,20 +651,20 @@ const Properties = () => {
                             >
                                 {propertyData.property.listing_type}
                             </span>
-                            <h4 className="title link"style={{marginTop:"20px"}}>{propertyData.property.title}</h4>
+                            <h4 className="title link" style={{ marginTop: "20px" }}>{propertyData.property.title}</h4>
                             {isPlot && <span className="badge bg-secondary ms-2">Plot</span>}
 
                             {/* Location displayed below */}
-                              <div className="info-box" style={{marginTop :"-10px"}}></div>
+                            <div className="info-box" style={{ marginTop: "-10px" }}></div>
                             <div className="info-box d-flex align-items-center mt-2" >
-                                <span className="icon icon-mapPin me-2"  style={{ color: 'red', fontSize: '18px' }} ></span>
+                                <span className="icon icon-mapPin me-2" style={{ color: 'red', fontSize: '18px' }} ></span>
                                 <p className="meta-item mb-0" style={{ fontWeight: '700', fontSize: '16px' }}>
                                     {propertyData.location.address}, {propertyData.location.location}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="content-bottom" style={{marginTop:"25px"}}>
+                        <div className="content-bottom" style={{ marginTop: "25px" }}>
                             <div className="info-box">
                                 <div className="label">FEATURES:</div>
                                 <ul className="meta">
@@ -1112,9 +1137,9 @@ const Properties = () => {
                                                 <li className="list-review-item" key={rev.id}>
                                                     <div className="avatar avt-60 round">
                                                         <img
-                                                            // src={download} 
-                                                            src={rev?.profile ? `${api.imageUrl}${rev.profile}` : download}
-                                                            alt="avatar" />
+                                                            src={rev?.profile || download}
+                                                            alt="avatar"
+                                                        />
 
                                                     </div>
                                                     <div className="content">
