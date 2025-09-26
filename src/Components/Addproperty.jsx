@@ -1124,6 +1124,48 @@ const AddProperty = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setShowDropdown]);
 
+  // Detect user's location
+  const detectLocation = async () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log("Lat/Lng:", latitude, longitude);
+
+        try {
+          // Example using OpenStreetMap Nominatim API
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          console.log("Reverse geocode data:", data);
+
+          // Extract fields
+          if (data.address) {
+            setState(data.address.state || "");
+            setLocation(data.address.city || data.address.town || data.address.village || "");
+            setPostalCode(data.address.postcode || "");
+            setLocatedNear(data.address.neighbourhood || data.address.suburb || "");
+            setAddress(data.display_name || "");
+          }
+        } catch (error) {
+          console.error("Error fetching location data:", error);
+          toast.error("Failed to detect location");
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        toast.error("Unable to fetch location. Please allow location access.");
+      },
+      { enableHighAccuracy: true }
+    );
+  };
+
+
 
 
 
@@ -1860,7 +1902,24 @@ const AddProperty = () => {
 
             {currentStep === 2 && (
               <div>
+                <div style={{display:"flex", justifyContent:"space-between"}}>
                 <h4 className="step-heading">Where is your property Located?</h4>
+
+                  <button
+                  type="button"
+                  onClick={detectLocation}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+
+
+                  }}
+                >
+                  📍Detect Location
+                </button>
+</div>
+              
+
 
                 {/* State Select */}
                 <div className="form-group">
@@ -2277,7 +2336,7 @@ const AddProperty = () => {
                       background: "#f8f8f8",
                       cursor: "pointer",
                       fontSize: "14px",
-                      marginLeft:"10px"
+                      marginLeft: "10px"
                     }}
                   >
                     Back
@@ -9716,22 +9775,32 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
 
                             <button
                               className="back-btn"
@@ -9793,7 +9862,7 @@ const AddProperty = () => {
                                     onChange={(e) => setAllInclusive(e.target.checked)}
                                     className="step3-checkbox"
                                   />
-                                 
+                                  All Inclusive Price?
                                 </label>
                                 <label className="step3-checkbox-label">
                                   <input
@@ -9894,22 +9963,68 @@ const AddProperty = () => {
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
+                                disabled={
+                                  !expectedPrice ||
+                                  !(
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                  ) ||
+                                  !uniqueProperty.trim()
+                                }
                                 style={{
-                                  backgroundColor: "#ED2027",
+                                  backgroundColor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "#ccc"
+                                      : "#ED2027",
                                   color: "#fff",
                                   padding: "12px 28px",
                                   borderRadius: 6,
                                   fontWeight: 600,
                                   border: "none",
-                                  cursor: "pointer",
+                                  cursor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "not-allowed"
+                                      : "pointer",
                                   fontSize: 15,
                                   transition: "background-color 0.15s ease",
                                 }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                                onMouseOver={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#c41b21";
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#ED2027";
+                                  }
+                                }}
                               >
                                 Continue
                               </button>
+
 
                               <button
                                 className="back-btn"
@@ -10076,22 +10191,68 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={
+                                !expectedPrice ||
+                                !(
+                                  expectedPrice &&
+                                  (carpetArea || builtUpArea) &&
+                                  (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                ) ||
+                                !uniqueProperty.trim()
+                              }
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor:
+                                  !expectedPrice ||
+                                    !(
+                                      expectedPrice &&
+                                      (carpetArea || builtUpArea) &&
+                                      (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                    ) ||
+                                    !uniqueProperty.trim()
+                                    ? "#ccc"
+                                    : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor:
+                                  !expectedPrice ||
+                                    !(
+                                      expectedPrice &&
+                                      (carpetArea || builtUpArea) &&
+                                      (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                    ) ||
+                                    !uniqueProperty.trim()
+                                    ? "not-allowed"
+                                    : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (
+                                  expectedPrice &&
+                                  (carpetArea || builtUpArea) &&
+                                  (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                  uniqueProperty.trim()
+                                ) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (
+                                  expectedPrice &&
+                                  (carpetArea || builtUpArea) &&
+                                  (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                  uniqueProperty.trim()
+                                ) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
 
                             <button
                               className="back-btn"
@@ -10259,22 +10420,32 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
 
                             <button
                               className="back-btn"
@@ -10439,22 +10610,68 @@ const AddProperty = () => {
                       <button
                         type="button"
                         onClick={handleStep5Continue}
+                        disabled={
+                          !expectedPrice ||
+                          !(
+                            expectedPrice &&
+                            (carpetArea || builtUpArea) &&
+                            (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                          ) ||
+                          !uniqueProperty.trim()
+                        }
                         style={{
-                          backgroundColor: "#ED2027",
+                          backgroundColor:
+                            !expectedPrice ||
+                              !(
+                                expectedPrice &&
+                                (carpetArea || builtUpArea) &&
+                                (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                              ) ||
+                              !uniqueProperty.trim()
+                              ? "#ccc"
+                              : "#ED2027",
                           color: "#fff",
                           padding: "12px 28px",
                           borderRadius: 6,
                           fontWeight: 600,
                           border: "none",
-                          cursor: "pointer",
+                          cursor:
+                            !expectedPrice ||
+                              !(
+                                expectedPrice &&
+                                (carpetArea || builtUpArea) &&
+                                (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                              ) ||
+                              !uniqueProperty.trim()
+                              ? "not-allowed"
+                              : "pointer",
                           fontSize: 15,
                           transition: "background-color 0.15s ease",
                         }}
-                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                        onMouseOver={(e) => {
+                          if (
+                            expectedPrice &&
+                            (carpetArea || builtUpArea) &&
+                            (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                            uniqueProperty.trim()
+                          ) {
+                            e.currentTarget.style.backgroundColor = "#c41b21";
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (
+                            expectedPrice &&
+                            (carpetArea || builtUpArea) &&
+                            (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                            uniqueProperty.trim()
+                          ) {
+                            e.currentTarget.style.backgroundColor = "#ED2027";
+                          }
+                        }}
                       >
                         Continue
                       </button>
+
 
                       <button
                         className="back-btn"
@@ -10619,22 +10836,68 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={
+                                !expectedPrice ||
+                                !(
+                                  expectedPrice &&
+                                  (carpetArea || builtUpArea) &&
+                                  (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                ) ||
+                                !uniqueProperty.trim()
+                              }
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor:
+                                  !expectedPrice ||
+                                    !(
+                                      expectedPrice &&
+                                      (carpetArea || builtUpArea) &&
+                                      (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                    ) ||
+                                    !uniqueProperty.trim()
+                                    ? "#ccc"
+                                    : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor:
+                                  !expectedPrice ||
+                                    !(
+                                      expectedPrice &&
+                                      (carpetArea || builtUpArea) &&
+                                      (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                    ) ||
+                                    !uniqueProperty.trim()
+                                    ? "not-allowed"
+                                    : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (
+                                  expectedPrice &&
+                                  (carpetArea || builtUpArea) &&
+                                  (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                  uniqueProperty.trim()
+                                ) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (
+                                  expectedPrice &&
+                                  (carpetArea || builtUpArea) &&
+                                  (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                  uniqueProperty.trim()
+                                ) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
                             <button
                               className="back-btn"
                               onClick={handleBack}
@@ -10808,22 +11071,32 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
                             <button
                               className="back-btn"
                               onClick={handleBack}
@@ -10989,22 +11262,68 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={
+                                !expectedPrice ||
+                                !(
+                                  expectedPrice &&
+                                  (carpetArea || builtUpArea) &&
+                                  (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                ) ||
+                                !uniqueProperty.trim()
+                              }
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor:
+                                  !expectedPrice ||
+                                    !(
+                                      expectedPrice &&
+                                      (carpetArea || builtUpArea) &&
+                                      (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                    ) ||
+                                    !uniqueProperty.trim()
+                                    ? "#ccc"
+                                    : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor:
+                                  !expectedPrice ||
+                                    !(
+                                      expectedPrice &&
+                                      (carpetArea || builtUpArea) &&
+                                      (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                    ) ||
+                                    !uniqueProperty.trim()
+                                    ? "not-allowed"
+                                    : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (
+                                  expectedPrice &&
+                                  (carpetArea || builtUpArea) &&
+                                  (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                  uniqueProperty.trim()
+                                ) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (
+                                  expectedPrice &&
+                                  (carpetArea || builtUpArea) &&
+                                  (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                  uniqueProperty.trim()
+                                ) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
 
                             <button
                               className="back-btn"
@@ -11643,19 +11962,64 @@ const AddProperty = () => {
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
+                                disabled={
+                                  !expectedPrice ||
+                                  !(
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                  ) ||
+                                  !uniqueProperty.trim()
+                                }
                                 style={{
-                                  backgroundColor: "#ED2027",
+                                  backgroundColor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "#ccc"
+                                      : "#ED2027",
                                   color: "#fff",
                                   padding: "12px 28px",
                                   borderRadius: 6,
                                   fontWeight: 600,
                                   border: "none",
-                                  cursor: "pointer",
+                                  cursor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "not-allowed"
+                                      : "pointer",
                                   fontSize: 15,
                                   transition: "background-color 0.15s ease",
                                 }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                                onMouseOver={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#c41b21";
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#ED2027";
+                                  }
+                                }}
                               >
                                 Continue
                               </button>
@@ -12013,22 +12377,32 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
 
                             <button
                               className="back-btn"
@@ -12376,22 +12750,68 @@ const AddProperty = () => {
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
+                                disabled={
+                                  !expectedPrice ||
+                                  !(
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                  ) ||
+                                  !uniqueProperty.trim()
+                                }
                                 style={{
-                                  backgroundColor: "#ED2027",
+                                  backgroundColor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "#ccc"
+                                      : "#ED2027",
                                   color: "#fff",
                                   padding: "12px 28px",
                                   borderRadius: 6,
                                   fontWeight: 600,
                                   border: "none",
-                                  cursor: "pointer",
+                                  cursor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "not-allowed"
+                                      : "pointer",
                                   fontSize: 15,
                                   transition: "background-color 0.15s ease",
                                 }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                                onMouseOver={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#c41b21";
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#ED2027";
+                                  }
+                                }}
                               >
                                 Continue
                               </button>
+
                               <button
                                 className="back-btn"
                                 onClick={handleBack}
@@ -12553,19 +12973,28 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
@@ -12916,22 +13345,68 @@ const AddProperty = () => {
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
+                                disabled={
+                                  !expectedPrice ||
+                                  !(
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                  ) ||
+                                  !uniqueProperty.trim()
+                                }
                                 style={{
-                                  backgroundColor: "#ED2027",
+                                  backgroundColor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "#ccc"
+                                      : "#ED2027",
                                   color: "#fff",
                                   padding: "12px 28px",
                                   borderRadius: 6,
                                   fontWeight: 600,
                                   border: "none",
-                                  cursor: "pointer",
+                                  cursor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "not-allowed"
+                                      : "pointer",
                                   fontSize: 15,
                                   transition: "background-color 0.15s ease",
                                 }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                                onMouseOver={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#c41b21";
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#ED2027";
+                                  }
+                                }}
                               >
                                 Continue
                               </button>
+
 
                               <button
                                 className="back-btn"
@@ -13097,22 +13572,32 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
                             <button
                               className="back-btn"
                               onClick={handleBack}
@@ -13464,22 +13949,68 @@ const AddProperty = () => {
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
+                                disabled={
+                                  !expectedPrice ||
+                                  !(
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                  ) ||
+                                  !uniqueProperty.trim()
+                                }
                                 style={{
-                                  backgroundColor: "#ED2027",
+                                  backgroundColor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "#ccc"
+                                      : "#ED2027",
                                   color: "#fff",
                                   padding: "12px 28px",
                                   borderRadius: 6,
                                   fontWeight: 600,
                                   border: "none",
-                                  cursor: "pointer",
+                                  cursor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "not-allowed"
+                                      : "pointer",
                                   fontSize: 15,
                                   transition: "background-color 0.15s ease",
                                 }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                                onMouseOver={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#c41b21";
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#ED2027";
+                                  }
+                                }}
                               >
                                 Continue
                               </button>
+
                               <button
                                 className="back-btn"
                                 onClick={handleBack}
@@ -13643,19 +14174,28 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
@@ -14008,22 +14548,68 @@ const AddProperty = () => {
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
+                                disabled={
+                                  !expectedPrice ||
+                                  !(
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                  ) ||
+                                  !uniqueProperty.trim()
+                                }
                                 style={{
-                                  backgroundColor: "#ED2027",
+                                  backgroundColor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "#ccc"
+                                      : "#ED2027",
                                   color: "#fff",
                                   padding: "12px 28px",
                                   borderRadius: 6,
                                   fontWeight: 600,
                                   border: "none",
-                                  cursor: "pointer",
+                                  cursor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "not-allowed"
+                                      : "pointer",
                                   fontSize: 15,
                                   transition: "background-color 0.15s ease",
                                 }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                                onMouseOver={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#c41b21";
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#ED2027";
+                                  }
+                                }}
                               >
                                 Continue
                               </button>
+
 
                               <button
                                 className="back-btn"
@@ -14183,22 +14769,32 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
                             <button
                               className="back-btn"
                               onClick={handleBack}
@@ -14546,22 +15142,68 @@ const AddProperty = () => {
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
+                                disabled={
+                                  !expectedPrice ||
+                                  !(
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                  ) ||
+                                  !uniqueProperty.trim()
+                                }
                                 style={{
-                                  backgroundColor: "#ED2027",
+                                  backgroundColor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "#ccc"
+                                      : "#ED2027",
                                   color: "#fff",
                                   padding: "12px 28px",
                                   borderRadius: 6,
                                   fontWeight: 600,
                                   border: "none",
-                                  cursor: "pointer",
+                                  cursor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "not-allowed"
+                                      : "pointer",
                                   fontSize: 15,
                                   transition: "background-color 0.15s ease",
                                 }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                                onMouseOver={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#c41b21";
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#ED2027";
+                                  }
+                                }}
                               >
                                 Continue
                               </button>
+
 
                               <button
                                 className="back-btn"
@@ -14721,19 +15363,28 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
@@ -15088,22 +15739,68 @@ const AddProperty = () => {
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
+                                disabled={
+                                  !expectedPrice ||
+                                  !(
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                  ) ||
+                                  !uniqueProperty.trim()
+                                }
                                 style={{
-                                  backgroundColor: "#ED2027",
+                                  backgroundColor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "#ccc"
+                                      : "#ED2027",
                                   color: "#fff",
                                   padding: "12px 28px",
                                   borderRadius: 6,
                                   fontWeight: 600,
                                   border: "none",
-                                  cursor: "pointer",
+                                  cursor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "not-allowed"
+                                      : "pointer",
                                   fontSize: 15,
                                   transition: "background-color 0.15s ease",
                                 }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                                onMouseOver={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#c41b21";
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#ED2027";
+                                  }
+                                }}
                               >
                                 Continue
                               </button>
+
 
                               <button
                                 className="back-btn"
@@ -15263,22 +15960,32 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
 
                             <button
                               className="back-btn"
@@ -15627,19 +16334,64 @@ const AddProperty = () => {
                               <button
                                 type="button"
                                 onClick={handleStep5Continue}
+                                disabled={
+                                  !expectedPrice ||
+                                  !(
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                  ) ||
+                                  !uniqueProperty.trim()
+                                }
                                 style={{
-                                  backgroundColor: "#ED2027",
+                                  backgroundColor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "#ccc"
+                                      : "#ED2027",
                                   color: "#fff",
                                   padding: "12px 28px",
                                   borderRadius: 6,
                                   fontWeight: 600,
                                   border: "none",
-                                  cursor: "pointer",
+                                  cursor:
+                                    !expectedPrice ||
+                                      !(
+                                        expectedPrice &&
+                                        (carpetArea || builtUpArea) &&
+                                        (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea))
+                                      ) ||
+                                      !uniqueProperty.trim()
+                                      ? "not-allowed"
+                                      : "pointer",
                                   fontSize: 15,
                                   transition: "background-color 0.15s ease",
                                 }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                                onMouseOver={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#c41b21";
+                                  }
+                                }}
+                                onMouseOut={(e) => {
+                                  if (
+                                    expectedPrice &&
+                                    (carpetArea || builtUpArea) &&
+                                    (parseFloat(expectedPrice) / parseFloat(carpetArea || builtUpArea)) &&
+                                    uniqueProperty.trim()
+                                  ) {
+                                    e.currentTarget.style.backgroundColor = "#ED2027";
+                                  }
+                                }}
                               >
                                 Continue
                               </button>
@@ -15802,22 +16554,32 @@ const AddProperty = () => {
                             <button
                               type="button"
                               onClick={handleStep5Continue}
+                              disabled={!expectedRent || !uniqueProperty.trim()}
                               style={{
-                                backgroundColor: "#ED2027",
+                                backgroundColor: !expectedRent || !uniqueProperty.trim() ? "#ccc" : "#ED2027",
                                 color: "#fff",
                                 padding: "12px 28px",
                                 borderRadius: 6,
                                 fontWeight: 600,
                                 border: "none",
-                                cursor: "pointer",
+                                cursor: !expectedRent || !uniqueProperty.trim() ? "not-allowed" : "pointer",
                                 fontSize: 15,
                                 transition: "background-color 0.15s ease",
                               }}
-                              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#c41b21")}
-                              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
+                              onMouseOver={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#c41b21";
+                                }
+                              }}
+                              onMouseOut={(e) => {
+                                if (expectedRent && uniqueProperty.trim()) {
+                                  e.currentTarget.style.backgroundColor = "#ED2027";
+                                }
+                              }}
                             >
                               Continue
                             </button>
+
 
                             <button
                               className="back-btn"
