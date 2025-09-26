@@ -6,6 +6,7 @@ import easy from "../assets/easy.png"
 import toast from 'react-hot-toast';
 
 import Arrow from '../assets/Arrow.png'
+import gps from "../assets/gps.png"
 import Search from '../assets/Search.png'
 
 
@@ -36,6 +37,10 @@ const Header = ({ showSearch }) => {
 
   const [requireMobile, setRequireMobile] = useState(false);
   const [fallbackMobile, setFallbackMobile] = useState("");
+      const [detectedCity, setDetectedCity] = useState("");
+      const [detectedState, setDetectedState] = useState("");
+      const [detectedCountry, setDetectedCountry] = useState("");
+  
 
   const [searchTerm, setSearchTerm] = useState("");
   const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
@@ -817,6 +822,58 @@ const Header = ({ showSearch }) => {
     }, 150);
   };
 
+const handleDetectLocation = () => {
+  if (!navigator.geolocation) {
+    toast.error("Geolocation is not supported by your browser");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+        );
+        const data = await response.json();
+
+        const city =
+          data.address.city ||
+          data.address.town ||
+          data.address.village ||
+          "";
+        const state = data.address.state || "";
+        const country = data.address.country || "";
+
+        setDetectedCity(city);
+        setDetectedState(state);
+        setDetectedCountry(country);
+
+        console.log("Detected Location:", city, state, country);
+
+        // ✅ Navigate to listing with detected location
+        const queryParams = new URLSearchParams({
+          country: country || "",
+          state: state || "",
+          city: city || "",
+        });
+
+        navigate(`/listing?${queryParams.toString()}`);
+      } catch (error) {
+        console.error("Error fetching location details:", error);
+        toast.error("Failed to fetch location details.");
+      }
+    },
+    (error) => {
+      console.error("Geolocation error:", error);
+      toast.error("Unable to fetch location. Please enable GPS.");
+    }
+  );
+};
+
+
+
   return (
     <>
       <header className="main-header fixed-header desktop-header" style={{ height: "75px" }}>
@@ -896,7 +953,20 @@ const Header = ({ showSearch }) => {
 
 
                         {/* ✅ Custom imported search icon */}
+
+                       
+                          
                         <img
+                          src={gps}
+                          alt="search"
+                          className="search-icong"
+                          onClick={handleDetectLocation}
+                        // ✅ attach
+                          style={{ cursor: "pointer", backgroundColor:"#F0F4FF", padding:'5px', borderRadius:"50%" }}
+                        />
+                       
+
+                         <img
                           src={Search}
                           alt="search"
                           className="search-icon"
@@ -1449,6 +1519,26 @@ const Header = ({ showSearch }) => {
                           paddingRight: "28px", // space for icon
                         }}
                       />
+
+                      <img
+                          src={gps}
+                          alt="search"
+                              onClick={handleDetectLocation}
+                          className="search-icong"
+                        // ✅ attach
+                        style={{
+                          padding:"8px",
+                          backgroundColor:"#F0F4FF",
+                          borderRadius:"50%", 
+                          width: "35px",
+                          height: "35px",
+                          position: "absolute",
+                          right: "30px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          cursor: "pointer",
+                        }}
+                        />
                       <img
                         src={Search}
                         alt="search"
