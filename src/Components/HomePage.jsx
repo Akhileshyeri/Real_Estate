@@ -14,6 +14,8 @@ import Dub from "../assets/du.jpg"
 import { encryptId } from '../utils/crypto';
 import { slugify } from '../utils/slugify';
 import gps from "../assets/gps.png"
+import { useMediaQuery } from "react-responsive";
+
 
 
 
@@ -23,7 +25,7 @@ const HomePage = () => {
 
     const [recentProperties, setRecentProperties] = useState([]);
 
-
+const isTabletOrMobile = useMediaQuery({ maxWidth: 768 });
 
 
     const [reviews, setReviews] = useState([]);
@@ -218,7 +220,6 @@ const HomePage = () => {
 
     const [rentRange, setRentRange] = useState([0, 200000]); // ✅ separate rent range
 
-
     const handleDetectLocation = () => {
         if (!navigator.geolocation) {
             alert("Geolocation is not supported by your browser");
@@ -230,7 +231,6 @@ const HomePage = () => {
                 const { latitude, longitude } = position.coords;
 
                 try {
-                    // ✅ Use OpenStreetMap Nominatim API (Free, no key required)
                     const response = await fetch(
                         `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
                     );
@@ -248,12 +248,20 @@ const HomePage = () => {
                     setDetectedState(state);
                     setDetectedCountry(country);
 
-                    // ✅ Also update your state selector
                     if (state) setSelectedState(state);
 
+console.log("Detected Location:", city, state, country);
 
+                    // ✅ Navigate to listing with detected location
+                    const queryParams = new URLSearchParams({
+                        country: country || "",
+                        state: state || "",
+                        city: city || "",
+                        state: state, // 👈 keep state here
 
-                    console.log("Detected Location:", city, state, country);
+                    });
+
+                    navigate(`/listing?${queryParams.toString()}`);
                 } catch (error) {
                     console.error("Error fetching location details:", error);
                 }
@@ -824,20 +832,26 @@ const HomePage = () => {
                                                                         type="button"
                                                                         onClick={handleDetectLocation}
                                                                         style={{
-                                                                            padding: "20px",
-                                                                            backgroundColor: "#F0F4FF", // light background
+                                                                          
+                                                                               padding: isTabletOrMobile ? "8px" :  "20px",
+                                                                            backgroundColor: "#F0F4FF",
                                                                             border: "none",
                                                                             marginRight: "20px",
                                                                             cursor: "pointer",
                                                                             color: "#5D87FF",
-                                                                            borderRadius: "50%", // makes it circular
+                                                                            borderRadius: "50%",
                                                                             display: "flex",
                                                                             alignItems: "center",
-                                                                            justifyContent: "center"
+                                                                            justifyContent: "center",
                                                                         }}
                                                                         title="Detect my location"
                                                                     >
-                                                                        <img src={gps} alt="gps" width="80px" height="80px" />
+                                                                        <img
+                                                                            src={gps}
+                                                                            alt="gps"
+                                                                            width={isTabletOrMobile ? "20px" : "80px"}
+                                                                            height={isTabletOrMobile ? "20px" : "80px"}
+                                                                        />
                                                                     </span>
 
                                                                     {/* Show detected location */}

@@ -28,6 +28,8 @@ import StateList from "./Components/CityList";
 import RecentProperties from "./Components/RecentProperties";
 import EMICalculator from "./Components/EMICalculator";
 import ConstructionCalculator from "./Components/ConstructionCalculator";
+import AreaCalculator from "./Components/AreaCalculator";
+import RentVsBuyCalculator from "./Components/RentVsBuyCalculator";
 
 
 
@@ -77,7 +79,9 @@ function App() {
         <Route exact path="/recent" element={<RecentProperties />} />
         <Route exact path="/emi" element={<EMICalculator />} />
         <Route exact path="/calc" element={<ConstructionCalculator />} />
+        <Route exact path="/area" element={<AreaCalculator />} />
 
+        <Route exact path="/rent" element={<RentVsBuyCalculator />} />
 
 
       </Routes>
