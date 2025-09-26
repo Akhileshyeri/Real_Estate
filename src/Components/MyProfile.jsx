@@ -637,7 +637,7 @@ const MyProfile = () => {
                                                         {/* Avatar + Name */}
                                                         <div
                                                             className="avatar avt-40 round"
-                                                            style={{ display: "inline-block", verticalAlign: "middle" }}
+                                                            style={{ display: "inline-block", verticalAlign: "middle",width:"45px" ,height:"45px"}}
                                                         >
                                                             <img src={avatar || "fallback.png"} alt="avt" />
 
@@ -649,14 +649,14 @@ const MyProfile = () => {
 
 
 
-                                                        {!isMobileView && (
+                                                        {/* {!isMobileView && (
                                                             <p
                                                                 className="name"
                                                                 style={{ cursor: "pointer", display: "inline-block", marginLeft: "8px" }}
                                                             >
                                                                 {name} <span className="icon icon-arr-down"></span>
                                                             </p>
-                                                        )}
+                                                        )} */}
 
 
                                                         {/* Dropdown */}

@@ -1,10 +1,9 @@
-
 /* Step Headings */
 .step-heading {
   color: #333;
   font-weight: 600;
   font-size: 18px;
-  margin-bottom: 5px; 
+  margin-bottom: 5px;
 }
 
 .step-subheading {
@@ -368,10 +367,14 @@
 
 @media (max-width: 767px) {
   .step3-toggle-btn {
-    width: 100%;            /* full width on mobile */
-    font-size: 14px;        /* slightly smaller */
-    padding: 10px;          /* more compact padding  */
-    text-align: center;     /* center the label       */
+    width: 100%;
+    /* full width on mobile */
+    font-size: 14px;
+    /* slightly smaller */
+    padding: 10px;
+    /* more compact padding  */
+    text-align: center;
+    /* center the label       */
   }
 }
 
@@ -643,7 +646,7 @@
 }
 
 .cancel-btn,
-.popup-continue-btn { 
+.popup-continue-btn {
   width: 45%;
   padding: 8px 0;
   border-radius: 4px;
@@ -656,32 +659,32 @@
   text-align: center;
 }
 
-.popup-continue-btn { 
- 
+.popup-continue-btn {
+
   background: #f5f5f5;
   color: #555;
   border: 1px solid #e0e0e0;
 }
 
-.popup-continue-btn { 
+.popup-continue-btn {
 
   background: #ed2027;
   color: #fff;
   border: 1px solid #ed2027;
 }
- 
+
 @media (max-width: 576px) {
   .col-12.col-md-8 {
     margin-left: 12px;
     margin-right: 10px;
   }
-} 
+}
 
 @media (max-width: 576px) {
   .title {
     margin-left: 2px;
   }
-} 
+}
 
 /* Desktop layout (default) */
 .button-group {
@@ -708,7 +711,8 @@
 .title {
   color: #161E2D;
   margin-bottom: 20px;
-  font-weight: 600;     /* "semibold" */
+  font-weight: 600;
+  /* "semibold" */
 }
 
 /* Hide the <br> on small screens */
@@ -783,10 +787,12 @@
   cursor: pointer;
   font-size: 15px;
   margin-left: "5px";
-  width: 100%;          /* mobile: full width */
-  max-width: 300px;     /* width on larger screens */
+  width: 100%;
+  /* mobile: full width */
+  max-width: 300px;
+  /* width on larger screens */
   transition: background-color 0.15s ease;
-   /* margin-left: 4px;    */
+  /* margin-left: 4px;    */
 }
 
 .submit-btn:hover {
@@ -797,15 +803,17 @@
 @media (min-width: 768px) {
   .submit-btn {
     width: auto;
-      margin-left: 0; 
+    margin-left: 0;
   }
 }
 
 .button-row {
   display: flex;
-  justify-content: space-between; /* Continue left, Back right */
+  justify-content: space-between;
+  /* Continue left, Back right */
   align-items: center;
-  gap: 10px; /* optional spacing */
+  gap: 10px;
+  /* optional spacing */
   margin-top: 15px;
 }
 
@@ -816,10 +824,21 @@
   background: #f8f8f8;
   cursor: pointer;
   font-size: 14px;
-  margin-left: 550px;  /* fixed position */
+  margin-left: 550px;
+  /* fixed position */
 }
 
 .back-btn:hover {
   background: #e5e5e5;
 }
 
+.continue-btn:disabled {
+  background-color: #f1f3f5;
+  /* light grey */
+  color: #9ca3af;
+  /* muted text */
+  cursor: not-allowed;
+  opacity: 0.7;
+  /* blurred look */
+  border: 1px solid #e5e7eb;
+}

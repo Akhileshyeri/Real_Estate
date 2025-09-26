@@ -1468,8 +1468,6 @@ const AddProperty = () => {
                     setTitle(e.target.value);
                     console.log("Title:", e.target.value); // ✅ log input
                   }}
-
-
                   style={{
                     width: "100%",
                     padding: "10px",
@@ -1478,29 +1476,6 @@ const AddProperty = () => {
                     borderRadius: "6px",
                   }}
                 />
-
-                {/* Keywords */}
-                {/* <h4 className="step-heading" style={{ color: "#161E2D" }}>
-                  Keyword
-                </h4>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Enter keyword"
-                  value={keyword}
-                  onChange={(e) => {
-                    setKeyword(e.target.value);
-                    console.log("Keyword:", e.target.value); 
-                  }}
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    marginBottom: "20px",
-                    border: "1px solid #ccc",
-                    borderRadius: "6px",
-                  }}
-                /> */}
-
 
                 {/* LISTING TYPE */}
                 <h4 className="step-heading" style={{ color: "#161E2D" }}>
@@ -1553,23 +1528,9 @@ const AddProperty = () => {
                 {/* If Layout/Land development under Joint Venture */}
                 {listingType === "Joint Venture" &&
                   propertyType === "Layout/Land development" && (
-                    <button
-                      className="continue-btn"
-                      onClick={() => setCurrentStep(2)}
-                      style={{
-                        marginTop: "20px",
-                        padding: "12px 24px",
-                        backgroundColor: "#ED2027",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                        fontSize: "16px",
-                      }}
-                    >
-                      Continue
-                    </button>
+                    <p style={{ marginTop: "10px", fontStyle: "italic", color: "#555" }}>
+                      You selected Layout/Land development. Fill details and Continue.
+                    </p>
                   )}
 
                 {/* SUB PROPERTY OPTIONS */}
@@ -1590,7 +1551,7 @@ const AddProperty = () => {
                                 setSubPropertyType(subType);
                                 setSubPropertyQuestionOption("");
                                 setSubPropertyQuestionOptionLvl2("");
-                                console.log("Sub Property Type:", subType); // ✅ log selection
+                                console.log("Sub Property Type:", subType);
                               }}
                               className={`subproperty-option ${subPropertyType === subType ? "active" : ""
                                 }`}
@@ -1643,8 +1604,6 @@ const AddProperty = () => {
                 )}
 
                 {/* ===== Commercial follow-ups (ONLY for Sell/Rent, not Joint Venture) ===== */}
-
-
                 {propertyType === "Commercial" && subPropertyType === "Office" && (
                   <>
                     <h4 className="step-label" style={{ color: "#161E2D" }}>
@@ -1782,79 +1741,78 @@ const AddProperty = () => {
                   </>
                 )}
 
+                {/* CONTINUE BUTTON (Always visible at bottom) */}
+                {(() => {
+                  const isCommercial = propertyType === "Commercial";
+                  const isListingTypeSet = listingType !== "";
+                  const isPropertyTypeSet = propertyType !== "";
 
+                  const isValidRetail =
+                    listingType !== "Joint Venture" &&
+                    isCommercial &&
+                    subPropertyType === "Retail" &&
+                    subPropertyQuestionOption &&
+                    subPropertyQuestionOptionLvl2;
 
-                {/* CONTINUE BUTTON */}
-                {subPropertyType && propertyType !== "Layout/Land development" && (
-                  <>
-                    {(() => {
-                      const isCommercial = propertyType === "Commercial";
-                      const isListingTypeSet = listingType !== "";
-                      const isPropertyTypeSet = propertyType !== "";
+                  const isValidOffice =
+                    listingType !== "Joint Venture" &&
+                    isCommercial &&
+                    subPropertyType === "Office" &&
+                    subPropertyQuestionOption;
 
-                      // For Sell/Rent, validation stays same
-                      const isValidRetail =
-                        listingType !== "Joint Venture" &&
-                        isCommercial &&
-                        subPropertyType === "Retail" &&
-                        subPropertyQuestionOption &&
-                        subPropertyQuestionOptionLvl2;
+                  const isValidOtherCommercial =
+                    listingType !== "Joint Venture" &&
+                    isCommercial &&
+                    ["Plot", "Storage", "Industry", "Hospitality"].includes(
+                      subPropertyType
+                    ) &&
+                    subPropertyQuestionOption;
 
-                      const isValidOffice =
-                        listingType !== "Joint Venture" &&
-                        isCommercial &&
-                        subPropertyType === "Office" &&
-                        subPropertyQuestionOption;
+                  const isJV = listingType === "Joint Venture" && subPropertyType;
 
-                      const isValidOtherCommercial =
-                        listingType !== "Joint Venture" &&
-                        isCommercial &&
-                        ["Plot", "Storage", "Industry", "Hospitality"].includes(
-                          subPropertyType
-                        ) &&
-                        subPropertyQuestionOption;
+                  const isResidentialOrSimple =
+                    !isCommercial ||
+                    (isCommercial &&
+                      ![
+                        "Retail",
+                        "Office",
+                        "Plot",
+                        "Storage",
+                        "Industry",
+                        "Hospitality",
+                      ].includes(subPropertyType));
 
-                      // Joint Venture = simple continue if subPropertyType selected
-                      const isJV = listingType === "Joint Venture" && subPropertyType;
+                  const canContinue =
+                    title.trim() !== "" && // ✅ make title mandatory
+                    isListingTypeSet &&
+                    isPropertyTypeSet &&
+                    (isJV ||
+                      isValidRetail ||
+                      isValidOffice ||
+                      isValidOtherCommercial ||
+                      (isResidentialOrSimple && subPropertyType));
 
-                      const isResidentialOrSimple =
-                        !isCommercial ||
-                        (isCommercial &&
-                          ![
-                            "Retail",
-                            "Office",
-                            "Plot",
-                            "Storage",
-                            "Industry",
-                            "Hospitality",
-                          ].includes(subPropertyType));
-
-                      const canContinue =
-                        isListingTypeSet &&
-                        isPropertyTypeSet &&
-                        (isJV ||
-                          isValidRetail ||
-                          isValidOffice ||
-                          isValidOtherCommercial ||
-                          (isResidentialOrSimple && subPropertyType));
-
-                      return canContinue ? (
-                        <button className="continue-btn" onClick={() => setCurrentStep(2)}>
-                          Continue
-                        </button>
-                      ) : (
-                        <button
-                          className="continue-btn"
-                          onClick={() =>
-                            alert("Please complete all selections before continuing.")
-                          }
-                        >
-                          Continue
-                        </button>
-                      );
-                    })()}
-                  </>
-                )}
+                  return (
+                    <button
+                      className="continue-btn"
+                      onClick={() => canContinue && setCurrentStep(2)}
+                      disabled={!canContinue}
+                      style={{
+                        marginTop: "20px",
+                        padding: "12px 24px",
+                        backgroundColor: canContinue ? "#ED2027" : "#ccc",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: canContinue ? "pointer" : "not-allowed",
+                        fontWeight: "600",
+                        fontSize: "16px",
+                      }}
+                    >
+                      Continue
+                    </button>
+                  );
+                })()}
 
                 {/* ===== Confirmation Popup Card ===== */}
                 {showConfirmModal && (
@@ -1895,16 +1853,18 @@ const AddProperty = () => {
             )}
 
 
+
+
+
             {/* Step 2 - Location Details */}
 
             {currentStep === 2 && (
               <div>
                 <h4 className="step-heading">Where is your property Located?</h4>
 
-                {/* City Select */}
+                {/* State Select */}
                 <div className="form-group">
                   <label>State</label>
-
                   <select
                     value={state}
                     onChange={(e) => setState(e.target.value)}
@@ -1920,7 +1880,7 @@ const AddProperty = () => {
                       outline: "none",
                       cursor: "pointer",
                       transition: "all 0.2s ease",
-                      height: "55px"
+                      height: "55px",
                     }}
                   >
                     <option value="">Select State</option>
@@ -1930,10 +1890,9 @@ const AddProperty = () => {
                       </option>
                     ))}
                   </select>
-
                 </div>
 
-
+                {/* City / Location */}
                 <div className="form-group">
                   <label>City</label>
                   <input
@@ -1944,8 +1903,8 @@ const AddProperty = () => {
                     className="input-field"
                   />
                 </div>
-                {/* You are? Buttons */}
 
+                {/* Ownership */}
                 <div className="form-group">
                   <label>You are?</label>
                   <div className="ownership-buttons">
@@ -1963,11 +1922,6 @@ const AddProperty = () => {
                   </div>
                 </div>
 
-
-                {/* Location Input */}
-
-
-
                 {/* Apartment Select */}
                 <div className="form-group" style={{ position: "relative", width: "100%" }}>
                   <label>Apartment/Project</label>
@@ -1975,17 +1929,12 @@ const AddProperty = () => {
                     <input
                       type="text"
                       value={apartment}
-                      onChange={e => {
-                        setApartment(e.target.value);
-                        // Don't automatically show dropdown on change
-                      }}
+                      onChange={(e) => setApartment(e.target.value)}
                       onClick={() => {
-                        // Show dropdown only on click and make API call
                         setShowDropdown(true);
                         projectList(apartment);
                       }}
                       onFocus={() => {
-                        // Show dropdown on focus and make API call
                         setShowDropdown(true);
                         projectList(apartment);
                       }}
@@ -2014,7 +1963,7 @@ const AddProperty = () => {
                       {showModal ? <FaMinus /> : <FaPlus />}
                     </div>
 
-                    {/* Dropdown suggestions - Only show when explicitly triggered */}
+                    {/* Dropdown suggestions */}
                     {showDropdown && (
                       <ul
                         style={{
@@ -2034,12 +1983,12 @@ const AddProperty = () => {
                         }}
                       >
                         {results.length > 0 &&
-                          results.map(item => (
+                          results.map((item) => (
                             <li
                               key={item.id}
                               onClick={() => {
                                 setApartment(item.name);
-                                setShowDropdown(false); // Hide dropdown after selection
+                                setShowDropdown(false);
                                 setResults([]);
                               }}
                               style={{
@@ -2106,7 +2055,7 @@ const AddProperty = () => {
                             type="text"
                             placeholder="Enter new apartment name"
                             value={newApartment}
-                            onChange={e => setNewApartment(e.target.value)}
+                            onChange={(e) => setNewApartment(e.target.value)}
                             style={{
                               width: "100%",
                               padding: "8px 10px",
@@ -2147,7 +2096,7 @@ const AddProperty = () => {
                                 setNewApartment("");
                                 setShowModal(false);
                                 setResults([]);
-                                setShowDropdown(false); // Close dropdown after adding
+                                setShowDropdown(false);
                               }}
                               style={{
                                 padding: "8px 14px",
@@ -2169,9 +2118,7 @@ const AddProperty = () => {
                   </div>
                 </div>
 
-
-
-                {/* Address */}
+                {/* Full Address */}
                 <div className="step2-section">
                   <label className="step2-label">Full Address</label>
                   <input
@@ -2195,7 +2142,7 @@ const AddProperty = () => {
                   />
                 </div>
 
-                {/* Sub Locality */}
+                {/* Sub Locality (Optional) */}
                 <div className="step2-section mt-3">
                   <label className="step2-label">Sub Locality</label>
                   <input
@@ -2207,9 +2154,7 @@ const AddProperty = () => {
                   />
                 </div>
 
-
-
-                {/* Located Near */}
+                {/* Located Near (Optional) */}
                 <div className="step2-section mt-3">
                   <label className="step2-label">Located Near</label>
                   <input
@@ -2221,8 +2166,8 @@ const AddProperty = () => {
                   />
                 </div>
 
-                {/* Road Width Input + Unit Dropdown */}
-                <div className="form-group  " style={{ display: "flex", gap: "10px" }}>
+                {/* Road Width + Unit */}
+                <div className="form-group" style={{ display: "flex", gap: "10px" }}>
                   <div className="mt-3" style={{ flex: 2 }}>
                     <label>Road Width</label>
                     <input
@@ -2250,7 +2195,7 @@ const AddProperty = () => {
                         outline: "none",
                         cursor: "pointer",
                         transition: "all 0.2s ease",
-                        height: "55px"
+                        height: "55px",
                       }}
                     >
                       <option value="">Select</option>
@@ -2259,7 +2204,6 @@ const AddProperty = () => {
                     </select>
                   </div>
                 </div>
-
 
                 {/* Property facing */}
                 <div className="step3-section mt-3">
@@ -2278,7 +2222,8 @@ const AddProperty = () => {
                       <button
                         key={opt}
                         type="button"
-                        className={`subproperty-option ${propertyFacing === opt ? "active" : ""}`}
+                        className={`subproperty-option ${propertyFacing === opt ? "active" : ""
+                          }`}
                         onClick={() => setPropertyFacing(opt)}
                       >
                         {opt}
@@ -2287,7 +2232,7 @@ const AddProperty = () => {
                   </div>
                 </div>
 
-                {/* House No. Input */}
+                {/* House No. (Optional) */}
                 <div className="house-no-group mt-3">
                   <label>House No. (Optional)</label>
                   <input
@@ -2299,14 +2244,28 @@ const AddProperty = () => {
                   />
                 </div>
 
+                {/* Continue + Back */}
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <button
+                    onClick={handleLocationContinue}
+                    className="continue-btn"
 
-                  {/* Continue button */}
-                  {selectedOwnership && location && (
-                    <button onClick={handleLocationContinue} className="continue-btn">
-                      Continue
-                    </button>
-                  )}
+                    disabled={
+                      !(
+                        state &&
+                        location &&
+                        selectedOwnership &&
+                        apartment &&
+                        address &&
+                        postalCode &&
+                        roadWidth &&
+                        roadUnit &&
+                        propertyFacing
+                      )
+                    }
+                  >
+                    Continue
+                  </button>
 
                   <button
                     className="back-btn"
@@ -2318,15 +2277,15 @@ const AddProperty = () => {
                       background: "#f8f8f8",
                       cursor: "pointer",
                       fontSize: "14px",
-
+                      marginLeft:"10px"
                     }}
                   >
                     Back
                   </button>
-
                 </div>
               </div>
             )}
+
 
             {/* Steps 3 Placeholder */}
 
@@ -9834,7 +9793,7 @@ const AddProperty = () => {
                                     onChange={(e) => setAllInclusive(e.target.checked)}
                                     className="step3-checkbox"
                                   />
-                                  All Inclusive Price?
+                                 
                                 </label>
                                 <label className="step3-checkbox-label">
                                   <input

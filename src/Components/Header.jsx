@@ -826,9 +826,16 @@ const Header = ({ showSearch }) => {
               <div className="inner-container d-flex justify-content-between align-items-center">
                 <div className="logo-box">
                   <div className="logo">
-                    <a href="" onClick={(e) => { e.preventDefault(); navigate('/home'); }}>
-                      <img src={easy} style={{ color: 'black' }} alt="logo" width="174" height="44" />
+                    <a
+                      href=""
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate("/home");
+                      }}
+                    >
+                      <img src={easy} alt="logo" className="logo-img" />
                     </a>
+
                   </div>
                 </div>
 
