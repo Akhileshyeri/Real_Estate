@@ -95,6 +95,26 @@
   transition: color 0.3s;
 }
 
+.property-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;        /* show 1 line initially */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;             /* adjust as needed */
+  line-height: 1.4;
+  transition: all 0.3s ease;
+}
+
+/* On hover → expand to 2 lines */
+.property-name:hover {
+ 
+  white-space: normal;          /* allow wrapping */
+  max-width: 100%;              /* expand width */
+   -webkit-line-clamp: 2;       
+}
+
+
 
 
 .text-address {

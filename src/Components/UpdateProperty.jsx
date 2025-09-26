@@ -7,6 +7,8 @@ import api from "../api/api";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
 import { decryptId } from "../utils/crypto";
+import { FaPlus, FaMinus } from "react-icons/fa";
+
 
 const UpdateProperty = () => {
   
@@ -37,6 +39,13 @@ const UpdateProperty = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [brokerageAmount, setBrokerageAmount] = useState("");
 
+    const [states, setStates] = useState([]);
+    const [state, setState] = useState("");
+
+      const containerRef = useRef();
+        const [showModal, setShowModal] = useState(false);
+      
+
 
   const [currentStep, setCurrentStep] = useState(1);
   const [propertyType, setPropertyType] = useState("");
@@ -54,6 +63,7 @@ const UpdateProperty = () => {
   const [apartmentBhk, setApartmentBhk] = useState("");
   const [retailWashroom, setRetailWashroom] = useState([]);
   const [files, setFiles] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
 
 
 
@@ -328,6 +338,38 @@ const UpdateProperty = () => {
     fetchProperty();
   }, []);
 
+    const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+
+    const StateList = async () => {
+     
+      const fd = new FormData();
+      fd.append("programType", "getStateListOnChangeOfCountry");
+      fd.append("authToken", localStorage.getItem("authToken"));
+      fd.append("country", localStorage.getItem("country"));
+  
+      try {
+        const response = await api.post("properties/preRequirements", fd);
+        console.log("states list:", response.data);
+  
+        if (response.data.success) {
+          setStates(response.data.data || []); // <-- correct key
+        } else {
+          setStates([]);
+        }
+      } catch (error) {
+        console.error("states error:", error);
+        setStates([]);
+      }
+    };
+  
+    useEffect(() => {
+      StateList();
+    }, []);
 
 
 
@@ -1519,6 +1561,46 @@ const UpdateProperty = () => {
   };
 
 
+   const detectLocation = async () => {
+      if (!navigator.geolocation) {
+        toast.error("Geolocation is not supported by your browser");
+        return;
+      }
+  
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log("Lat/Lng:", latitude, longitude);
+  
+          try {
+            // Example using OpenStreetMap Nominatim API
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+            );
+            const data = await response.json();
+            console.log("Reverse geocode data:", data);
+  
+            // Extract fields
+            if (data.address) {
+              setState(data.address.state || "");
+              setLocation(data.address.city || data.address.town || data.address.village || "");
+              setPostalCode(data.address.postcode || "");
+              setLocatedNear(data.address.neighbourhood || data.address.suburb || "");
+              setAddress(data.display_name || "");
+            }
+          } catch (error) {
+            console.error("Error fetching location data:", error);
+            toast.error("Failed to detect location");
+          }
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          toast.error("Unable to fetch location. Please allow location access.");
+        },
+        { enableHighAccuracy: true }
+      );
+    };
+
 
 
 
@@ -2338,83 +2420,273 @@ const UpdateProperty = () => {
 
 
             {/* Step 2 - Location Details */}
-
-            {currentStep === 2 && (
+  {currentStep === 2 && (
               <div>
-                <h4 className="step-heading">Where is your property Located?</h4>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <h4 className="step-heading">Where is your property Located?</h4>
 
-                {/* City Select */}
+
+                </div>
+
+
+
+                {/* State Select */}
                 <div className="form-group">
-                  <label>City</label>
+                  <label>State</label>
                   <select
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
                     className="select-field"
-                    style={{ height: "55px" }}
+                    style={{
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      fontSize: "15px",
+                      color: "#333",
+                      backgroundColor: "#fff",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                      outline: "none",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                      height: "55px",
+                    }}
                   >
-                    <option value="">Select City</option>
-                    <option value="Bangalore">Bangalore</option>
-                    <option value="Mumbai">Mumbai</option>
-                    <option value="Delhi">Delhi</option>
-                    <option value="Chennai">Chennai</option>
+                    <option value="">Select State</option>
+                    {states.map((s) => (
+                      <option key={s.id} value={s.name}>
+                        {s.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
-                {/* You are? Buttons */}
-                {city && (
-                  <div className="form-group">
-                    <label>You are?</label>
-                    <div className="ownership-buttons">
-                      {["Owner", "Broker", "Builder"].map((role) => (
-                        <button
-                          key={role}
-                          type="button"
-                          onClick={() => setOwnerType(role)}
-                          className={`ownership-option ${ownerType === role ? "active" : ""
-                            }`}
-                        >
-                          {role}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* City / Location */}
+                <div className="form-group">
+                  <label>City</label>
+                  <input
+                    type="text"
+                    placeholder="Enter Location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="input-field"
+                  />
+                </div>
 
-                {/* Location Input */}
-                {selectedOwnership && (
-                  <div className="form-group">
-                    <label>Location</label>
-                    <input
-                      type="text"
-                      placeholder="Enter Location"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      className="input-field"
-                    />
+                {/* Ownership */}
+                <div className="form-group">
+                  <label>You are?</label>
+                  <div className="ownership-buttons">
+                    {["Owner", "Broker", "Builder"].map((role) => (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => setSelectedOwnership(role)}
+                        className={`ownership-option ${selectedOwnership === role ? "active" : ""
+                          }`}
+                      >
+                        {role}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
 
                 {/* Apartment Select */}
-                {location && (
-                  <div className="form-group">
-                    <label>Apartment/Project</label>
-                    <select
+                <div className="form-group" style={{ position: "relative", width: "100%" }}>
+                  <label>Apartment/Project</label>
+                  <div style={{ position: "relative" }} ref={containerRef}>
+                    <input
+                      type="text"
                       value={apartment}
                       onChange={(e) => setApartment(e.target.value)}
+                      onClick={() => {
+                        setShowDropdown(true);
+                        projectList(apartment);
+                      }}
+                      onFocus={() => {
+                        setShowDropdown(true);
+                        projectList(apartment);
+                      }}
+                      placeholder="Search or type apartment..."
                       className="select-field"
-                      style={{ height: "55px" }}
+                      style={{
+                        height: "55px",
+                        width: "100%",
+                        paddingRight: "40px",
+                      }}
+                    />
+
+                    {/* Plus/Minus Icon */}
+                    <div
+                      onClick={() => setShowModal(!showModal)}
+                      style={{
+                        position: "absolute",
+                        right: "10px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        cursor: "pointer",
+                        fontSize: "18px",
+                        color: "#ED2027",
+                      }}
                     >
-                      <option value="">Select Apartment</option>
-                      <option value="Prestige Lakeside">Prestige Lakeside</option>
-                      <option value="Brigade Gateway">Brigade Gateway</option>
-                      <option value="Sobha Dream Acres">Sobha Dream Acres</option>
-                      <option value="Other">Other</option>
-                    </select>
+                      {showModal ? <FaMinus /> : <FaPlus />}
+                    </div>
+
+                    {/* Dropdown suggestions */}
+                    {showDropdown && (
+                      <ul
+                        style={{
+                          position: "absolute",
+                          top: "60px",
+                          left: 0,
+                          width: "100%",
+                          background: "#fff",
+                          border: "1px solid #ccc",
+                          borderRadius: "5px",
+                          maxHeight: "200px",
+                          overflowY: "auto",
+                          zIndex: 1000,
+                          listStyle: "none",
+                          padding: 0,
+                          margin: 0,
+                        }}
+                      >
+                        {results.length > 0 &&
+                          results.map((item) => (
+                            <li
+                              key={item.id}
+                              onClick={() => {
+                                setApartment(item.name);
+                                setShowDropdown(false);
+                                setResults([]);
+                              }}
+                              style={{
+                                padding: "10px",
+                                cursor: "pointer",
+                                borderBottom: "1px solid #eee",
+                              }}
+                            >
+                              {item.name}
+                            </li>
+                          ))}
+
+                        {results.length === 0 && (
+                          <li
+                            style={{
+                              padding: "10px",
+                              textAlign: "center",
+                              color: "#666",
+                            }}
+                          >
+                            No results found
+                          </li>
+                        )}
+                      </ul>
+                    )}
+
+                    {/* Modal Add New */}
+                    {showModal && (
+                      <div
+                        style={{
+                          position: "fixed",
+                          top: 0,
+                          left: 0,
+                          width: "100vw",
+                          height: "100vh",
+                          background: "rgba(0,0,0,0.5)",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          zIndex: 9999,
+                          padding: "10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "100%",
+                            maxWidth: "360px",
+                            background: "#fff",
+                            borderRadius: "12px",
+                            padding: "18px",
+                            boxShadow: "0 6px 12px rgba(0,0,0,0.25)",
+                          }}
+                        >
+                          <h3
+                            style={{
+                              marginBottom: "12px",
+                              fontSize: "18px",
+                              fontWeight: "600",
+                            }}
+                          >
+                            Add New Apartment/Project
+                          </h3>
+                          <input
+                            type="text"
+                            placeholder="Enter new apartment name"
+                            value={newApartment}
+                            onChange={(e) => setNewApartment(e.target.value)}
+                            style={{
+                              width: "100%",
+                              padding: "8px 10px",
+                              border: "1px solid #ccc",
+                              borderRadius: "6px",
+                              marginBottom: "15px",
+                              fontSize: "14px",
+                            }}
+                          />
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              gap: "8px",
+                            }}
+                          >
+                            <button
+                              onClick={() => setShowModal(false)}
+                              style={{
+                                padding: "8px 12px",
+                                border: "1px solid #ccc",
+                                borderRadius: "6px",
+                                background: "#f8f8f8",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (!newApartment) {
+                                  toast.error("Please enter a name");
+                                  return;
+                                }
+                                await addproject(newApartment);
+                                setApartment(newApartment);
+                                setNewApartment("");
+                                setShowModal(false);
+                                setResults([]);
+                                setShowDropdown(false);
+                              }}
+                              style={{
+                                padding: "8px 14px",
+                                border: "none",
+                                borderRadius: "6px",
+                                background: "#ED2027",
+                                color: "#fff",
+                                fontSize: "14px",
+                                fontWeight: "500",
+                                cursor: "pointer",
+                              }}
+                            >
+                              Submit
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
 
-
-                {/* Address */}
+                {/* Full Address */}
                 <div className="step2-section">
                   <label className="step2-label">Full Address</label>
                   <input
@@ -2438,7 +2710,7 @@ const UpdateProperty = () => {
                   />
                 </div>
 
-                {/* Sub Locality */}
+                {/* Sub Locality (Optional) */}
                 <div className="step2-section mt-3">
                   <label className="step2-label">Sub Locality</label>
                   <input
@@ -2450,9 +2722,7 @@ const UpdateProperty = () => {
                   />
                 </div>
 
-
-
-                {/* Located Near */}
+                {/* Located Near (Optional) */}
                 <div className="step2-section mt-3">
                   <label className="step2-label">Located Near</label>
                   <input
@@ -2464,8 +2734,8 @@ const UpdateProperty = () => {
                   />
                 </div>
 
-                {/* Road Width Input + Unit Dropdown */}
-                <div className="form-group  " style={{ display: "flex", gap: "10px" }}>
+                {/* Road Width + Unit */}
+                <div className="form-group" style={{ display: "flex", gap: "10px" }}>
                   <div className="mt-3" style={{ flex: 2 }}>
                     <label>Road Width</label>
                     <input
@@ -2482,7 +2752,19 @@ const UpdateProperty = () => {
                       className="select-field input-field p-2"
                       value={roadUnit}
                       onChange={(e) => setRoadUnit(e.target.value)}
-                      style={{ height: "55px" }}
+                      style={{
+                        padding: "10px 14px",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
+                        fontSize: "15px",
+                        color: "#333",
+                        backgroundColor: "#fff",
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                        outline: "none",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                        height: "55px",
+                      }}
                     >
                       <option value="">Select</option>
                       <option value="feet">Feet</option>
@@ -2490,7 +2772,6 @@ const UpdateProperty = () => {
                     </select>
                   </div>
                 </div>
-
 
                 {/* Property facing */}
                 <div className="step3-section mt-3">
@@ -2509,7 +2790,8 @@ const UpdateProperty = () => {
                       <button
                         key={opt}
                         type="button"
-                        className={`subproperty-option ${propertyFacing === opt ? "active" : ""}`}
+                        className={`subproperty-option ${propertyFacing === opt ? "active" : ""
+                          }`}
                         onClick={() => setPropertyFacing(opt)}
                       >
                         {opt}
@@ -2518,7 +2800,7 @@ const UpdateProperty = () => {
                   </div>
                 </div>
 
-                {/* House No. Input */}
+                {/* House No. (Optional) */}
                 <div className="house-no-group mt-3">
                   <label>House No. (Optional)</label>
                   <input
@@ -2530,12 +2812,45 @@ const UpdateProperty = () => {
                   />
                 </div>
 
-                {/* Continue button */}
-                {city && selectedOwnership && location && (
-                  <button onClick={handleLocationContinue} className="continue-btn">
+                {/* Continue + Back */}
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <button
+                    onClick={handleLocationContinue}
+                    className="continue-btn"
+
+                    disabled={
+                      !(
+                        state &&
+                        location &&
+                        selectedOwnership &&
+                        apartment &&
+                        address &&
+                        postalCode &&
+                        roadWidth &&
+                        roadUnit &&
+                        propertyFacing
+                      )
+                    }
+                  >
                     Continue
                   </button>
-                )}
+
+                  <button
+                    className="back-btn"
+                    onClick={handleBack}
+                    style={{
+                      padding: "10px 20px",
+                      border: "1px solid #ccc",
+                      borderRadius: "6px",
+                      background: "#f8f8f8",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      marginLeft: "10px"
+                    }}
+                  >
+                    Back
+                  </button>
+                </div>
               </div>
             )}
 
