@@ -1902,23 +1902,23 @@ const AddProperty = () => {
 
             {currentStep === 2 && (
               <div>
-                <div style={{display:"flex", justifyContent:"space-between"}}>
-                <h4 className="step-heading">Where is your property Located?</h4>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <h4 className="step-heading">Where is your property Located?</h4>
 
                   <button
-                  type="button"
-                  onClick={detectLocation}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "8px",
+                    type="button"
+                    onClick={detectLocation}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "8px",
 
 
-                  }}
-                >
-                  📍Detect Location
-                </button>
-</div>
-              
+                    }}
+                  >
+                    📍Detect Location
+                  </button>
+                </div>
+
 
 
                 {/* State Select */}
