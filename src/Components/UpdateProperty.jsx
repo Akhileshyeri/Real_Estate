@@ -30,6 +30,8 @@ const UpdateProperty = () => {
   const [listingType, setListingType] = useState("Sell");
   const [ownerPercentage, setOwnerPercentage] = useState("");
   const [ownerType, setOwnerType] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState([]);
 
   const [developerPercentage, setDeveloperPercentage] = useState("");
 
@@ -559,6 +561,54 @@ const UpdateProperty = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingPropertyType, setPendingPropertyType] = useState("");
 
+    // 🔹 API call for search
+    const projectList = async (searchText = "") => {
+      const fd = new FormData();
+      fd.append("programType", "getProjectsOrApartments");
+      fd.append("authToken", localStorage.getItem("authToken"));
+      fd.append("name", searchText);
+  
+      try {
+        setLoading(true);
+        const response = await api.post("properties/preRequirements", fd);
+        console.log("Project List:", response.data);
+  
+        let data = response.data.data || [];
+  
+        // if no search text, show only last 4
+        if (!searchText) {
+          data = data.slice(-4); // ✅ keep last 4
+        }
+  
+        setResults(data);
+      } catch (error) {
+        console.error("projectList error:", error);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    // 🔹 Default fetch on mount (last 4)
+    useEffect(() => {
+      projectList(""); // get last 4
+    }, []);
+
+      useEffect(() => {
+        if (!apartment) {
+          // show last 4 by default
+          setShowDropdown(true);
+          return;
+        }
+    
+        const delayDebounce = setTimeout(() => {
+          projectList(apartment);
+          setShowDropdown(false);
+        }, 400);
+    
+        return () => clearTimeout(delayDebounce);
+      }, [apartment]);
+  
   // confirmation handler
   const handlePropertyTypeChange = (newType) => {
     if (
