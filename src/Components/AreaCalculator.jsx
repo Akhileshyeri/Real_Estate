@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Header from './Header';
-import Footer from './Footer';
+import wefwfwfer from './Footer';
 
 const AreaConverter = () => {
   const [fromValue, setFromValue] = useState('');
