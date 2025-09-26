@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from 'react-router-dom'
-import easy from "../assets/easy.png"
+import easyfooter from "../assets/easyfooter.png"
 
 const Footer = () => {
     const naviagte = useNavigate()
@@ -17,14 +17,14 @@ const Footer = () => {
 
 
 
-    return (
+    return ( 
 
         <footer className="footer">
             <div className="top-footer">
                 <div className="container">
                     <div className="content-footer-top">
                         <div className="footer-logo">
-                            <img src={easy} alt="logo-footer" width="174" height="44" />
+                            <img src={easyfooter} alt="logo-footer" width="174" height="44" />
                         </div>
                         <div className="wd-social">
                             <span>Follow Us:</span>
@@ -132,7 +132,7 @@ const Footer = () => {
                                             to="/listing?listingType=joint venture"
                                             className="caption-1 text-variant-2"
                                         >
-                                         Joint venture
+                                            Joint venture
                                         </Link>
                                     </li>
 

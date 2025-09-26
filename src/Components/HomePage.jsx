@@ -250,7 +250,7 @@ const isTabletOrMobile = useMediaQuery({ maxWidth: 768 });
 
                     if (state) setSelectedState(state);
 
-                    console.log("Detected Location:", city, state, country);
+console.log("Detected Location:", city, state, country);
 
                     // ✅ Navigate to listing with detected location
                     const queryParams = new URLSearchParams({
@@ -833,7 +833,7 @@ const isTabletOrMobile = useMediaQuery({ maxWidth: 768 });
                                                                         onClick={handleDetectLocation}
                                                                         style={{
                                                                           
-                                                                               padding: isTabletOrMobile ? "8px" : "20px",
+                                                                               padding: isTabletOrMobile ? "8px" :  "20px",
                                                                             backgroundColor: "#F0F4FF",
                                                                             border: "none",
                                                                             marginRight: "20px",
@@ -1852,12 +1852,7 @@ const isTabletOrMobile = useMediaQuery({ maxWidth: 768 });
                                     </div>
                                     <div className="title-count">Successful Transactions</div>
                                 </div>
-                                <div className="counter-box">
-                                    <div className="count-number">
-                                        <div className="number" data-speed="2000" data-to="66" data-inviewport="yes">66</div>
-                                    </div>
-                                    <div className="title-count">Monthly Traffic</div>
-                                </div>
+
                             </div>
                         </div>
                     </section>
@@ -1867,7 +1862,7 @@ const isTabletOrMobile = useMediaQuery({ maxWidth: 768 });
                         <div className="container">
                             <div className="box-title text-center wow fadeInUpSmall" data-wow-delay=".2s" data-wow-duration="2000ms">
                                 <div className="text-subtitle text-primary">Our Benifit</div>
-                                <h4 className="mt-4">Why Choose Easy Acres</h4>
+                                <h4 className="mt-4">Why Choose Eazy Acres</h4>
                             </div>
                             <div className="wrap-benefit wow fadeInUpSmall" data-wow-delay=".2s" data-wow-duration="2000ms">
                                 <div className="box-benefit">
@@ -2123,13 +2118,16 @@ const isTabletOrMobile = useMediaQuery({ maxWidth: 768 });
                                                                     {/* ⭐ Dynamic stars */}
                                                                     <ul className="list-star">
                                                                         {Array.from({ length: 5 }).map((_, i) => (
-                                                                            <li
-                                                                                key={i}
-                                                                                className={`icon icon-star ${i < parseInt(rev.star) ? "text-warning" : ""
-                                                                                    }`}
-                                                                            ></li>
+                                                                            <li key={i} className="icon">
+                                                                                {i < parseInt(rev.star) ? (
+                                                                                    <i className="icon-star text-warning"></i>   // filled star
+                                                                                ) : (
+                                                                                    <i className="icon-star-empty text-gray-400"></i> // empty star
+                                                                                )}
+                                                                            </li>
                                                                         ))}
                                                                     </ul>
+
 
                                                                     {/* 📝 Review text */}
                                                                     <p className="note body-1">"{rev.message}"</p>
