@@ -420,4 +420,17 @@
     display: block;
   }
 }
+/* Desktop logo (default) */
+.logo-img {
+  width: 174px;
+  height: auto;
+}
+
+/* Mobile logo */
+@media (max-width: 480px) {
+  .logo-img {
+    width: 120px; /* smaller on mobile */
+    height: auto;
+  }
+}
 
