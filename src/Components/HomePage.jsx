@@ -773,31 +773,7 @@ console.log("Detected Location:", city, state, country);
                                                                         />
 
                                                                     </div>
-                                                                    <div className="form-group-2 form-style">
-                                                                        <label>State</label>
-                                                                        <div className="group-select">
-                                                                            <div className="nice-select" tabIndex="0">
-                                                                                <span className="current">{selectedState}</span>
-                                                                                <ul className="list">
-                                                                                    {states.length > 0 ? (
-                                                                                        states.map((state) => (
-                                                                                            <li
-                                                                                                key={state.id}
-                                                                                                data-value={state.id}
-                                                                                                className={`option ${selectedState === state.name ? "selected" : ""
-                                                                                                    }`}
-                                                                                                onClick={() => setSelectedState(state.name)}
-                                                                                            >
-                                                                                                {state.name}
-                                                                                            </li>
-                                                                                        ))
-                                                                                    ) : (
-                                                                                        <li className="option disabled">No states found</li>
-                                                                                    )}
-                                                                                </ul>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
+                                                                  
 
 
                                                                     <div className="form-group-3 form-style">

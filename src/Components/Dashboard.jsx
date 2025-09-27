@@ -29,6 +29,7 @@ const Dashboard = () => {
     const [showDashboard, setShowDashboard] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [avatar, setAvatar] = useState(localStorage.getItem("userProfile"));
+    const [isDeleting, setIsDeleting] = useState();
 
 
 
@@ -253,19 +254,26 @@ const Dashboard = () => {
         const fd = new FormData();
         fd.append("programType", "deletePropertyFromCustomer");
         fd.append("authToken", localStorage.getItem("authToken"));
-
         fd.append("propertyId", id);
-        console.log(id)
-
 
         try {
-
             const response = await api.post("properties/property", fd);
-            console.log("dealte", response)
+            console.log("deleted", response);
+
+            if (response.data.success) {
+                // ✅ Immediately update local state so UI hides deleted property
+                setProperties((prev) => prev.filter((p) => p.id !== id));
+
+                toast.success("Property deleted successfully ✅");
+            } else {
+                toast.error("Failed to delete property ❌");
+            }
         } catch (error) {
             console.error("Delete fetch error:", error);
+            toast.error("Something went wrong!");
         }
     };
+
 
 
     // ================= Status Mapping =================
@@ -933,8 +941,8 @@ const Dashboard = () => {
                                                                                         <button
                                                                                             onClick={() => {
                                                                                                 const encryptedId = encryptId(property.id)
-                                                                                                 const slug = slugify(property.title);
-                                                                                            
+                                                                                                const slug = slugify(property.title);
+
                                                                                                 navigate(`/edit-property/${encryptedId}&slug=${slug}`)
                                                                                             }}
                                                                                             style={{
@@ -986,6 +994,8 @@ const Dashboard = () => {
                                                                                         </button>
 
                                                                                         {/* Delete Confirmation Modal */}
+
+
                                                                                         {showDeleteModal && (
                                                                                             <div
                                                                                                 style={{
@@ -1027,37 +1037,45 @@ const Dashboard = () => {
                                                                                                                 cursor: "pointer",
                                                                                                                 fontSize: "14px",
                                                                                                             }}
+                                                                                                            disabled={isDeleting}
                                                                                                         >
                                                                                                             Cancel
                                                                                                         </button>
                                                                                                         <button
                                                                                                             onClick={async () => {
                                                                                                                 if (propertyToDelete) {
-                                                                                                                    await deleteproperty(propertyToDelete);
+                                                                                                                    setIsDeleting(true); // start loader
+                                                                                                                    await deleteproperty(propertyToDelete); // ⬅ this now removes from UI
+                                                                                                                    setIsDeleting(false); // stop loader
                                                                                                                     setShowDeleteModal(false);
                                                                                                                     setPropertyToDelete(null);
                                                                                                                 }
                                                                                                             }}
-                                                                                                            style={{
-                                                                                                                padding: "6px 12px",
-                                                                                                                borderRadius: "6px",
-                                                                                                                border: "none",
-                                                                                                                backgroundColor: "#ED2027",
-                                                                                                                hover: "#CD380F",
-                                                                                                                color: "#fff",
-                                                                                                                cursor: "pointer",
-                                                                                                                fontSize: "14px",
-                                                                                                            }}
-                                                                                                            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#CD380F")}
-                                                                                                            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#ED2027")}
-                                                                                                        >
 
-                                                                                                            Delete
+                                                                                                        >
+                                                                                                            {isDeleting ? (
+                                                                                                                <div
+                                                                                                                    style={{
+                                                                                                                        border: "2px solid #fff",
+                                                                                                                        borderTop: "2px solid transparent",
+                                                                                                                        borderRadius: "50%",
+                                                                                                                        width: "14px",
+                                                                                                                        height: "14px",
+                                                                                                                        animation: "spin 1s linear infinite",
+                                                                                                                    }}
+                                                                                                                ></div>
+                                                                                                            ) : (
+                                                                                                                "Delete"
+                                                                                                            )}
                                                                                                         </button>
+
                                                                                                     </div>
                                                                                                 </div>
                                                                                             </div>
                                                                                         )}
+
+
+
                                                                                     </li>
                                                                                 </ul>
                                                                             </td>

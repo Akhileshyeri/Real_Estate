@@ -10,7 +10,47 @@ import { FaPlus, FaMinus } from "react-icons/fa";
 
 const AddProperty = () => {
 
+  const semiItemsList = [
+    "Fans",
+    "TV",
+    "Wardrobe",
+    "Sofa",
+    "Stove",
+    "Water Purifier",
+    "Modular Kitchen",
+    "Dining Table",
+  ];
 
+  const [semiFurnishedItems, setSemiFurnishedItems] = useState(
+    semiItemsList.reduce((acc, item) => ({ ...acc, [item]: false }), {})
+  );
+
+  // "Add Other" state
+  const [showOtherInput, setShowOtherInput] = useState(false);
+  const [otherValue, setOtherValue] = useState("");
+
+  // Toggle furnished checkbox
+
+
+  // Toggle semi-furnished checkbox
+  const toggleSemiItem = (item) => {
+    setSemiFurnishedItems((prev) => ({
+      ...prev,
+      [item]: !prev[item],
+    }));
+  };
+
+  // Handle add new "Other" furnishing
+  const handleAddOther = () => {
+    if (otherValue.trim() !== "") {
+      setSemiFurnishedItems((prev) => ({
+        ...prev,
+        [otherValue.trim()]: false,
+      }));
+      setOtherValue("");
+      setShowOtherInput(false);
+    }
+  };
 
   const navigate = useNavigate()
   const [percentage, setPercentage] = useState(0);
@@ -295,17 +335,16 @@ const AddProperty = () => {
     Warehouse: 0,
   });
   const [furnishingCheckboxes, setFurnishingCheckboxes] = useState({
-    "Sofa": false,
-    "Washing Machine": true,
-    "Stove": false,
+    "light": false,
+    "Ac": true,
+    "beds": false,
+    "geyser": true,
+    "washing machine": false,
     "Fridge": true,
-    "Water Purifier": false,
-    "Microwave": true,
-    "Modular Kitchen": false,
+    " microwave": false,
     "Chimney": false,
-    "Dinning Table": false,
     "Curtains": false,
-    "Exhaust Fan": false,
+
   });
 
   const steps = [
@@ -1124,47 +1163,29 @@ const AddProperty = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setShowDropdown]);
 
-  // Detect user's location
-  const detectLocation = async () => {
-    if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by your browser");
-      return;
-    }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        console.log("Lat/Lng:", latitude, longitude);
 
-        try {
-          // Example using OpenStreetMap Nominatim API
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
-          );
-          const data = await response.json();
-          console.log("Reverse geocode data:", data);
 
-          // Extract fields
-          if (data.address) {
-            setState(data.address.state || "");
-            setLocation(data.address.city || data.address.town || data.address.village || "");
-            setPostalCode(data.address.postcode || "");
-            setLocatedNear(data.address.neighbourhood || data.address.suburb || "");
-            setAddress(data.display_name || "");
-          }
-        } catch (error) {
-          console.error("Error fetching location data:", error);
-          toast.error("Failed to detect location");
-        }
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-        toast.error("Unable to fetch location. Please allow location access.");
-      },
-      { enableHighAccuracy: true }
-    );
-  };
+  const stepRef = useRef(null);
+  const [canContinue, setCanContinue] = useState(false);
 
+  useEffect(() => {
+    if (!stepRef.current) return; // ✅ check if ref exists
+
+    const handleInput = () => {
+      const inputs = stepRef.current.querySelectorAll("input, select, textarea");
+      const allFilled = Array.from(inputs).every(input => input.value.trim() !== "");
+      setCanContinue(allFilled);
+    };
+
+    const inputs = stepRef.current.querySelectorAll("input, select, textarea");
+    inputs.forEach((input) => input.addEventListener("input", handleInput));
+
+    // Clean up
+    return () => {
+      inputs.forEach((input) => input.removeEventListener("input", handleInput));
+    };
+  }, [stepRef.current]);
 
 
 
@@ -1902,24 +1923,7 @@ const AddProperty = () => {
 
             {currentStep === 2 && (
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <h4 className="step-heading">Where is your property Located?</h4>
-
-                  <button
-                    type="button"
-                    onClick={detectLocation}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: "8px",
-
-
-                    }}
-                  >
-                    📍Detect Location
-                  </button>
-                </div>
-
-
+                <h4 className="step-heading">Where is your property Located?</h4>
 
                 {/* State Select */}
                 <div className="form-group">
@@ -2349,1207 +2353,142 @@ const AddProperty = () => {
             {/* Steps 3 Placeholder */}
 
             {currentStep === 3 && (
-              <div className="step3-container">
-                {/* Property Profile Header */}
-                <h4 className="step3-header">
-                  Tell us about your property
-                </h4>
-
-
-                {(subPropertyType.includes("Flat / Apartment") || subPropertyType.includes("Independent Floor") || subPropertyType.includes("Serviced Apartment")) && (
-                  <>
-                    {/* Rent + Residential */}
-                    {listingType === "Rent" && propertyType === "Residential" && (
-                      <>
-                        {/* Apartment Type (BHK) */}
-                        {/* BHK Selection */}
-                        <div className="step3-section">
-                          <label className="step3-label">Your apartment is a</label>
-                          <div className="step3-button-group">
-                            {["1 BHK", "2 BHK", "3 BHK", "Other"].map((bhk) => (
-                              <button
-                                key={bhk}
-                                type="button"
-                                onClick={() => handleBhkSelect(bhk)}
-                                className={`step3-option-btn ${apartmentBhk === bhk ? "active" : ""}`}
-                              >
-                                {bhk}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-
-                        {/* Room Details */}
-                        <div className="step3-section">
-                          <h6 className="step3-subheader">
-                            Add Room Details
-                          </h6>
-
-                          {/* Bedrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">No. of Bedrooms</label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => {
-                                const isDisabled = apartmentBhk !== "Other"; // disable unless Other
-                                return (
-                                  <div
-                                    key={num}
-                                    onClick={() => !isDisabled && setBedrooms(num)}
-                                    className={`step3-number-btn ${bedrooms === num ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
-                                    style={{
-                                      opacity: isDisabled ? 0.5 : 1,
-                                      pointerEvents: isDisabled ? "none" : "auto",
-                                    }}
-                                  >
-                                    {num}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          {/* Bathrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bathrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBathrooms(num)}
-                                  className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Balconies */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              Balconies
-                            </label>
-                            <div className="step3-button-group">
-                              {[0, 1, 2, 3, "More than 3"].map((val) => (
-                                <div
-                                  key={val}
-                                  onClick={() => setBalconies(val)}
-                                  className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
-                                >
-                                  {val}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Area Details */}
-                        <div
-
-                        >
-                          {/* Header */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                              Add Area Details
-                            </label>
-
-                          </div>
-
-                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                            At least one area type is mandatory
-                          </p>
-
-                          {/* Carpet Area */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginBottom: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Carpet Area"
-                              value={carpetArea}
-                              onChange={(e) => setCarpetArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowCarpetUnits((p) => !p)}
-                            >
-                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                            </div>
-
-                            {showCarpetUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
-                                }}
-                              >
-                                {UNIT_OPTIONS.map((u) => (
-                                  <div
-                                    key={u}
-                                    onClick={() => {
-                                      setCarpetUnit(u);
-                                      setBuiltUpUnit(u); // sync
-                                      setShowCarpetUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: carpetUnit === u ? "#ED2027" : "#fff",
-                                      color: carpetUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
-                                  >
-                                    {u}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Validation */}
-                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                              Carpet area must be smaller than built-up area
-                            </p>
-                          )}
-
-                          {/* Built-up Area */}
-                          {!showBuiltUpArea ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowBuiltUpArea(true)}
-                              style={{
-                                background: "transparent",
-                                border: "1px dashed #ED2027",
-                                color: "#ED2027",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "500",
-                                marginTop: "10px",
-                              }}
-                            >
-                              + Add Built-up Area
-                            </button>
-                          ) : (
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "10px",
-                                marginTop: "16px",
-                                position: "relative",
-                              }}
-                            >
-                              <input
-                                type="number"
-                                placeholder="Built-up Area"
-                                value={builtUpArea}
-                                onChange={(e) => setBuiltUpArea(e.target.value)}
-                                style={{
-                                  flex: 1,
-                                  padding: "12px",
-                                  borderRadius: "8px",
-                                  border: "1px solid #ccc",
-                                  fontSize: "14px",
-                                }}
-                              />
-                              <div
-                                style={{
-                                  minWidth: "100px",
-                                  padding: "12px",
-                                  border: "1px solid #ccc",
-                                  borderRadius: "8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  cursor: "pointer",
-                                  background: "#f9f9f9",
-                                }}
-                                onClick={() => setShowBuiltUpUnits((p) => !p)}
-                              >
-                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                              </div>
-
-                              {showBuiltUpUnits && (
-                                <div
-                                  style={{
-                                    position: "absolute",
-                                    top: "110%",
-                                    right: "0",
-                                    background: "#fff",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                    zIndex: 10,
-                                    width: "120px",
-                                  }}
-                                >
-                                  {UNIT_OPTIONS.map((u) => (
-                                    <div
-                                      key={u}
-                                      onClick={() => {
-                                        setBuiltUpUnit(u);
-                                        setCarpetUnit(u); // sync
-                                        setShowBuiltUpUnits(false);
-                                      }}
-                                      style={{
-                                        padding: "10px",
-                                        cursor: "pointer",
-                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                        color: builtUpUnit === u ? "#fff" : "#333",
-                                        borderBottom: "1px solid #eee",
-                                      }}
-                                    >
-                                      {u}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-
-
-
-                        {/* Furnishing */}
-                        <div className="section mt-3">
-                          <label className="section-label">Furnishing</label>
-                          <div className="furnishing-options">
-                            {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
-                              <div
-                                key={type}
-                                onClick={() => setFurnishingType(type)}
-                                className={`furnishing-chip ${furnishingType === type ? "active" : ""
-                                  }`}
-                              >
-                                {type}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Show only when Furnished or Semi-furnished */}
-                          {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
-                            <>
-
-                              <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
-                                At least three furnishings are mandatory for furnished
-                              </p>
-
-
-                              <div className="furnishing-grid">
-
-
-                                {Object.keys(furnishingCheckboxes).map((item) => (
-                                  <label key={item} className="furnishing-checkbox">
-                                    <input
-                                      type="checkbox"
-                                      checked={furnishingCheckboxes[item]}
-                                      onChange={() => toggleFurnishingCheckbox(item)}
-                                    />
-                                    {item}
-                                  </label>
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Floor Details */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Floor Details
-                          </label>
-                          <div className="step3-floor-group">
-                            <input
-                              type="number"
-                              value={totalFloors}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setTotalFloors(v);
-                                const nTotal = parseInt(v, 10);
-                                const nProp = parseInt(propertyOnFloor, 10);
-                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                  setPropertyOnFloor(String(nTotal));
-                                }
-                              }}
-                              placeholder="Total Floors"
-                              className="step3-floor-input"
-                            />
-                            <select
-                              value={propertyOnFloor}
-                              onChange={(e) => setPropertyOnFloor(e.target.value)}
-                              className="step3-floor-select"
-                            >
-                              <option value="" hidden>Property on Floor</option>
-                              <option value="Basement">Basement</option>
-                              <option value="Lower Ground">Lower Ground</option>
-                              <option value="Ground">Ground</option>
-                              {(() => {
-                                const n = parseInt(totalFloors, 10);
-                                if (!Number.isNaN(n) && n > 0) {
-                                  return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
-                                    <option key={f} value={String(f)}>
-                                      {f}
-                                    </option>
-                                  ));
-                                }
-                                return null;
-                              })()}
-                            </select>
-                          </div>
-                        </div>
-
-
-
-                        {/* Age of property if Ready to Move */}
-
-                        <div className="step3-section">
-                          <label className="step3-label">Age of property</label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? "active" : ""
-                                  }`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Parking Facility */}
-                        <div className="step3-section">
-                          <label className="step3-label">Parking Facility</label>
-                          <div className="step3-button-group">
-                            {["Covered", "Open", "Both", "None"].map((option) => (
-                              <button
-                                key={option}
-                                type="button"
-                                onClick={() => setParkingFacility(option)}
-                                className={`step3-option-btn ${parkingFacility === option ? "active" : ""}`}
-                              >
-                                {option}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* ------------------- RENT DETAILS ------------------- */}
-                        {/* Available From */}
-                        <div className="step3-section">
-                          <label className="step3-label">Available from</label>
-                          <input
-                            type="date"
-                            value={availableFrom}
-                            onChange={(e) => setAvailableFrom(e.target.value)}
-                            className="step3-input"
-                          />
-                        </div>
-
-                        {/* Willing to rent out to */}
-                        <div className="step3-section">
-                          <label className="step3-label">Willing to rent out to</label>
-                          <div className="step3-button-group">
-                            {["Family", "Single men", "Single women"].map((opt) => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setWillingTo(opt)}
-                                className={`step3-option-btn ${willingTo === opt ? "active" : ""
-                                  }`}
-                              >
-                                + {opt}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-                        {/* ------------------- END OF RENT DETAILS ------------------- */}
-
-
-                      </>
-                    )}
-
-                    {/* Sell + Residential */}
-                    {listingType === "Sell" && propertyType === "Residential" && (
-                      <>
-
-                        <div className="step3-section">
-                          <label className="step3-label">Your apartment is a</label>
-                          <div className="step3-button-group">
-                            {["1 BHK", "2 BHK", "3 BHK", "Other"].map((bhk) => (
-                              <button
-                                key={bhk}
-                                type="button"
-                                onClick={() => handleBhkSelect(bhk)}
-                                className={`step3-option-btn ${apartmentBhk === bhk ? "active" : ""}`}
-                              >
-                                {bhk}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-                        {/* Room Details */}
-                        <div className="step3-section">
-                          <h6 className="step3-subheader">
-                            Add Room Details
-                          </h6>
-
-                          {/* Bedrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">No. of Bedrooms</label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => {
-                                const isDisabled = apartmentBhk !== "Other"; // disable unless Other
-                                return (
-                                  <div
-                                    key={num}
-                                    onClick={() => !isDisabled && setBedrooms(num)}
-                                    className={`step3-number-btn ${bedrooms === num ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
-                                    style={{
-                                      opacity: isDisabled ? 0.5 : 1,
-                                      pointerEvents: isDisabled ? "none" : "auto",
-                                    }}
-                                  >
-                                    {num}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          {/* Bathrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bathrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBathrooms(num)}
-                                  className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Balconies */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              Balconies
-                            </label>
-                            <div className="step3-button-group">
-                              {[0, 1, 2, 3, "More than 3"].map((val) => (
-                                <div
-                                  key={val}
-                                  onClick={() => setBalconies(val)}
-                                  className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
-                                >
-                                  {val}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Area Details */}
-                        <div
-                          className="mb-3"
-                        >
-                          {/* Header */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                              Add Area Details
-                            </label>
-
-                          </div>
-
-                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                            At least one area type is mandatory
-                          </p>
-
-                          {/* Carpet Area */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginBottom: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Carpet Area"
-                              value={carpetArea}
-                              onChange={(e) => setCarpetArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowCarpetUnits((p) => !p)}
-                            >
-                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                            </div>
-
-                            {showCarpetUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
-                                }}
-                              >
-                                {UNIT_OPTIONS.map((u) => (
-                                  <div
-                                    key={u}
-                                    onClick={() => {
-                                      setCarpetUnit(u);
-                                      setBuiltUpUnit(u); // sync
-                                      setShowCarpetUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: carpetUnit === u ? "#ED2027" : "#fff",
-                                      color: carpetUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
-                                  >
-                                    {u}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Validation */}
-                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                              Carpet area must be smaller than built-up area
-                            </p>
-                          )}
-
-                          {/* Built-up Area */}
-                          {!showBuiltUpArea ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowBuiltUpArea(true)}
-                              style={{
-                                background: "transparent",
-                                border: "1px dashed #ED2027",
-                                color: "#ED2027",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "500",
-                                marginTop: "10px",
-                              }}
-                            >
-                              + Add Built-up Area
-                            </button>
-                          ) : (
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "10px",
-                                marginTop: "16px",
-                                position: "relative",
-                              }}
-                            >
-                              <input
-                                type="number"
-                                placeholder="Built-up Area"
-                                value={builtUpArea}
-                                onChange={(e) => setBuiltUpArea(e.target.value)}
-                                style={{
-                                  flex: 1,
-                                  padding: "12px",
-                                  borderRadius: "8px",
-                                  border: "1px solid #ccc",
-                                  fontSize: "14px",
-                                }}
-                              />
-                              <div
-                                style={{
-                                  minWidth: "100px",
-                                  padding: "12px",
-                                  border: "1px solid #ccc",
-                                  borderRadius: "8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  cursor: "pointer",
-                                  background: "#f9f9f9",
-                                }}
-                                onClick={() => setShowBuiltUpUnits((p) => !p)}
-                              >
-                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                              </div>
-
-                              {showBuiltUpUnits && (
-                                <div
-                                  style={{
-                                    position: "absolute",
-                                    top: "110%",
-                                    right: "0",
-                                    background: "#fff",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                    zIndex: 10,
-                                    width: "120px",
-                                  }}
-                                >
-                                  {UNIT_OPTIONS.map((u) => (
-                                    <div
-                                      key={u}
-                                      onClick={() => {
-                                        setBuiltUpUnit(u);
-                                        setCarpetUnit(u); // sync
-                                        setShowBuiltUpUnits(false);
-                                      }}
-                                      style={{
-                                        padding: "10px",
-                                        cursor: "pointer",
-                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                        color: builtUpUnit === u ? "#fff" : "#333",
-                                        borderBottom: "1px solid #eee",
-                                      }}
-                                    >
-                                      {u}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-
-                        {/* Furnishing */}
-                        <div className="section">
-                          <label className="section-label">Furnishing</label>
-                          <div className="furnishing-options">
-                            {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
-                              <div
-                                key={type}
-                                onClick={() => setFurnishingType(type)}
-                                className={`furnishing-chip ${furnishingType === type ? "active" : ""
-                                  }`}
-                              >
-                                {type}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Show only when Furnished or Semi-furnished */}
-                          {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
-                            <>
-
-                              <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
-                                At least three furnishings are mandatory for furnished
-                              </p>
-
-
-                              <div className="furnishing-grid">
-
-
-                                {Object.keys(furnishingCheckboxes).map((item) => (
-                                  <label key={item} className="furnishing-checkbox">
-                                    <input
-                                      type="checkbox"
-                                      checked={furnishingCheckboxes[item]}
-                                      onChange={() => toggleFurnishingCheckbox(item)}
-                                    />
-                                    {item}
-                                  </label>
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Floor Details */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Floor Details
-                          </label>
-                          <div className="step3-floor-group">
-                            <input
-                              type="number"
-                              value={totalFloors}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setTotalFloors(v);
-                                const nTotal = parseInt(v, 10);
-                                const nProp = parseInt(propertyOnFloor, 10);
-                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                  setPropertyOnFloor(String(nTotal));
-                                }
-                              }}
-                              placeholder="Total Floors"
-                              className="step3-floor-input"
-                            />
-                            <select
-                              value={propertyOnFloor}
-                              onChange={(e) => setPropertyOnFloor(e.target.value)}
-                              className="step3-floor-select"
-                            >
-                              <option value="" hidden>Property on Floor</option>
-                              <option value="Basement">Basement</option>
-                              <option value="Lower Ground">Lower Ground</option>
-                              <option value="Ground">Ground</option>
-                              {(() => {
-                                const n = parseInt(totalFloors, 10);
-                                if (!Number.isNaN(n) && n > 0) {
-                                  return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
-                                    <option key={f} value={String(f)}>
-                                      {f}
-                                    </option>
-                                  ));
-                                }
-                                return null;
-                              })()}
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Air Conditioning */}
-                        <div className="step3-section">
-                          <label className="step3-label">Air Conditioning</label>
-                          <div className="step3-button-group">
-                            {["Central", "Individual", "None"].map((option) => (
-                              <button
-                                key={option}
-                                type="button"
-                                onClick={() => setAirConditioning(option)}
-                                className={`step3-option-btn ${airConditioning === option ? "active" : ""
-                                  }`}
-                              >
-                                {option}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-                        {/* Parking Facility */}
-                        <div className="step3-section">
-                          <label className="step3-label">Parking Facility</label>
-                          <div className="step3-button-group">
-                            {["Covered", "Open", "Both", "None"].map((option) => (
-                              <button
-                                key={option}
-                                type="button"
-                                onClick={() => setParkingFacility(option)}
-                                className={`step3-option-btn ${parkingFacility === option ? "active" : ""}`}
-                              >
-                                {option}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-
-
-
-                        {/* Availability Status */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Availability Status
-                          </label>
-                          <div className="step3-button-group">
-                            {["Ready to Move", "Under Construction"].map((status) => (
-                              <button
-                                key={status}
-                                type="button"
-                                onClick={() => setAvailabilityStatus(status)}
-                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                              >
-                                {status}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Age of property if Ready to Move */}
-                        {availabilityStatus === "Ready to Move" && (
+              <div ref={stepRef}>
+                <div className="step3-container">
+                  {/* Property Profile Header */}
+                  <h4 className="step3-header">
+                    Tell us about your property
+                  </h4>
+
+
+                  {(subPropertyType.includes("Flat / Apartment") || subPropertyType.includes("Independent Floor") || subPropertyType.includes("Serviced Apartment")) && (
+                    <>
+                      {/* Rent + Residential */}
+                      {listingType === "Rent" && propertyType === "Residential" && (
+                        <>
+                          {/* Apartment Type (BHK) */}
+                          {/* BHK Selection */}
                           <div className="step3-section">
-                            <label className="step3-label">
-                              Age of property
-                            </label>
+                            <label className="step3-label">Your apartment is a</label>
                             <div className="step3-button-group">
-                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                              {["1 BHK", "2 BHK", "3 BHK", "Other"].map((bhk) => (
                                 <button
-                                  key={age}
+                                  key={bhk}
                                   type="button"
-                                  onClick={() => setAgeOfProperty(age)}
-                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                  onClick={() => handleBhkSelect(bhk)}
+                                  className={`step3-option-btn ${apartmentBhk === bhk ? "active" : ""}`}
                                 >
-                                  {age}
+                                  {bhk}
                                 </button>
                               ))}
                             </div>
                           </div>
-                        )}
 
-                        {/* Possession By if Under Construction */}
-                        {availabilityStatus === "Under Construction" && (
+
+
+                          {/* Room Details */}
                           <div className="step3-section">
-                            <label className="step3-label">Possession By</label>
-                            <select
-                              value={possessionBy}
-                              onChange={(e) => setPossessionBy(e.target.value)}
-                              className="step3-input"
-                            >
-                              <option value="" hidden>Expected time</option>
-                              <option value="Within 3 Months">Within 3 Months</option>
-                              <option value="Within 6 Months">Within 6 Months</option>
-                              <option value="By 2026">By 2026</option>
-                              <option value="By 2027">By 2027</option>
-                              <option value="By 2028">By 2028</option>
-                              <option value="By 2029">By 2029</option>
-                              <option value="By 2030">By 2030</option>
-                            </select>
-                          </div>
-                        )}
+                            <h6 className="step3-subheader">
+                              Add Room Details
+                            </h6>
 
-                        {/* Age of property */}
+                            {/* Bedrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">No. of Bedrooms</label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => {
+                                  const isDisabled = apartmentBhk !== "Other"; // disable unless Other
+                                  return (
+                                    <div
+                                      key={num}
+                                      onClick={() => !isDisabled && setBedrooms(num)}
+                                      className={`step3-number-btn ${bedrooms === num ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
+                                      style={{
+                                        opacity: isDisabled ? 0.5 : 1,
+                                        pointerEvents: isDisabled ? "none" : "auto",
+                                      }}
+                                    >
+                                      {num}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
 
-                        {/* Ownership */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Ownership
-                          </label>
-                          <div className="step3-button-group">
-                            {["Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"].map((opt) => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setSelectedOwnership(opt)}
-                                className={`step3-option-btn ${selectedOwnership === opt ? 'active' : ''}`}
-                              >
-                                {opt}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-                      </>
-                    )}
-
-                  </>
-                )}
-
-                {subPropertyType.includes("Independent House / Villa") && (
-                  <>
-
-                    {/* Sell + Residential */}
-                    {listingType === "Sell" && propertyType === "Residential" && (
-                      <>
-
-                        <div className="step3-section">
-                          <label className="step3-label">Your apartment is a</label>
-                          <div className="step3-button-group">
-                            {["1 BHK", "2 BHK", "3 BHK", "Other"].map((bhk) => (
-                              <button
-                                key={bhk}
-                                type="button"
-                                onClick={() => handleBhkSelect(bhk)}
-                                className={`step3-option-btn ${apartmentBhk === bhk ? "active" : ""}`}
-                              >
-                                {bhk}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="step3-section">
-                          <h6 className="step3-subheader">
-                            Add Room Details
-                          </h6>
-
-                          {/* Bedrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">No. of Bedrooms</label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => {
-                                const isDisabled = apartmentBhk !== "Other"; // disable unless Other
-                                return (
+                            {/* Bathrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bathrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => (
                                   <div
                                     key={num}
-                                    onClick={() => !isDisabled && setBedrooms(num)}
-                                    className={`step3-number-btn ${bedrooms === num ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
-                                    style={{
-                                      opacity: isDisabled ? 0.5 : 1,
-                                      pointerEvents: isDisabled ? "none" : "auto",
-                                    }}
+                                    onClick={() => setBathrooms(num)}
+                                    className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
                                   >
                                     {num}
                                   </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          {/* Bathrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bathrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBathrooms(num)}
-                                  className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Balconies */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              Balconies
-                            </label>
-                            <div className="step3-button-group">
-                              {[0, 1, 2, 3, "More than 3"].map((val) => (
-                                <div
-                                  key={val}
-                                  onClick={() => setBalconies(val)}
-                                  className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
-                                >
-                                  {val}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* plotinput */}
-
-
-                        {/* Area Details */}
-                        <div
-                          className="mb-3"
-                        >
-                          {/* Header */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                              Add Area Details
-                            </label>
-
-                          </div>
-
-                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                            At least one area type is mandatory
-                          </p>
-
-                          {/* Carpet Area */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginBottom: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Carpet Area"
-                              value={carpetArea}
-                              onChange={(e) => setCarpetArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowCarpetUnits((p) => !p)}
-                            >
-                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                ))}
+                              </div>
                             </div>
 
-                            {showCarpetUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
-                                }}
-                              >
-                                {UNIT_OPTIONS.map((u) => (
+                            {/* Balconies */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                Balconies
+                              </label>
+                              <div className="step3-button-group">
+                                {[0, 1, 2, 3, "More than 3"].map((val) => (
                                   <div
-                                    key={u}
-                                    onClick={() => {
-                                      setCarpetUnit(u);
-                                      setBuiltUpUnit(u); // sync
-                                      setShowCarpetUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: carpetUnit === u ? "#ED2027" : "#fff",
-                                      color: carpetUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
+                                    key={val}
+                                    onClick={() => setBalconies(val)}
+                                    className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
                                   >
-                                    {u}
+                                    {val}
                                   </div>
                                 ))}
                               </div>
-                            )}
+                            </div>
                           </div>
 
-                          {/* Validation */}
-                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                              Carpet area must be smaller than built-up area
-                            </p>
-                          )}
+                          {/* Area Details */}
+                          <div
 
-                          {/* Built-up Area */}
-                          {!showBuiltUpArea ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowBuiltUpArea(true)}
+                          >
+                            {/* Header */}
+                            <div
                               style={{
-                                background: "transparent",
-                                border: "1px dashed #ED2027",
-                                color: "#ED2027",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "500",
-                                marginTop: "10px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
                               }}
                             >
-                              + Add Built-up Area
-                            </button>
-                          ) : (
+                              <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                                Add Area Details
+                              </label>
+
+                            </div>
+
+                            <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                              At least one area type is mandatory
+                            </p>
+
+                            {/* Carpet Area */}
                             <div
                               style={{
                                 display: "flex",
                                 gap: "10px",
-                                marginTop: "16px",
+                                marginBottom: "16px",
                                 position: "relative",
                               }}
                             >
                               <input
                                 type="number"
-                                placeholder="Built-up Area"
-                                value={builtUpArea}
-                                onChange={(e) => setBuiltUpArea(e.target.value)}
+                                placeholder="Carpet Area"
+                                value={carpetArea}
+                                onChange={(e) => setCarpetArea(e.target.value)}
                                 style={{
                                   flex: 1,
                                   padding: "12px",
@@ -3570,12 +2509,12 @@ const AddProperty = () => {
                                   cursor: "pointer",
                                   background: "#f9f9f9",
                                 }}
-                                onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                onClick={() => setShowCarpetUnits((p) => !p)}
                               >
-                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
                               </div>
 
-                              {showBuiltUpUnits && (
+                              {showCarpetUnits && (
                                 <div
                                   style={{
                                     position: "absolute",
@@ -3593,15 +2532,15 @@ const AddProperty = () => {
                                     <div
                                       key={u}
                                       onClick={() => {
-                                        setBuiltUpUnit(u);
-                                        setCarpetUnit(u); // sync
-                                        setShowBuiltUpUnits(false);
+                                        setCarpetUnit(u);
+                                        setBuiltUpUnit(u); // sync
+                                        setShowCarpetUnits(false);
                                       }}
                                       style={{
                                         padding: "10px",
                                         cursor: "pointer",
-                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                        color: builtUpUnit === u ? "#fff" : "#333",
+                                        background: carpetUnit === u ? "#ED2027" : "#fff",
+                                        color: carpetUnit === u ? "#fff" : "#333",
                                         borderBottom: "1px solid #eee",
                                       }}
                                     >
@@ -3611,4016 +2550,1825 @@ const AddProperty = () => {
                                 </div>
                               )}
                             </div>
-                          )}
-                        </div>
 
-                        {/* Furnishing */}
-                        <div className="section">
-                          <label className="section-label">Furnishing</label>
-                          <div className="furnishing-options">
-                            {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
-                              <div
-                                key={type}
-                                onClick={() => setFurnishingType(type)}
-                                className={`furnishing-chip ${furnishingType === type ? "active" : ""
-                                  }`}
-                              >
-                                {type}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Show only when Furnished or Semi-furnished */}
-                          {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
-                            <>
-
-                              <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
-                                At least three furnishings are mandatory for furnished
+                            {/* Validation */}
+                            {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                              <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                                Carpet area must be smaller than built-up area
                               </p>
-
-
-                              <div className="furnishing-grid">
-
-
-                                {Object.keys(furnishingCheckboxes).map((item) => (
-                                  <label key={item} className="furnishing-checkbox">
-                                    <input
-                                      type="checkbox"
-                                      checked={furnishingCheckboxes[item]}
-                                      onChange={() => toggleFurnishingCheckbox(item)}
-                                    />
-                                    {item}
-                                  </label>
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* {floor deatils} */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Floor Details
-                          </label>
-                          <div className="step3-floor-group">
-                            <input
-                              type="number"
-                              value={totalFloors}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setTotalFloors(v);
-                                const nTotal = parseInt(v, 10);
-                                const nProp = parseInt(propertyOnFloor, 10);
-                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                  setPropertyOnFloor(String(nTotal));
-                                }
-                              }}
-                              placeholder="Total Floors"
-                              className="step3-floor-input"
-                            />
-
-                          </div>
-                        </div>
-
-                        {/* Air Conditioning */}
-                        <div className="step3-section">
-                          <label className="step3-label">Air Conditioning</label>
-                          <div className="step3-button-group">
-                            {["Central", "Individual", "None"].map((option) => (
-                              <button
-                                key={option}
-                                type="button"
-                                onClick={() => setAirConditioning(option)}
-                                className={`step3-option-btn ${airConditioning === option ? "active" : ""
-                                  }`}
-                              >
-                                {option}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Parking Facility */}
-                        <div className="step3-section">
-                          <label className="step3-label">Parking Facility</label>
-                          <div className="step3-button-group">
-                            {["Covered", "Open", "Both", "None"].map((option) => (
-                              <button
-                                key={option}
-                                type="button"
-                                onClick={() => setParkingFacility(option)}
-                                className={`step3-option-btn ${parkingFacility === option ? "active" : ""}`}
-                              >
-                                {option}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-                        {/* Availability Status */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Availability Status
-                          </label>
-                          <div className="step3-button-group">
-                            {["Ready to Move", "Under Construction"].map((status) => (
-                              <button
-                                key={status}
-                                type="button"
-                                onClick={() => setAvailabilityStatus(status)}
-                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                              >
-                                {status}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Age of property if Ready to Move */}
-                        {availabilityStatus === "Ready to Move" && (
-                          <div className="step3-section">
-                            <label className="step3-label">
-                              Age of property
-                            </label>
-                            <div className="step3-button-group">
-                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                                <button
-                                  key={age}
-                                  type="button"
-                                  onClick={() => setAgeOfProperty(age)}
-                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
-                                >
-                                  {age}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Possession By if Under Construction */}
-                        {availabilityStatus === "Under Construction" && (
-                          <div className="step3-section">
-                            <label className="step3-label">Possession By</label>
-                            <select
-                              value={possessionBy}
-                              onChange={(e) => setPossessionBy(e.target.value)}
-                              className="step3-input"
-                            >
-                              <option value="" hidden>Expected time</option>
-                              <option value="Within 3 Months">Within 3 Months</option>
-                              <option value="Within 6 Months">Within 6 Months</option>
-                              <option value="By 2026">By 2026</option>
-                              <option value="By 2027">By 2027</option>
-                              <option value="By 2028">By 2028</option>
-                              <option value="By 2029">By 2029</option>
-                              <option value="By 2030">By 2030</option>
-                            </select>
-                          </div>
-                        )}
-
-
-
-                        {/* Ownership */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Ownership
-                          </label>
-                          <div className="step3-button-group">
-                            {["Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"].map((opt) => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setSelectedOwnership(opt)}
-                                className={`step3-option-btn ${selectedOwnership === opt ? 'active' : ''}`}
-                              >
-                                {opt}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                      </>
-                    )}
-
-                    {/* Rent + Residential */}
-                    {listingType === "Rent" && propertyType === "Residential" && (
-                      <>
-
-                        <div className="step3-section">
-                          <label className="step3-label">Your apartment is a</label>
-                          <div className="step3-button-group">
-                            {["1 BHK", "2 BHK", "3 BHK", "Other"].map((bhk) => (
-                              <button
-                                key={bhk}
-                                type="button"
-                                onClick={() => handleBhkSelect(bhk)}
-                                className={`step3-option-btn ${apartmentBhk === bhk ? "active" : ""}`}
-                              >
-                                {bhk}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                        {/* Room Details */}
-                        <div className="step3-section">
-                          <h6 className="step3-subheader">
-                            Add Room Details
-                          </h6>
-                          {/* Bedrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">No. of Bedrooms</label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => {
-                                const isDisabled = apartmentBhk !== "Other"; // disable unless Other
-                                return (
-                                  <div
-                                    key={num}
-                                    onClick={() => !isDisabled && setBedrooms(num)}
-                                    className={`step3-number-btn ${bedrooms === num ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
-                                    style={{
-                                      opacity: isDisabled ? 0.5 : 1,
-                                      pointerEvents: isDisabled ? "none" : "auto",
-                                    }}
-                                  >
-                                    {num}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          {/* Bathrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bathrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBathrooms(num)}
-                                  className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Balconies */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              Balconies
-                            </label>
-                            <div className="step3-button-group">
-                              {[0, 1, 2, 3, "More than 3"].map((val) => (
-                                <div
-                                  key={val}
-                                  onClick={() => setBalconies(val)}
-                                  className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
-                                >
-                                  {val}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Area Details */}
-                        <div
-                          className="mb-3"
-                        >
-                          {/* Header */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                              Add Area Details
-                            </label>
-
-                          </div>
-
-                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                            At least one area type is mandatory
-                          </p>
-
-                          {/* Carpet Area */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginBottom: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Carpet Area"
-                              value={carpetArea}
-                              onChange={(e) => setCarpetArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowCarpetUnits((p) => !p)}
-                            >
-                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                            </div>
-
-                            {showCarpetUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
-                                }}
-                              >
-                                {UNIT_OPTIONS.map((u) => (
-                                  <div
-                                    key={u}
-                                    onClick={() => {
-                                      setCarpetUnit(u);
-                                      setBuiltUpUnit(u); // sync
-                                      setShowCarpetUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: carpetUnit === u ? "#ED2027" : "#fff",
-                                      color: carpetUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
-                                  >
-                                    {u}
-                                  </div>
-                                ))}
-                              </div>
                             )}
-                          </div>
 
-                          {/* Validation */}
-                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                              Carpet area must be smaller than built-up area
-                            </p>
-                          )}
-
-                          {/* Built-up Area */}
-                          {!showBuiltUpArea ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowBuiltUpArea(true)}
-                              style={{
-                                background: "transparent",
-                                border: "1px dashed #ED2027",
-                                color: "#ED2027",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "500",
-                                marginTop: "10px",
-                              }}
-                            >
-                              + Add Built-up Area
-                            </button>
-                          ) : (
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "10px",
-                                marginTop: "16px",
-                                position: "relative",
-                              }}
-                            >
-                              <input
-                                type="number"
-                                placeholder="Built-up Area"
-                                value={builtUpArea}
-                                onChange={(e) => setBuiltUpArea(e.target.value)}
+                            {/* Built-up Area */}
+                            {!showBuiltUpArea ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowBuiltUpArea(true)}
                                 style={{
-                                  flex: 1,
-                                  padding: "12px",
+                                  background: "transparent",
+                                  border: "1px dashed #ED2027",
+                                  color: "#ED2027",
+                                  padding: "10px 14px",
                                   borderRadius: "8px",
-                                  border: "1px solid #ccc",
-                                  fontSize: "14px",
-                                }}
-                              />
-                              <div
-                                style={{
-                                  minWidth: "100px",
-                                  padding: "12px",
-                                  border: "1px solid #ccc",
-                                  borderRadius: "8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
                                   cursor: "pointer",
-                                  background: "#f9f9f9",
-                                }}
-                                onClick={() => setShowBuiltUpUnits((p) => !p)}
-                              >
-                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                              </div>
-
-                              {showBuiltUpUnits && (
-                                <div
-                                  style={{
-                                    position: "absolute",
-                                    top: "110%",
-                                    right: "0",
-                                    background: "#fff",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                    zIndex: 10,
-                                    width: "120px",
-                                  }}
-                                >
-                                  {UNIT_OPTIONS.map((u) => (
-                                    <div
-                                      key={u}
-                                      onClick={() => {
-                                        setBuiltUpUnit(u);
-                                        setCarpetUnit(u); // sync
-                                        setShowBuiltUpUnits(false);
-                                      }}
-                                      style={{
-                                        padding: "10px",
-                                        cursor: "pointer",
-                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                        color: builtUpUnit === u ? "#fff" : "#333",
-                                        borderBottom: "1px solid #eee",
-                                      }}
-                                    >
-                                      {u}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-
-
-                        {/* Furnishing */}
-                        <div className="section">
-                          <label className="section-label">Furnishing</label>
-                          <div className="furnishing-options">
-                            {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
-                              <div
-                                key={type}
-                                onClick={() => setFurnishingType(type)}
-                                className={`furnishing-chip ${furnishingType === type ? "active" : ""
-                                  }`}
-                              >
-                                {type}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Show only when Furnished or Semi-furnished */}
-                          {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
-                            <>
-
-                              <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
-                                At least three furnishings are mandatory for furnished
-                              </p>
-
-
-                              <div className="furnishing-grid">
-
-
-                                {Object.keys(furnishingCheckboxes).map((item) => (
-                                  <label key={item} className="furnishing-checkbox">
-                                    <input
-                                      type="checkbox"
-                                      checked={furnishingCheckboxes[item]}
-                                      onChange={() => toggleFurnishingCheckbox(item)}
-                                    />
-                                    {item}
-                                  </label>
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </div>
-
-
-                        {/* {floor deatils} */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Floor Details
-                          </label>
-                          <div className="step3-floor-group">
-                            <input
-                              type="number"
-                              value={totalFloors}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setTotalFloors(v);
-                                const nTotal = parseInt(v, 10);
-                                const nProp = parseInt(propertyOnFloor, 10);
-                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                  setPropertyOnFloor(String(nTotal));
-                                }
-                              }}
-                              placeholder="Total Floors"
-                              className="step3-floor-input"
-                            />
-
-                          </div>
-                        </div>
-
-                        {/* Age of property if Ready to Move */}
-
-                        <div className="step3-section">
-                          <label className="step3-label">Age of property</label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? "active" : ""
-                                  }`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* ------------------- RENT DETAILS ------------------- */}
-                        {/* Available From */}
-                        <div className="step3-section">
-                          <label className="step3-label">Available from</label>
-                          <input
-                            type="date"
-                            value={availableFrom}
-                            onChange={(e) => setAvailableFrom(e.target.value)}
-                            className="step3-input"
-                          />
-                        </div>
-
-                        {/* Willing to rent out to */}
-                        <div className="step3-section">
-                          <label className="step3-label">Willing to rent out to</label>
-                          <div className="step3-button-group">
-                            {["Family", "Single men", "Single women"].map((opt) => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setWillingTo(opt)}
-                                className={`step3-option-btn ${willingTo === opt ? "active" : ""
-                                  }`}
-                              >
-                                + {opt}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-
-
-
-
-                      </>
-                    )}
-
-                  </>
-                )}
-
-                {subPropertyType.includes("Plot / Land") && (
-                  <>
-                    <div
-                      className="mb-3"
-
-                    >
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "16px",
-                          fontWeight: 600,
-                          marginBottom: "6px",
-                          color: "#333",
-                        }}
-                      >
-                        Add Area Details
-                      </label>
-
-                      <p
-                        style={{
-                          fontSize: "13px",
-                          color: "#777",
-                          marginBottom: "14px",
-                        }}
-                      >
-                        Please enter the plot size
-                      </p>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
-                        }}
-                      >
-                        {/* Input box */}
-                        <input
-                          type="number"
-                          placeholder="Plot Area"
-                          value={plotArea}
-                          onChange={(e) => setPlotArea(e.target.value)}
-                          style={{
-                            flex: 1,
-                            padding: "10px 14px",
-                            borderRadius: "8px",
-                            border: "1px solid #ccc",
-                            fontSize: "15px",
-                            color: "#333",
-                            outline: "none",
-                            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                            transition: "all 0.2s ease",
-                          }}
-                          onFocus={(e) => (e.target.style.border = "1px solid #4a90e2")}
-                          onBlur={(e) => (e.target.style.border = "1px solid #ccc")}
-                        />
-
-                        {/* Select dropdown */}
-                        <select
-                          value={plotAreaUnit}
-                          onChange={(e) => setPlotAreaUnit(e.target.value)}
-                          style={{
-                            padding: "10px 14px",
-                            borderRadius: "8px",
-                            border: "1px solid #ccc",
-                            fontSize: "15px",
-                            color: "#333",
-                            backgroundColor: "#fff",
-                            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-                            outline: "none",
-                            cursor: "pointer",
-                            transition: "all 0.2s ease",
-                            height: "48px"
-                          }}
-                          onFocus={(e) => (e.target.style.border = "1px solid #4a90e2")}
-                          onBlur={(e) => (e.target.style.border = "1px solid #ccc")}
-                        >
-                          <option value="sqft">Sq.ft</option>
-                          <option value="sqyards">Sq.yards</option>
-                          <option value="sqm">Sq.m</option>
-                          <option value="acres">Acres</option>
-                          <option value="Marla">Marla</option>
-                          <option value="Cents">Cents</option>
-                        </select>
-                      </div>
-                    </div>
-
-
-                    {/* Property Dimensions (Optional) */}
-                    <div className="step3-section">
-                      <label className="step3-label">
-                        Property Dimensions (Optional)
-                      </label>
-
-                      <div className="step3-input-group">
-                        <input
-                          type="number"
-                          placeholder="Length of plot (in Ft.)"
-                          value={plotLength}
-                          onChange={(e) => setPlotLength(e.target.value)}
-                          className="step3-input"
-                        />
-                      </div>
-
-                      <div className="step3-input-group">
-                        <input
-                          type="number"
-                          placeholder="Breadth of plot (in Ft.)"
-                          value={plotBreadth}
-                          onChange={(e) => setPlotBreadth(e.target.value)}
-                          className="step3-input"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Floors Allowed */}
-                    <div className="step3-section">
-                      <label className="step3-label">
-                        Floors Allowed For Construction
-                      </label>
-                      <div className="step3-input-group">
-                        <input
-                          type="number"
-                          placeholder="No. of floors"
-                          value={floorsAllowed}
-                          onChange={(e) => setFloorsAllowed(e.target.value)}
-                          className="step3-input"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Boundary Wall */}
-                    <div className="step3-section">
-                      <label className="step3-label">
-                        Is there a boundary wall around the property?
-                      </label>
-                      <div className="step3-button-group">
-                        <button
-                          type="button"
-                          onClick={() => setHasBoundaryWall(true)}
-                          className={`step3-option-btn ${hasBoundaryWall ? 'active' : ''}`}
-                        >
-                          Yes
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setHasBoundaryWall(false)}
-                          className={`step3-option-btn ${hasBoundaryWall === false ? 'active' : ''}`}
-                        >
-                          No
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Open Sides */}
-                    <div className="step3-section">
-                      <label className="step3-label">
-                        No. of open sides
-                      </label>
-                      <div className="step3-button-group">
-                        {[1, 2, 3, "3+"].map((num) => (
-                          <button
-                            key={num}
-                            type="button"
-                            onClick={() => setOpenSides(num)}
-                            className={`step3-option-btn ${openSides === num ? 'active' : ''}`}
-                          >
-                            {num}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Existing Construction */}
-                    <div className="step3-section">
-                      <label className="step3-label">
-                        Any construction done on this property?
-                      </label>
-                      <div className="step3-button-group">
-                        <button
-                          type="button"
-                          onClick={() => setHasConstruction(true)}
-                          className={`step3-option-btn ${hasConstruction ? 'active' : ''}`}
-                        >
-                          Yes
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setHasConstruction(false)}
-                          className={`step3-option-btn ${hasConstruction === false ? 'active' : ''}`}
-                        >
-                          No
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Construction Type (if hasConstruction is true) */}
-                    {hasConstruction && (
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          What type of construction has been done?
-                        </label>
-                        <div className="step3-button-group">
-                          {['Shed', 'Rooms', 'Washroom', 'Other'].map((type) => (
-                            <button
-                              key={type}
-                              type="button"
-                              onClick={() => {
-                                if (constructionTypes.includes(type)) {
-                                  setConstructionTypes(constructionTypes.filter(t => t !== type));
-                                } else {
-                                  setConstructionTypes([...constructionTypes, type]);
-                                }
-                              }}
-                              className={`step3-option-btn ${constructionTypes.includes(type) ? 'active' : ''}`}
-                            >
-                              {type}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {/* Possession By */}
-                    <div className="step3-section">
-                      <label className="step3-label">Possession By</label>
-                      <select
-                        value={possessionBy}
-                        onChange={(e) => setPossessionBy(e.target.value)}
-                        className="step3-input"
-                      >
-                        <option value="" hidden>Expected time</option>
-                        <option value="Immediate">Immediate</option>
-                        <option value="Within 3 Months">Within 3 Months</option>
-                        <option value="Within 6 Months">Within 6 Months</option>
-                        <option value="By 2026">By 2026</option>
-                        <option value="By 2027">By 2027</option>
-                        <option value="By 2028">By 2028</option>
-                        <option value="By 2029">By 2029</option>
-
-                      </select>
-                    </div>
-                    {/* ownership */}
-                    <div className="step3-section">
-                      <label className="step3-label">
-                        Ownership
-                      </label>
-                      <div className="step3-button-group">
-                        {["Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"].map((opt) => (
-                          <button
-                            key={opt}
-                            type="button"
-                            onClick={() => setSelectedOwnership(opt)}
-                            className={`step3-option-btn ${selectedOwnership === opt ? 'active' : ''}`}
-                          >
-                            {opt}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-
-                  </>
-                )}
-
-                {subPropertyType === "1 RK / Studio Apartment" && (
-
-                  <>
-                    {/* Sell + Residential */}
-                    {listingType === "Sell" && propertyType === "Residential" && (
-                      <>
-                        <div className="step3-section">
-                          <h6 className="step3-subheader">
-                            Add Room Details
-                          </h6>
-
-                          {/* Bedrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bedrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBedrooms(num)}
-                                  className={`step3-number-btn ${bedrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Bathrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bathrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBathrooms(num)}
-                                  className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Balconies */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              Balconies
-                            </label>
-                            <div className="step3-button-group">
-                              {[0, 1, 2, 3, "More than 3"].map((val) => (
-                                <div
-                                  key={val}
-                                  onClick={() => setBalconies(val)}
-                                  className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
-                                >
-                                  {val}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Area Details */}
-                        <div
-                          className="mb-3"
-                        >
-                          {/* Header */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                              Add Area Details
-                            </label>
-
-                          </div>
-
-                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                            At least one area type is mandatory
-                          </p>
-
-                          {/* Carpet Area */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginBottom: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Carpet Area"
-                              value={carpetArea}
-                              onChange={(e) => setCarpetArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowCarpetUnits((p) => !p)}
-                            >
-                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                            </div>
-
-                            {showCarpetUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
+                                  fontWeight: "500",
+                                  marginTop: "10px",
                                 }}
                               >
-                                {UNIT_OPTIONS.map((u) => (
-                                  <div
-                                    key={u}
-                                    onClick={() => {
-                                      setCarpetUnit(u);
-                                      setBuiltUpUnit(u); // sync
-                                      setShowCarpetUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: carpetUnit === u ? "#ED2027" : "#fff",
-                                      color: carpetUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
-                                  >
-                                    {u}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Validation */}
-                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                              Carpet area must be smaller than built-up area
-                            </p>
-                          )}
-
-                          {/* Built-up Area */}
-                          {!showBuiltUpArea ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowBuiltUpArea(true)}
-                              style={{
-                                background: "transparent",
-                                border: "1px dashed #ED2027",
-                                color: "#ED2027",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "500",
-                                marginTop: "10px",
-                              }}
-                            >
-                              + Add Built-up Area
-                            </button>
-                          ) : (
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "10px",
-                                marginTop: "16px",
-                                position: "relative",
-                              }}
-                            >
-                              <input
-                                type="number"
-                                placeholder="Built-up Area"
-                                value={builtUpArea}
-                                onChange={(e) => setBuiltUpArea(e.target.value)}
-                                style={{
-                                  flex: 1,
-                                  padding: "12px",
-                                  borderRadius: "8px",
-                                  border: "1px solid #ccc",
-                                  fontSize: "14px",
-                                }}
-                              />
+                                + Add Built-up Area
+                              </button>
+                            ) : (
                               <div
-                                style={{
-                                  minWidth: "100px",
-                                  padding: "12px",
-                                  border: "1px solid #ccc",
-                                  borderRadius: "8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  cursor: "pointer",
-                                  background: "#f9f9f9",
-                                }}
-                                onClick={() => setShowBuiltUpUnits((p) => !p)}
-                              >
-                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                              </div>
-
-                              {showBuiltUpUnits && (
-                                <div
-                                  style={{
-                                    position: "absolute",
-                                    top: "110%",
-                                    right: "0",
-                                    background: "#fff",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                    zIndex: 10,
-                                    width: "120px",
-                                  }}
-                                >
-                                  {UNIT_OPTIONS.map((u) => (
-                                    <div
-                                      key={u}
-                                      onClick={() => {
-                                        setBuiltUpUnit(u);
-                                        setCarpetUnit(u); // sync
-                                        setShowBuiltUpUnits(false);
-                                      }}
-                                      style={{
-                                        padding: "10px",
-                                        cursor: "pointer",
-                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                        color: builtUpUnit === u ? "#fff" : "#333",
-                                        borderBottom: "1px solid #eee",
-                                      }}
-                                    >
-                                      {u}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="section">
-                          <label className="section-label">Other rooms (Optional)</label>
-                          <div className="room-options">
-                            {["Pooja Room", "Study Room", "Servant Room", "Store Room"].map((room) => (
-                              <div
-                                key={room}
-                                onClick={() =>
-                                  setOtherRooms((prev) =>
-                                    prev.includes(room)
-                                      ? prev.filter((r) => r !== room)
-                                      : [...prev, room]
-                                  )
-                                }
-                                className={`room-chip ${otherRooms.includes(room) ? "active" : ""}`}
-                              >
-                                {room}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        {/* furnished */}
-                        <div className="section">
-                          <label className="section-label">Furnishing</label>
-                          <div className="furnishing-options">
-                            {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
-                              <div
-                                key={type}
-                                onClick={() => setFurnishingType(type)}
-                                className={`furnishing-chip ${furnishingType === type ? "active" : ""
-                                  }`}
-                              >
-                                {type}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Show only when Furnished or Semi-furnished */}
-                          {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
-                            <>
-
-                              <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
-                                At least three furnishings are mandatory for furnished
-                              </p>
-
-
-                              <div className="furnishing-grid">
-
-
-                                {Object.keys(furnishingCheckboxes).map((item) => (
-                                  <label key={item} className="furnishing-checkbox">
-                                    <input
-                                      type="checkbox"
-                                      checked={furnishingCheckboxes[item]}
-                                      onChange={() => toggleFurnishingCheckbox(item)}
-                                    />
-                                    {item}
-                                  </label>
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        <div className="section">
-                          <label className="section-label">Reserved Parking (Optional)</label>
-                          <div className="parking-container">
-                            <div className="parking-item">
-                              <span className="parking-label">Covered Parking</span>
-                              <button
-                                className={`count-btn ${hoveredButton === "covered-minus" ? "hovered" : ""
-                                  }`}
-                                onClick={() => setCoveredParking(Math.max(0, coveredParking - 1))}
-                                onMouseEnter={() => setHoveredButton("covered-minus")}
-                                onMouseLeave={() => setHoveredButton(null)}
-                              >
-                                –
-                              </button>
-                              <span className="count-value">{coveredParking}</span>
-                              <button
-                                className={`count-btn ${hoveredButton === "covered-plus" ? "hovered" : ""
-                                  }`}
-                                onClick={() => setCoveredParking(coveredParking + 1)}
-                                onMouseEnter={() => setHoveredButton("covered-plus")}
-                                onMouseLeave={() => setHoveredButton(null)}
-                              >
-                                +
-                              </button>
-                            </div>
-
-                            <div className="parking-item">
-                              <span className="parking-label">Open Parking</span>
-                              <button
-                                className={`count-btn ${hoveredButton === "open-minus" ? "hovered" : ""
-                                  }`}
-                                onClick={() => setOpenParking(Math.max(0, openParking - 1))}
-                                onMouseEnter={() => setHoveredButton("open-minus")}
-                                onMouseLeave={() => setHoveredButton(null)}
-                              >
-                                –
-                              </button>
-                              <span className="count-value">{openParking}</span>
-                              <button
-                                className={`count-btn ${hoveredButton === "open-plus" ? "hovered" : ""
-                                  }`}
-                                onClick={() => setOpenParking(openParking + 1)}
-                                onMouseEnter={() => setHoveredButton("open-plus")}
-                                onMouseLeave={() => setHoveredButton(null)}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                        {/* floor */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Floor Details
-                          </label>
-                          <div className="step3-floor-group">
-                            <input
-                              type="number"
-                              value={totalFloors}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setTotalFloors(v);
-                                const nTotal = parseInt(v, 10);
-                                const nProp = parseInt(propertyOnFloor, 10);
-                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                  setPropertyOnFloor(String(nTotal));
-                                }
-                              }}
-                              placeholder="Total Floors"
-                              className="step3-floor-input"
-                            />
-                            <select
-                              value={propertyOnFloor}
-                              onChange={(e) => setPropertyOnFloor(e.target.value)}
-                              className="step3-floor-select"
-                            >
-                              <option value="" hidden>Property on Floor</option>
-                              <option value="Basement">Basement</option>
-                              <option value="Lower Ground">Lower Ground</option>
-                              <option value="Ground">Ground</option>
-                              {(() => {
-                                const n = parseInt(totalFloors, 10);
-                                if (!Number.isNaN(n) && n > 0) {
-                                  return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
-                                    <option key={f} value={String(f)}>
-                                      {f}
-                                    </option>
-                                  ));
-                                }
-                                return null;
-                              })()}
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Availability Status */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Availability Status
-                          </label>
-                          <div className="step3-button-group">
-                            {["Ready to Move", "Under Construction"].map((status) => (
-                              <button
-                                key={status}
-                                type="button"
-                                onClick={() => setAvailabilityStatus(status)}
-                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                              >
-                                {status}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Age of property if Ready to Move */}
-                        {availabilityStatus === "Ready to Move" && (
-                          <div className="step3-section">
-                            <label className="step3-label">
-                              Age of property
-                            </label>
-                            <div className="step3-button-group">
-                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                                <button
-                                  key={age}
-                                  type="button"
-                                  onClick={() => setAgeOfProperty(age)}
-                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
-                                >
-                                  {age}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Possession By if Under Construction */}
-                        {availabilityStatus === "Under Construction" && (
-                          <div className="step3-section">
-                            <label className="step3-label">Possession By</label>
-                            <select
-                              value={possessionBy}
-                              onChange={(e) => setPossessionBy(e.target.value)}
-                              className="step3-input"
-                            >
-                              <option value="" hidden>Expected time</option>
-                              <option value="Within 3 Months">Within 3 Months</option>
-                              <option value="Within 6 Months">Within 6 Months</option>
-                              <option value="By 2026">By 2026</option>
-                              <option value="By 2027">By 2027</option>
-                              <option value="By 2028">By 2028</option>
-                              <option value="By 2029">By 2029</option>
-                              <option value="By 2030">By 2030</option>
-                            </select>
-                          </div>
-                        )}
-
-                        {/* Ownership */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Ownership
-                          </label>
-                          <div className="step3-button-group">
-                            {["Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"].map((opt) => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setSelectedOwnership(opt)}
-                                className={`step3-option-btn ${selectedOwnership === opt ? 'active' : ''}`}
-                              >
-                                {opt}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-                      </>
-                    )}
-                    {/* Rent + Residential */}
-                    {listingType === "Rent" && propertyType === "Residential" && (
-                      <>
-
-
-                        <div className="step3-section">
-                          <h6 className="step3-subheader">
-                            Add Room Details
-                          </h6>
-
-                          {/* Bedrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bedrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBedrooms(num)}
-                                  className={`step3-number-btn ${bedrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Bathrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bathrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBathrooms(num)}
-                                  className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Balconies */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              Balconies
-                            </label>
-                            <div className="step3-button-group">
-                              {[0, 1, 2, 3, "More than 3"].map((val) => (
-                                <div
-                                  key={val}
-                                  onClick={() => setBalconies(val)}
-                                  className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
-                                >
-                                  {val}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Area Details */}
-                        <div
-                          className="mb-3"
-                        >
-                          {/* Header */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                              Add Area Details
-                            </label>
-
-                          </div>
-
-                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                            At least one area type is mandatory
-                          </p>
-
-                          {/* Carpet Area */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginBottom: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Carpet Area"
-                              value={carpetArea}
-                              onChange={(e) => setCarpetArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowCarpetUnits((p) => !p)}
-                            >
-                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                            </div>
-
-                            {showCarpetUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
-                                }}
-                              >
-                                {UNIT_OPTIONS.map((u) => (
-                                  <div
-                                    key={u}
-                                    onClick={() => {
-                                      setCarpetUnit(u);
-                                      setBuiltUpUnit(u); // sync
-                                      setShowCarpetUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: carpetUnit === u ? "#ED2027" : "#fff",
-                                      color: carpetUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
-                                  >
-                                    {u}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Validation */}
-                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                              Carpet area must be smaller than built-up area
-                            </p>
-                          )}
-
-                          {/* Built-up Area */}
-                          {!showBuiltUpArea ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowBuiltUpArea(true)}
-                              style={{
-                                background: "transparent",
-                                border: "1px dashed #ED2027",
-                                color: "#ED2027",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "500",
-                                marginTop: "10px",
-                              }}
-                            >
-                              + Add Built-up Area
-                            </button>
-                          ) : (
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "10px",
-                                marginTop: "16px",
-                                position: "relative",
-                              }}
-                            >
-                              <input
-                                type="number"
-                                placeholder="Built-up Area"
-                                value={builtUpArea}
-                                onChange={(e) => setBuiltUpArea(e.target.value)}
-                                style={{
-                                  flex: 1,
-                                  padding: "12px",
-                                  borderRadius: "8px",
-                                  border: "1px solid #ccc",
-                                  fontSize: "14px",
-                                }}
-                              />
-                              <div
-                                style={{
-                                  minWidth: "100px",
-                                  padding: "12px",
-                                  border: "1px solid #ccc",
-                                  borderRadius: "8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  cursor: "pointer",
-                                  background: "#f9f9f9",
-                                }}
-                                onClick={() => setShowBuiltUpUnits((p) => !p)}
-                              >
-                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                              </div>
-
-                              {showBuiltUpUnits && (
-                                <div
-                                  style={{
-                                    position: "absolute",
-                                    top: "110%",
-                                    right: "0",
-                                    background: "#fff",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                    zIndex: 10,
-                                    width: "120px",
-                                  }}
-                                >
-                                  {UNIT_OPTIONS.map((u) => (
-                                    <div
-                                      key={u}
-                                      onClick={() => {
-                                        setBuiltUpUnit(u);
-                                        setCarpetUnit(u); // sync
-                                        setShowBuiltUpUnits(false);
-                                      }}
-                                      style={{
-                                        padding: "10px",
-                                        cursor: "pointer",
-                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                        color: builtUpUnit === u ? "#fff" : "#333",
-                                        borderBottom: "1px solid #eee",
-                                      }}
-                                    >
-                                      {u}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-
-                        {/* furnished */}
-                        <div className="section">
-                          <label className="section-label">Furnishing</label>
-                          <div className="furnishing-options">
-                            {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
-                              <div
-                                key={type}
-                                onClick={() => setFurnishingType(type)}
-                                className={`furnishing-chip ${furnishingType === type ? "active" : ""
-                                  }`}
-                              >
-                                {type}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Show only when Furnished or Semi-furnished */}
-                          {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
-                            <>
-
-                              <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
-                                At least three furnishings are mandatory for furnished
-                              </p>
-
-
-                              <div className="furnishing-grid">
-
-
-                                {Object.keys(furnishingCheckboxes).map((item) => (
-                                  <label key={item} className="furnishing-checkbox">
-                                    <input
-                                      type="checkbox"
-                                      checked={furnishingCheckboxes[item]}
-                                      onChange={() => toggleFurnishingCheckbox(item)}
-                                    />
-                                    {item}
-                                  </label>
-                                ))}
-                              </div>
-                            </>
-                          )}
-                        </div>
-
-                        <div className="section">
-                          <label className="section-label">Reserved Parking (Optional)</label>
-                          <div className="parking-container">
-                            <div className="parking-item">
-                              <span className="parking-label">Covered Parking</span>
-                              <button
-                                className={`count-btn ${hoveredButton === "covered-minus" ? "hovered" : ""
-                                  }`}
-                                onClick={() => setCoveredParking(Math.max(0, coveredParking - 1))}
-                                onMouseEnter={() => setHoveredButton("covered-minus")}
-                                onMouseLeave={() => setHoveredButton(null)}
-                              >
-                                –
-                              </button>
-                              <span className="count-value">{coveredParking}</span>
-                              <button
-                                className={`count-btn ${hoveredButton === "covered-plus" ? "hovered" : ""
-                                  }`}
-                                onClick={() => setCoveredParking(coveredParking + 1)}
-                                onMouseEnter={() => setHoveredButton("covered-plus")}
-                                onMouseLeave={() => setHoveredButton(null)}
-                              >
-                                +
-                              </button>
-                            </div>
-
-                            <div className="parking-item">
-                              <span className="parking-label">Open Parking</span>
-                              <button
-                                className={`count-btn ${hoveredButton === "open-minus" ? "hovered" : ""
-                                  }`}
-                                onClick={() => setOpenParking(Math.max(0, openParking - 1))}
-                                onMouseEnter={() => setHoveredButton("open-minus")}
-                                onMouseLeave={() => setHoveredButton(null)}
-                              >
-                                –
-                              </button>
-                              <span className="count-value">{openParking}</span>
-                              <button
-                                className={`count-btn ${hoveredButton === "open-plus" ? "hovered" : ""
-                                  }`}
-                                onClick={() => setOpenParking(openParking + 1)}
-                                onMouseEnter={() => setHoveredButton("open-plus")}
-                                onMouseLeave={() => setHoveredButton(null)}
-                              >
-                                +
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-
-
-
-                        {/* floor */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Floor Details
-                          </label>
-                          <div className="step3-floor-group">
-                            <input
-                              type="number"
-                              value={totalFloors}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setTotalFloors(v);
-                                const nTotal = parseInt(v, 10);
-                                const nProp = parseInt(propertyOnFloor, 10);
-                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                  setPropertyOnFloor(String(nTotal));
-                                }
-                              }}
-                              placeholder="Total Floors"
-                              className="step3-floor-input"
-                            />
-                            <select
-                              value={propertyOnFloor}
-                              onChange={(e) => setPropertyOnFloor(e.target.value)}
-                              className="step3-floor-select"
-                            >
-                              <option value="" hidden>Property on Floor</option>
-                              <option value="Basement">Basement</option>
-                              <option value="Lower Ground">Lower Ground</option>
-                              <option value="Ground">Ground</option>
-                              {(() => {
-                                const n = parseInt(totalFloors, 10);
-                                if (!Number.isNaN(n) && n > 0) {
-                                  return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
-                                    <option key={f} value={String(f)}>
-                                      {f}
-                                    </option>
-                                  ));
-                                }
-                                return null;
-                              })()}
-                            </select>
-                          </div>
-                        </div>
-
-
-
-                        {/* Age of property if Ready to Move */}
-
-                        <div className="step3-section">
-                          <label className="step3-label">Age of property</label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? "active" : ""
-                                  }`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* ------------------- RENT DETAILS ------------------- */}
-                        {/* Available From */}
-                        <div className="step3-section">
-                          <label className="step3-label">Available from</label>
-                          <input
-                            type="date"
-                            value={availableFrom}
-                            onChange={(e) => setAvailableFrom(e.target.value)}
-                            className="step3-input"
-                          />
-                        </div>
-
-                        {/* Willing to rent out to */}
-                        <div className="step3-section">
-                          <label className="step3-label">Willing to rent out to</label>
-                          <div className="step3-button-group">
-                            {["Family", "Single men", "Single women"].map((opt) => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setWillingTo(opt)}
-                                className={`step3-option-btn ${willingTo === opt ? "active" : ""
-                                  }`}
-                              >
-                                + {opt}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-                      </>
-                    )}
-                  </>
-                )}
-
-
-                {subPropertyType.includes("Farmhouse") && (
-                  <>
-                    {/* Sell + Residential */}
-                    {listingType === "Sell" && propertyType === "Residential" && (
-                      <>
-                        <div className="step3-section">
-                          <h6 className="step3-subheader">
-                            Add Room Details
-                          </h6>
-
-                          {/* Bedrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bedrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBedrooms(num)}
-                                  className={`step3-number-btn ${bedrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Bathrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bathrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBathrooms(num)}
-                                  className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Balconies */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              Balconies
-                            </label>
-                            <div className="step3-button-group">
-                              {[0, 1, 2, 3, "More than 3"].map((val) => (
-                                <div
-                                  key={val}
-                                  onClick={() => setBalconies(val)}
-                                  className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
-                                >
-                                  {val}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        {/* Area Details */}
-                        <div
-                          className="mb-3"
-                        >
-                          {/* Header */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                              Add Area Details
-                            </label>
-
-                          </div>
-
-                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                            At least one area type is mandatory
-                          </p>
-
-                          {/* Carpet Area */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginBottom: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Carpet Area"
-                              value={carpetArea}
-                              onChange={(e) => setCarpetArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowCarpetUnits((p) => !p)}
-                            >
-                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                            </div>
-
-                            {showCarpetUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
-                                }}
-                              >
-                                {UNIT_OPTIONS.map((u) => (
-                                  <div
-                                    key={u}
-                                    onClick={() => {
-                                      setCarpetUnit(u);
-                                      setBuiltUpUnit(u); // sync
-                                      setShowCarpetUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: carpetUnit === u ? "#ED2027" : "#fff",
-                                      color: carpetUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
-                                  >
-                                    {u}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Validation */}
-                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                              Carpet area must be smaller than built-up area
-                            </p>
-                          )}
-
-                          {/* Built-up Area */}
-                          {!showBuiltUpArea ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowBuiltUpArea(true)}
-                              style={{
-                                background: "transparent",
-                                border: "1px dashed #ED2027",
-                                color: "#ED2027",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "500",
-                                marginTop: "10px",
-                              }}
-                            >
-                              + Add Built-up Area
-                            </button>
-                          ) : (
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "10px",
-                                marginTop: "16px",
-                                position: "relative",
-                              }}
-                            >
-                              <input
-                                type="number"
-                                placeholder="Built-up Area"
-                                value={builtUpArea}
-                                onChange={(e) => setBuiltUpArea(e.target.value)}
-                                style={{
-                                  flex: 1,
-                                  padding: "12px",
-                                  borderRadius: "8px",
-                                  border: "1px solid #ccc",
-                                  fontSize: "14px",
-                                }}
-                              />
-                              <div
-                                style={{
-                                  minWidth: "100px",
-                                  padding: "12px",
-                                  border: "1px solid #ccc",
-                                  borderRadius: "8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  cursor: "pointer",
-                                  background: "#f9f9f9",
-                                }}
-                                onClick={() => setShowBuiltUpUnits((p) => !p)}
-                              >
-                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                              </div>
-
-                              {showBuiltUpUnits && (
-                                <div
-                                  style={{
-                                    position: "absolute",
-                                    top: "110%",
-                                    right: "0",
-                                    background: "#fff",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                    zIndex: 10,
-                                    width: "120px",
-                                  }}
-                                >
-                                  {UNIT_OPTIONS.map((u) => (
-                                    <div
-                                      key={u}
-                                      onClick={() => {
-                                        setBuiltUpUnit(u);
-                                        setCarpetUnit(u); // sync
-                                        setShowBuiltUpUnits(false);
-                                      }}
-                                      style={{
-                                        padding: "10px",
-                                        cursor: "pointer",
-                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                        color: builtUpUnit === u ? "#fff" : "#333",
-                                        borderBottom: "1px solid #eee",
-                                      }}
-                                    >
-                                      {u}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-
-                        {/* {floor deatils} */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Floor Details
-                          </label>
-                          <div className="step3-floor-group">
-                            <input
-                              type="number"
-                              value={totalFloors}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setTotalFloors(v);
-                                const nTotal = parseInt(v, 10);
-                                const nProp = parseInt(propertyOnFloor, 10);
-                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                  setPropertyOnFloor(String(nTotal));
-                                }
-                              }}
-                              placeholder="Total Floors"
-                              className="step3-floor-input"
-                            />
-
-                          </div>
-                        </div>
-
-
-                        {/* Availability Status */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Availability Status
-                          </label>
-                          <div className="step3-button-group">
-                            {["Ready to Move", "Under Construction"].map((status) => (
-                              <button
-                                key={status}
-                                type="button"
-                                onClick={() => setAvailabilityStatus(status)}
-                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                              >
-                                {status}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Age of property if Ready to Move */}
-                        {availabilityStatus === "Ready to Move" && (
-                          <div className="step3-section">
-                            <label className="step3-label">
-                              Age of property
-                            </label>
-                            <div className="step3-button-group">
-                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                                <button
-                                  key={age}
-                                  type="button"
-                                  onClick={() => setAgeOfProperty(age)}
-                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
-                                >
-                                  {age}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Possession By if Under Construction */}
-                        {availabilityStatus === "Under Construction" && (
-                          <div className="step3-section">
-                            <label className="step3-label">Possession By</label>
-                            <select
-                              value={possessionBy}
-                              onChange={(e) => setPossessionBy(e.target.value)}
-                              className="step3-input"
-                            >
-                              <option value="" hidden>Expected time</option>
-                              <option value="Within 3 Months">Within 3 Months</option>
-                              <option value="Within 6 Months">Within 6 Months</option>
-                              <option value="By 2026">By 2026</option>
-                              <option value="By 2027">By 2027</option>
-                              <option value="By 2028">By 2028</option>
-                              <option value="By 2029">By 2029</option>
-                              <option value="By 2030">By 2030</option>
-                            </select>
-                          </div>
-                        )}
-
-                        {/* Ownership */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Ownership
-                          </label>
-                          <div className="step3-button-group">
-                            {["Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"].map((opt) => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setSelectedOwnership(opt)}
-                                className={`step3-option-btn ${selectedOwnership === opt ? 'active' : ''}`}
-                              >
-                                {opt}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-                        {/*  pooja Others rooms */}
-                        <div className="section">
-                          <label className="section-label">Other rooms (Optional)</label>
-                          <div className="room-options">
-                            {["Pooja Room", "Study Room", "Servant Room", "Store Room"].map((room) => (
-                              <div
-                                key={room}
-                                onClick={() =>
-                                  setOtherRooms((prev) =>
-                                    prev.includes(room)
-                                      ? prev.filter((r) => r !== room)
-                                      : [...prev, room]
-                                  )
-                                }
-                                className={`room-chip ${otherRooms.includes(room) ? "active" : ""}`}
-                              >
-                                {room}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Furnishing */}
-                        <div className="section">
-                          <label className="section-label">Furnishing</label>
-                          <div className="furnishing-options">
-                            {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
-                              <div
-                                key={type}
-                                onClick={() => setFurnishingType(type)}
-                                className={`furnishing-chip ${furnishingType === type ? "active" : ""
-                                  }`}
-                              >
-                                {type}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Show only when Furnished or Semi-furnished */}
-                          {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
-                            <>
-
-                              <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
-                                At least three furnishings are mandatory for furnished
-                              </p>
-
-
-                              <div className="furnishing-grid">
-                                {Object.keys(furnishings).map((item) => (
-                                  <div key={item} className="furnishing-item">
-                                    <button
-                                      onClick={() => handleFurnishingCount(item, -1)}
-                                      onMouseEnter={() => setHoveredButton(`${item}-minus`)}
-                                      onMouseLeave={() => setHoveredButton(null)}
-                                      className={`count-btn ${hoveredButton === `${item}-minus` ? "hovered" : ""
-                                        }`}
-                                    >
-                                      –
-                                    </button>
-                                    <span className="count-value">{furnishings[item]}</span>
-                                    <button
-                                      onClick={() => handleFurnishingCount(item, 1)}
-                                      onMouseEnter={() => setHoveredButton(`${item}-plus`)}
-                                      onMouseLeave={() => setHoveredButton(null)}
-                                      className={`count-btn ${hoveredButton === `${item}-plus` ? "hovered" : ""
-                                        }`}
-                                    >
-                                      +
-                                    </button>
-                                    <span className="furnishing-name">{item}</span>
-                                  </div>
-                                ))}
-
-                                {Object.keys(furnishingCheckboxes).map((item) => (
-                                  <label key={item} className="furnishing-checkbox">
-                                    <input
-                                      type="checkbox"
-                                      checked={furnishingCheckboxes[item]}
-                                      onChange={() => toggleFurnishingCheckbox(item)}
-                                    />
-                                    {item}
-                                  </label>
-                                ))}
-                              </div>
-
-
-
-
-
-
-
-
-
-
-
-                            </>
-                          )}
-                        </div>
-
-                      </>
-                    )}
-
-                    {/* Rent + Residential */}
-                    {listingType === "Rent" && propertyType === "Residential" && (
-                      <>
-                        <div className="step3-section">
-                          <h6 className="step3-subheader">
-                            Add Room Details
-                          </h6>
-
-                          {/* Bedrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bedrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBedrooms(num)}
-                                  className={`step3-number-btn ${bedrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Bathrooms */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              No. of Bathrooms
-                            </label>
-                            <div className="step3-button-group">
-                              {[1, 2, 3, 4, 5].map((num) => (
-                                <div
-                                  key={num}
-                                  onClick={() => setBathrooms(num)}
-                                  className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
-                                >
-                                  {num}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Balconies */}
-                          <div className="step3-subsection">
-                            <label className="step3-label">
-                              Balconies
-                            </label>
-                            <div className="step3-button-group">
-                              {[0, 1, 2, 3, "More than 3"].map((val) => (
-                                <div
-                                  key={val}
-                                  onClick={() => setBalconies(val)}
-                                  className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
-                                >
-                                  {val}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        {/* Area Details */}
-                        <div
-                          className="mb-3"
-                        >
-                          {/* Header */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                              Add Area Details
-                            </label>
-
-                          </div>
-
-                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                            At least one area type is mandatory
-                          </p>
-
-                          {/* Carpet Area */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginBottom: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Carpet Area"
-                              value={carpetArea}
-                              onChange={(e) => setCarpetArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowCarpetUnits((p) => !p)}
-                            >
-                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                            </div>
-
-                            {showCarpetUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
-                                }}
-                              >
-                                {UNIT_OPTIONS.map((u) => (
-                                  <div
-                                    key={u}
-                                    onClick={() => {
-                                      setCarpetUnit(u);
-                                      setBuiltUpUnit(u); // sync
-                                      setShowCarpetUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: carpetUnit === u ? "#ED2027" : "#fff",
-                                      color: carpetUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
-                                  >
-                                    {u}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Validation */}
-                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                              Carpet area must be smaller than built-up area
-                            </p>
-                          )}
-
-                          {/* Built-up Area */}
-                          {!showBuiltUpArea ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowBuiltUpArea(true)}
-                              style={{
-                                background: "transparent",
-                                border: "1px dashed #ED2027",
-                                color: "#ED2027",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "500",
-                                marginTop: "10px",
-                              }}
-                            >
-                              + Add Built-up Area
-                            </button>
-                          ) : (
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "10px",
-                                marginTop: "16px",
-                                position: "relative",
-                              }}
-                            >
-                              <input
-                                type="number"
-                                placeholder="Built-up Area"
-                                value={builtUpArea}
-                                onChange={(e) => setBuiltUpArea(e.target.value)}
-                                style={{
-                                  flex: 1,
-                                  padding: "12px",
-                                  borderRadius: "8px",
-                                  border: "1px solid #ccc",
-                                  fontSize: "14px",
-                                }}
-                              />
-                              <div
-                                style={{
-                                  minWidth: "100px",
-                                  padding: "12px",
-                                  border: "1px solid #ccc",
-                                  borderRadius: "8px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  cursor: "pointer",
-                                  background: "#f9f9f9",
-                                }}
-                                onClick={() => setShowBuiltUpUnits((p) => !p)}
-                              >
-                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                              </div>
-
-                              {showBuiltUpUnits && (
-                                <div
-                                  style={{
-                                    position: "absolute",
-                                    top: "110%",
-                                    right: "0",
-                                    background: "#fff",
-                                    border: "1px solid #ddd",
-                                    borderRadius: "8px",
-                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                    zIndex: 10,
-                                    width: "120px",
-                                  }}
-                                >
-                                  {UNIT_OPTIONS.map((u) => (
-                                    <div
-                                      key={u}
-                                      onClick={() => {
-                                        setBuiltUpUnit(u);
-                                        setCarpetUnit(u); // sync
-                                        setShowBuiltUpUnits(false);
-                                      }}
-                                      style={{
-                                        padding: "10px",
-                                        cursor: "pointer",
-                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                        color: builtUpUnit === u ? "#fff" : "#333",
-                                        borderBottom: "1px solid #eee",
-                                      }}
-                                    >
-                                      {u}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="section">
-                          <label className="section-label">Furnishing</label>
-                          <div className="furnishing-options">
-                            {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
-                              <div
-                                key={type}
-                                onClick={() => setFurnishingType(type)}
-                                className={`furnishing-chip ${furnishingType === type ? "active" : ""
-                                  }`}
-                              >
-                                {type}
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Show only when Furnished or Semi-furnished */}
-                          {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
-                            <>
-
-                              <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
-                                At least three furnishings are mandatory for furnished
-                              </p>
-
-
-                              <div className="furnishing-grid">
-                                {Object.keys(furnishings).map((item) => (
-                                  <div key={item} className="furnishing-item">
-                                    <button
-                                      onClick={() => handleFurnishingCount(item, -1)}
-                                      onMouseEnter={() => setHoveredButton(`${item}-minus`)}
-                                      onMouseLeave={() => setHoveredButton(null)}
-                                      className={`count-btn ${hoveredButton === `${item}-minus` ? "hovered" : ""
-                                        }`}
-                                    >
-                                      –
-                                    </button>
-                                    <span className="count-value">{furnishings[item]}</span>
-                                    <button
-                                      onClick={() => handleFurnishingCount(item, 1)}
-                                      onMouseEnter={() => setHoveredButton(`${item}-plus`)}
-                                      onMouseLeave={() => setHoveredButton(null)}
-                                      className={`count-btn ${hoveredButton === `${item}-plus` ? "hovered" : ""
-                                        }`}
-                                    >
-                                      +
-                                    </button>
-                                    <span className="furnishing-name">{item}</span>
-                                  </div>
-                                ))}
-
-                                {Object.keys(furnishingCheckboxes).map((item) => (
-                                  <label key={item} className="furnishing-checkbox">
-                                    <input
-                                      type="checkbox"
-                                      checked={furnishingCheckboxes[item]}
-                                      onChange={() => toggleFurnishingCheckbox(item)}
-                                    />
-                                    {item}
-                                  </label>
-                                ))}
-                              </div>
-
-                            </>
-                          )}
-                        </div>
-
-
-                        {/* {floor deatils} */}
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Floor Details
-                          </label>
-                          <div className="step3-floor-group">
-                            <input
-                              type="number"
-                              value={totalFloors}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setTotalFloors(v);
-                                const nTotal = parseInt(v, 10);
-                                const nProp = parseInt(propertyOnFloor, 10);
-                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                  setPropertyOnFloor(String(nTotal));
-                                }
-                              }}
-                              placeholder="Total Floors"
-                              className="step3-floor-input"
-                            />
-
-                          </div>
-                        </div>
-
-
-
-                        {/* Age of property if Ready to Move */}
-
-                        <div className="step3-section">
-                          <label className="step3-label">Age of property</label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? "active" : ""
-                                  }`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* ------------------- RENT DETAILS ------------------- */}
-                        {/* Available From */}
-                        <div className="step3-section">
-                          <label className="step3-label">Available from</label>
-                          <input
-                            type="date"
-                            value={availableFrom}
-                            onChange={(e) => setAvailableFrom(e.target.value)}
-                            className="step3-input"
-                          />
-                        </div>
-
-                        {/* Willing to rent out to */}
-                        <div className="step3-section">
-                          <label className="step3-label">Willing to rent out to</label>
-                          <div className="step3-button-group">
-                            {["Family", "Single men", "Single women"].map((opt) => (
-                              <button
-                                key={opt}
-                                type="button"
-                                onClick={() => setWillingTo(opt)}
-                                className={`step3-option-btn ${willingTo === opt ? "active" : ""
-                                  }`}
-                              >
-                                + {opt}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-
-
-
-
-
-
-                      </>
-                    )}
-
-                  </>
-                )}
-
-
-
-
-
-
-
-                {propertyType === "Commercial" &&
-                  subPropertyType === "Office" &&
-                  subPropertyQuestionOption === "Ready to move office space" && (
-                    <>
-
-
-
-                      {/* Describe your office setup */}
-                      <div className="step3-section">
-                        <label className="step3-label">Describe your office setup</label>
-                        <div className="step3-input-row">
-                          <input
-                            type="number"
-                            placeholder="Min. no. of Seats"
-                            value={minSeats}
-                            onChange={(e) => setMinSeats(e.target.value)}
-                            className="step3-input"
-                          />
-                          <input
-                            type="number"
-                            placeholder="Max. no. of Seats (optional)"
-                            value={maxSeats}
-                            onChange={(e) => setMaxSeats(e.target.value)}
-                            className="step3-input"
-                          />
-                        </div>
-                        <input
-                          type="number"
-                          placeholder="No. of Cabins"
-                          value={noOfCabins}
-                          onChange={(e) => setNoOfCabins(e.target.value)}
-                          className="step3-input"
-                        />
-                      </div>
-
-                      {/* No. of meeting rooms */}
-                      <div className="step3-section">
-                        <label className="step3-label">No. of Meeting Rooms</label>
-                        <input
-                          type="number"
-                          placeholder="No. of Meeting Rooms"
-                          value={noOfMeetingRooms}
-                          onChange={(e) => setNoOfMeetingRooms(e.target.value)}
-                          className="step3-input"
-                        />
-                      </div>
-
-                      {/* Washrooms */}
-                      <div className="step3-section">
-                        <label className="step3-label">Washrooms</label>
-                        <div className="button-group">
-                          <button
-                            type="button"
-                            onClick={() => setWashroom("Available")}
-                            className={`subproperty-option ${washroom === "Available" ? "active" : ""
-                              }`}
-                          >
-                            Available
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setWashroom("Not Available")}
-                            className={`subproperty-option ${washroom === "Not Available" ? "active" : ""
-                              }`}
-                          >
-                            Not - Available
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Conference Room */}
-                      <div className="step3-section">
-                        <label className="step3-label">Conference Room</label>
-                        <div className="button-group">
-                          <button
-                            type="button"
-                            onClick={() => setConferenceRoom("Available")}
-                            className={`subproperty-option ${conferenceRoom === "Available" ? "active" : ""
-                              }`}
-                          >
-                            Available
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setConferenceRoom("Not Available")}
-                            className={`subproperty-option ${conferenceRoom === "Not Available" ? "active" : ""
-                              }`}
-                          >
-                            Not - Available
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Reception Area */}
-                      <div className="step3-section">
-                        <label className="step3-label">Reception Area</label>
-                        <div className="button-group">
-                          <button
-                            type="button"
-                            onClick={() => setReceptionArea("Available")}
-                            className={`subproperty-option ${receptionArea === "Available" ? "active" : ""
-                              }`}
-                          >
-                            Available
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setReceptionArea("Not Available")}
-                            className={`subproperty-option ${receptionArea === "Not Available" ? "active" : ""
-                              }`}
-                          >
-                            Not - Available
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Pantry Type */}
-                      <div className="step3-section">
-                        <label className="step3-label">Pantry Type</label>
-                        <div className="button-group">
-                          <button
-                            type="button"
-                            onClick={() => setPantryType("Private")}
-                            className={`subproperty-option ${pantryType === "Private" ? "active" : ""
-                              }`}
-                          >
-                            Private
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPantryType("Shared")}
-                            className={`subproperty-option ${pantryType === "Shared" ? "active" : ""
-                              }`}
-                          >
-                            Shared
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPantryType("Not Available")}
-                            className={`subproperty-option ${pantryType === "Not Available" ? "active" : ""
-                              }`}
-                          >
-                            Not - Available
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Facilities Available */}
-                      <div className="step3-section">
-                        <label className="step3-label">Please select the facilities available</label>
-
-                        {/* Furnishing */}
-                        <div className="step3-facility-row" style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-                          <span style={{ minWidth: "200px" }}>Furnishing</span>
-                          <label style={{ marginRight: "15px" }}>
-                            <input
-                              type="radio"
-                              name="furnishing"
-                              checked={furnishing === "Available"}
-                              onChange={() => setFurnishing("Available")}
-                            />{" "}
-                            Available
-                          </label>
-                          <label>
-                            <input
-                              type="radio"
-                              name="furnishing"
-                              checked={furnishing === "Not Available"}
-                              onChange={() => setFurnishing("Not Available")}
-                            />{" "}
-                            Not Available
-                          </label>
-                        </div>
-
-                        {/* Air Conditioning */}
-                        <div className="step3-facility-row" style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-                          <span style={{ minWidth: "200px" }}>Central Air Conditioning</span>
-                          <label style={{ marginRight: "15px" }}>
-                            <input
-                              type="radio"
-                              name="airConditioning"
-                              checked={airConditioning === "Available"}
-                              onChange={() => setAirConditioning("Available")}
-                            />{" "}
-                            Available
-                          </label>
-                          <label>
-                            <input
-                              type="radio"
-                              name="airConditioning"
-                              checked={airConditioning === "Not Available"}
-                              onChange={() => setAirConditioning("Not Available")}
-                            />{" "}
-                            Not Available
-                          </label>
-                        </div>
-
-                        {/* Oxygen Duct */}
-                        <div className="step3-facility-row" style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-                          <span style={{ minWidth: "200px" }}>Oxygen Duct</span>
-                          <label style={{ marginRight: "15px" }}>
-                            <input
-                              type="radio"
-                              name="oxygen"
-                              checked={oxygen === "Available"}
-                              onChange={() => setOxygen("Available")}
-                            />{" "}
-                            Available
-                          </label>
-                          <label>
-                            <input
-                              type="radio"
-                              name="oxygen"
-                              checked={oxygen === "Not Available"}
-                              onChange={() => setOxygen("Not Available")}
-                            />{" "}
-                            Not Available
-                          </label>
-                        </div>
-
-                        {/* UPS */}
-                        <div className="step3-facility-row" style={{ display: "flex", alignItems: "center" }}>
-                          <span style={{ minWidth: "200px" }}>UPS</span>
-                          <label style={{ marginRight: "15px" }}>
-                            <input
-                              type="radio"
-                              name="ups"
-                              checked={ups === "Available"}
-                              onChange={() => setUps("Available")}
-                            />{" "}
-                            Available
-                          </label>
-                          <label>
-                            <input
-                              type="radio"
-                              name="ups"
-                              checked={ups === "Not Available"}
-                              onChange={() => setUps("Not Available")}
-                            />{" "}
-                            Not Available
-                          </label>
-                        </div>
-                      </div>
-
-
-
-                      {/* 🔥 Fire Safety Measures Include */}
-                      <div className="step3-section">
-                        <label className="step3-label">Fire safety measures include</label>
-                        <div className="button-group">
-                          {["Fire Extinguisher", "Fire Sensors", "Sprinklers", "Fire Hose"].map((item) => (
-                            <button
-                              type="button"
-                              key={item}
-                              onClick={() =>
-                                setFireSafety((prev) =>
-                                  prev.includes(item)
-                                    ? prev.filter((i) => i !== item)
-                                    : [...prev, item]
-                                )
-                              }
-                              className={`subproperty-option ${fireSafety.includes(item) ? "active" : ""
-                                }`}
-                            >
-                              {item}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Floor deatils */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          Floor Details
-                        </label>
-                        <div className="step3-floor-group">
-                          <input
-                            type="number"
-                            value={totalFloors}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setTotalFloors(v);
-                              const nTotal = parseInt(v, 10);
-                              const nProp = parseInt(propertyOnFloor, 10);
-                              if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                setPropertyOnFloor(String(nTotal));
-                              }
-                            }}
-                            placeholder="Total Floors"
-                            className="step3-floor-input"
-                          />
-                          <select
-                            value={propertyOnFloor}
-                            onChange={(e) => setPropertyOnFloor(e.target.value)}
-                            className="step3-floor-select"
-                          >
-                            <option value="" hidden>Property on Floor</option>
-                            <option value="Basement">Basement</option>
-                            <option value="Lower Ground">Lower Ground</option>
-                            <option value="Ground">Ground</option>
-                            {(() => {
-                              const n = parseInt(totalFloors, 10);
-                              if (!Number.isNaN(n) && n > 0) {
-                                return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
-                                  <option key={f} value={String(f)}>
-                                    {f}
-                                  </option>
-                                ));
-                              }
-                              return null;
-                            })()}
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* 🧱 Number of Staircases */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          No. of Staircases <span className="step3-optional">(Optional)</span>
-                        </label>
-                        <div className="button-group">
-                          {[1, 2, 3, 4].map((num) => (
-                            <button
-                              key={num}
-                              type="button"
-                              onClick={() => setStaircases(num)}
-                              className={`subproperty-option ${staircases === num ? "active" : ""
-                                }`}
-                            >
-                              {num}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* 🛗 Lifts */}
-                      <div className="step3-section">
-                        <label className="step3-label">Lifts</label>
-                        <div className="button-group">
-                          <button
-                            type="button"
-                            onClick={() => setLifts("Available")}
-                            className={`subproperty-option ${lifts === "Available" ? "active" : ""
-                              }`}
-                          >
-                            Available
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setLifts("Not Available")}
-                            className={`subproperty-option ${lifts === "Not Available" ? "active" : ""
-                              }`}
-                          >
-                            Not - Available
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 🚗 Parking */}
-                      <div className="step3-section">
-                        <label className="step3-label">Parking</label>
-                        <div className="button-group">
-                          <button
-                            type="button"
-                            onClick={() => setParking("Available")}
-                            className={`subproperty-option ${parking === "Available" ? "active" : ""
-                              }`}
-                          >
-                            Available
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setParking("Not Available")}
-                            className={`subproperty-option ${parking === "Not Available" ? "active" : ""
-                              }`}
-                          >
-                            Not - Available
-                          </button>
-                        </div>
-                      </div>
-
-
-                      {/* Availability Status */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          Availability Status
-                        </label>
-                        <div className="step3-button-group">
-                          {["Ready to Move", "Under Construction"].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => setAvailabilityStatus(status)}
-                              className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                            >
-                              {status}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Age of property if Ready to Move */}
-                      {availabilityStatus === "Ready to Move" && (
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Age of property
-                          </label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Possession By if Under Construction */}
-                      {availabilityStatus === "Under Construction" && (
-                        <div className="step3-section">
-                          <label className="step3-label">Possession By</label>
-                          <select
-                            value={possessionBy}
-                            onChange={(e) => setPossessionBy(e.target.value)}
-                            className="step3-input"
-                          >
-                            <option value="" hidden>Expected time</option>
-                            <option value="Within 3 Months">Within 3 Months</option>
-                            <option value="Within 6 Months">Within 6 Months</option>
-                            <option value="By 2026">By 2026</option>
-                            <option value="By 2027">By 2027</option>
-                            <option value="By 2028">By 2028</option>
-                            <option value="By 2029">By 2029</option>
-                            <option value="By 2030">By 2030</option>
-                          </select>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-
-                {propertyType === "Commercial" &&
-                  subPropertyType === "Office" &&
-                  subPropertyQuestionOption === "Bare shell office space" && (
-                    <>
-
-                      {/* buit and carpet  Details */}
-
-
-
-                      {/* Construction status of walls */}
-                      <div className="step3-section">
-                        <label className="step3-label">Construction status of walls</label>
-                        <div className="button-group">
-                          {["No walls", "Brick walls", "Cemented walls", "Plastered walls"].map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              className={`subproperty-option ${wallStatus === opt ? "active" : ""}`}
-                              onClick={() => setWallStatus(opt)}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Doors constructed */}
-                      <div className="step3-section">
-                        <label className="step3-label">Are doors constructed</label>
-                        <div className="button-group">
-                          {["Yes", "No"].map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              className={`subproperty-option ${doorsConstructed === opt ? "active" : ""}`}
-                              onClick={() => setDoorsConstructed(opt)}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Washrooms */}
-                      <div className="step3-section">
-                        <label className="step3-label">Washrooms</label>
-                        <div className="button-group">
-                          {["Available", "Not built yet"].map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              className={`subproperty-option ${washroomBare === opt ? "active" : ""}`}
-                              onClick={() => setWashroomBare(opt)}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-
-                      {/* Pantry Type */}
-                      <div className="step3-section">
-                        <label className="step3-label">Pantry Type</label>
-                        <div className="button-group">
-                          <button
-                            type="button"
-                            onClick={() => setPantryType("Shared Pantry")}
-                            className={`subproperty-option ${pantryType === "Shared Pantry" ? "active" : ""
-                              }`}
-                          >
-                            Shared Pantry
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => setPantryType("No Shared Pantry")}
-                            className={`subproperty-option ${pantryType === "No Shared Pantry" ? "active" : ""
-                              }`}
-                          >
-                            No Shared Pantry
-                          </button>
-                        </div>
-                      </div>
-
-
-                      {/* Flooring  */}
-                      <div className="step3-section">
-                        <label className="step3-label">Type of flooring</label>
-                        <select
-                          className="step3-input"
-                          value={flooringType}
-                          onChange={(e) => setFlooringType(e.target.value)}
-                        >
-                          <option value="">Select</option>
-                          <option value="Marble">Marble</option>
-                          <option value="Concrete">Concrete</option>
-                          <option value="Polished concrete">Polished concrete</option>
-                          <option value="Granite">Granite</option>
-                          <option value="Ceramic">Ceramic</option>
-                        </select>
-                      </div>
-
-                      {/* Central Air Conditioning (3 options) */}
-                      <div className="step3-section">
-                        <label className="step3-label">Please select the facilities available</label>
-
-
-                        <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
-                          <span style={{ minWidth: "200px" }}>Central Air Conditioning</span>
-
-                          <label style={{ marginRight: "15px" }}>
-                            <input
-                              type="radio"
-                              name="airConditioning"
-                              checked={airConditioning === "Duct Only"}
-                              onChange={() => setAirConditioning("Duct Only")}
-                            />{" "}
-                            Duct Only
-                          </label>
-
-                          <label style={{ marginRight: "15px" }}>
-                            <input
-                              type="radio"
-                              name="airConditioning"
-                              checked={airConditioning === "Available"}
-                              onChange={() => setAirConditioning("Available")}
-                            />{" "}
-                            Available
-                          </label>
-
-                          <label style={{ marginRight: "15px" }}>
-                            <input
-                              type="radio"
-                              name="airConditioning"
-                              checked={airConditioning === "Not Available"}
-                              onChange={() => setAirConditioning("Not Available")}
-                            />{" "}
-                            Not Available
-                          </label>
-
-
-                        </div>
-
-                        {/* Oxygen Duct (2 options) */}
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                          <span style={{ minWidth: "200px" }}>Oxygen Duct</span>
-
-                          <label style={{ marginRight: "22px" }}>
-                            <input
-                              type="radio"
-                              name="oxygen"
-                              checked={oxygen === "Available"}
-                              onChange={() => setOxygen("Available")}
-                            />{" "}
-                            Available
-                          </label>
-
-                          <label>
-                            <input
-                              type="radio"
-                              name="oxygen"
-                              checked={oxygen === "Not Available"}
-                              onChange={() => setOxygen("Not Available")}
-                            />{" "}
-                            Not Available
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* 🔥 Fire Safety Measures Include */}
-                      <div className="step3-section">
-                        <label className="step3-label">Fire safety measures include</label>
-                        <div className="button-group">
-                          {["Fire Extinguisher", "Fire Sensors", "Sprinklers", "Fire Hose"].map((item) => (
-                            <button
-                              type="button"
-                              key={item}
-                              onClick={() =>
-                                setFireSafety((prev) =>
-                                  prev.includes(item)
-                                    ? prev.filter((i) => i !== item)
-                                    : [...prev, item]
-                                )
-                              }
-                              className={`subproperty-option ${fireSafety.includes(item) ? "active" : ""
-                                }`}
-                            >
-                              {item}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-
-                      {/* Floor deatils */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          Floor Details
-                        </label>
-                        <div className="step3-floor-group">
-                          <input
-                            type="number"
-                            value={totalFloors}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setTotalFloors(v);
-                              const nTotal = parseInt(v, 10);
-                              const nProp = parseInt(propertyOnFloor, 10);
-                              if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                setPropertyOnFloor(String(nTotal));
-                              }
-                            }}
-                            placeholder="Total Floors"
-                            className="step3-floor-input"
-                          />
-                          <select
-                            value={propertyOnFloor}
-                            onChange={(e) => setPropertyOnFloor(e.target.value)}
-                            className="step3-floor-select"
-                          >
-                            <option value="" hidden>Property on Floor</option>
-                            <option value="Basement">Basement</option>
-                            <option value="Lower Ground">Lower Ground</option>
-                            <option value="Ground">Ground</option>
-                            {(() => {
-                              const n = parseInt(totalFloors, 10);
-                              if (!Number.isNaN(n) && n > 0) {
-                                return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
-                                  <option key={f} value={String(f)}>
-                                    {f}
-                                  </option>
-                                ));
-                              }
-                              return null;
-                            })()}
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* 🧱 Number of Staircases */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          No. of Staircases <span className="step3-optional">(Optional)</span>
-                        </label>
-                        <div className="button-group">
-                          {[1, 2, 3, 4].map((num) => (
-                            <button
-                              key={num}
-                              type="button"
-                              onClick={() => setStaircases(num)}
-                              className={`subproperty-option ${staircases === num ? "active" : ""
-                                }`}
-                            >
-                              {num}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* 🛗 Lifts */}
-                      <div className="step3-section">
-                        <label className="step3-label">Lifts</label>
-                        <div className="button-group">
-                          <button
-                            type="button"
-                            onClick={() => setLifts("Available")}
-                            className={`subproperty-option ${lifts === "Available" ? "active" : ""
-                              }`}
-                          >
-                            Available
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setLifts("Not Available")}
-                            className={`subproperty-option ${lifts === "Not Available" ? "active" : ""
-                              }`}
-                          >
-                            Not - Available
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 🚗 Parking */}
-                      <div className="step3-section">
-                        <label className="step3-label">Parking</label>
-                        <div className="button-group">
-                          <button
-                            type="button"
-                            onClick={() => setParking("Available")}
-                            className={`subproperty-option ${parking === "Available" ? "active" : ""
-                              }`}
-                          >
-                            Available
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setParking("Not Available")}
-                            className={`subproperty-option ${parking === "Not Available" ? "active" : ""
-                              }`}
-                          >
-                            Not - Available
-                          </button>
-                        </div>
-                      </div>
-
-
-                      {/* Availability Status */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          Availability Status
-                        </label>
-                        <div className="step3-button-group">
-                          {["Ready to Move", "Under Construction"].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => setAvailabilityStatus(status)}
-                              className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                            >
-                              {status}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Age of property if Ready to Move */}
-                      {availabilityStatus === "Ready to Move" && (
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Age of property
-                          </label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Possession By if Under Construction */}
-                      {availabilityStatus === "Under Construction" && (
-                        <div className="step3-section">
-                          <label className="step3-label">Possession By</label>
-                          <select
-                            value={possessionBy}
-                            onChange={(e) => setPossessionBy(e.target.value)}
-                            className="step3-input"
-                          >
-                            <option value="" hidden>Expected time</option>
-                            <option value="Within 3 Months">Within 3 Months</option>
-                            <option value="Within 6 Months">Within 6 Months</option>
-                            <option value="By 2026">By 2026</option>
-                            <option value="By 2027">By 2027</option>
-                            <option value="By 2028">By 2028</option>
-                            <option value="By 2029">By 2029</option>
-                            <option value="By 2030">By 2030</option>
-                          </select>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-
-                {propertyType === "Commercial" &&
-                  subPropertyType === "Office" &&
-                  subPropertyQuestionOption === "Co-working office space" && (
-                    <>
-
-                      {/* Washrooms */}
-                      <div className="step3-section">
-                        <label className="step3-label">Washrooms</label>
-                        <div className="button-group">
-                          {["None", "Shared", "1", "2", "3", "4"].map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              className={`subproperty-option ${washroomBare === opt ? "active" : ""}`}
-                              onClick={() => setWashroomBare(opt)}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-
-
-                      {/* Availability Status */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          Availability Status
-                        </label>
-                        <div className="step3-button-group">
-                          {["Ready to Move", "Under Construction"].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => setAvailabilityStatus(status)}
-                              className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                            >
-                              {status}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Age of property if Ready to Move */}
-                      {availabilityStatus === "Ready to Move" && (
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Age of property
-                          </label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Possession By if Under Construction */}
-                      {availabilityStatus === "Under Construction" && (
-                        <div className="step3-section">
-                          <label className="step3-label">Possession By</label>
-                          <select
-                            value={possessionBy}
-                            onChange={(e) => setPossessionBy(e.target.value)}
-                            className="step3-input"
-                          >
-                            <option value="" hidden>Expected time</option>
-                            <option value="Within 3 Months">Within 3 Months</option>
-                            <option value="Within 6 Months">Within 6 Months</option>
-                            <option value="By 2026">By 2026</option>
-                            <option value="By 2027">By 2027</option>
-                            <option value="By 2028">By 2028</option>
-                            <option value="By 2029">By 2029</option>
-                            <option value="By 2030">By 2030</option>
-                          </select>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                {propertyType === "Commercial" &&
-                  subPropertyType === "Retail" &&
-                  (subPropertyQuestionOption === "Commercial Shops" ||
-                    subPropertyQuestionOption === "Commercial Showrooms") && (
-                    <>
-
-
-                      {/* Shop Facade Size */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          Shop facade size <span className="step3-optional">(Optional)</span>
-                        </label>
-                        <p className="step3-subtext">Shop - front related details</p>
-
-                        {/* Entrance width */}
-                        <div className="step3-input-group">
-                          <input
-                            type="number"
-                            placeholder="Entrance width"
-                            value={entranceWidth}
-                            onChange={(e) => setEntranceWidth(e.target.value)}
-                            className="step3-input"
-                          />
-                          <div
-                            className="step3-unit-selector"
-                            onClick={() => setShowEntranceUnit((p) => !p)}
-                          >
-                            {entranceUnit || "ft."} <span className="step3-dropdown-icon">▼</span>
-                          </div>
-                          {showEntranceUnit && (
-                            <div className="step3-unit-dropdown">
-                              {["ft.", "mtr."].map((u) => (
-                                <div
-                                  key={u}
-                                  onClick={() => {
-                                    setEntranceUnit(u);
-                                    setShowEntranceUnit(false);
-                                  }}
-                                  className="step3-unit-option"
-                                >
-                                  {u}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Ceiling Height */}
-                        <div className="step3-input-group">
-                          <input
-                            type="number"
-                            placeholder="Ceiling Height"
-                            value={ceilingHeight}
-                            onChange={(e) => setCeilingHeight(e.target.value)}
-                            className="step3-input"
-                          />
-                          <div
-                            className="step3-unit-selector"
-                            onClick={() => setShowCeilingUnit((p) => !p)}
-                          >
-                            {ceilingUnit || "ft."} <span className="step3-dropdown-icon">▼</span>
-                          </div>
-                          {showCeilingUnit && (
-                            <div className="step3-unit-dropdown">
-                              {["ft.", "mtr."].map((u) => (
-                                <div
-                                  key={u}
-                                  onClick={() => {
-                                    setCeilingUnit(u);
-                                    setShowCeilingUnit(false);
-                                  }}
-                                  className="step3-unit-option"
-                                >
-                                  {u}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Washroom details */}
-                      <div className="step3-section">
-                        <label className="step3-label">Washroom details</label>
-                        <div className="button-group">
-                          {["Private washrooms", "Public washrooms", "Not Available"].map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              className={`subproperty-option ${retailWashroom.includes(opt) ? "active" : ""}`}
-                              onClick={() => {
-                                if (opt === "Not Available") {
-                                  // If "Not Available" clicked -> clear all other options and select only this
-                                  setRetailWashroom(["Not Available"]);
-                                } else {
-                                  setRetailWashroom((prev) => {
-                                    // if "Not Available" is already selected -> remove it
-                                    let updated = prev.filter((i) => i !== "Not Available");
-
-                                    // then toggle the selected option
-                                    if (updated.includes(opt)) {
-                                      return updated.filter((i) => i !== opt);
-                                    } else {
-                                      return [...updated, opt];
-                                    }
-                                  });
-                                }
-                              }}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Floor Details */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          Floor Details
-                        </label>
-                        <div className="step3-floor-group">
-                          <input
-                            type="number"
-                            value={totalFloors}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setTotalFloors(v);
-                              const nTotal = parseInt(v, 10);
-                              const nProp = parseInt(propertyOnFloor, 10);
-                              if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
-                                setPropertyOnFloor(String(nTotal));
-                              }
-                            }}
-                            placeholder="Total Floors"
-                            className="step3-floor-input"
-                          />
-                          <select
-                            value={propertyOnFloor}
-                            onChange={(e) => setPropertyOnFloor(e.target.value)}
-                            className="step3-floor-select"
-                          >
-                            <option value="" hidden>Property on Floor</option>
-                            <option value="Basement">Basement</option>
-                            <option value="Lower Ground">Lower Ground</option>
-                            <option value="Ground">Ground</option>
-                            {(() => {
-                              const n = parseInt(totalFloors, 10);
-                              if (!Number.isNaN(n) && n > 0) {
-                                return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
-                                  <option key={f} value={String(f)}>
-                                    {f}
-                                  </option>
-                                ));
-                              }
-                              return null;
-                            })()}
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* Located Near */}
-                      <div className="step3-section">
-                        <label className="step3-label">Located Near <span className="step3-optional">(Optional)</span></label>
-                        <div className="button-group">
-                          {["Entrance", "Elevator", "Stairs"].map((option) => (
-                            <button
-                              key={option}
-                              type="button"
-                              className={`subproperty-option ${locatedNear.includes(option) ? "active" : ""}`}
-                              onClick={() => {
-                                setLocatedNear((prev) =>
-                                  prev.includes(option)
-                                    ? prev.filter((i) => i !== option)
-                                    : [...prev, option]
-                                );
-                              }}
-                            >
-                              {option}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Parking Type */}
-                      <div className="step3-section">
-                        <label className="step3-label">Parking Type</label>
-                        <div className="button-group">
-                          {["Private Parking", "Public Parking", "Multilevel Parking", "Not Available"].map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              className={`subproperty-option ${parkingTypeRetail.includes(opt) ? "active" : ""}`}
-                              onClick={() => {
-                                if (opt === "Not Available") {
-                                  setParkingTypeRetail(["Not Available"]);
-                                } else {
-                                  setParkingTypeRetail((prev) => {
-                                    let updated = prev.filter((i) => i !== "Not Available");
-                                    if (updated.includes(opt)) {
-                                      return updated.filter((i) => i !== opt);
-                                    } else {
-                                      return [...updated, opt];
-                                    }
-                                  });
-                                }
-                              }}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-
-                      {/* Availability Status */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          Availability Status
-                        </label>
-                        <div className="step3-button-group">
-                          {["Ready to Move", "Under Construction"].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => setAvailabilityStatus(status)}
-                              className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                            >
-                              {status}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Age of property if Ready to Move */}
-                      {availabilityStatus === "Ready to Move" && (
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Age of property
-                          </label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Possession By if Under Construction */}
-                      {availabilityStatus === "Under Construction" && (
-                        <div className="step3-section">
-                          <label className="step3-label">Possession By</label>
-                          <select
-                            value={possessionBy}
-                            onChange={(e) => setPossessionBy(e.target.value)}
-                            className="step3-input"
-                          >
-                            <option value="" hidden>Expected time</option>
-                            <option value="Within 3 Months">Within 3 Months</option>
-                            <option value="Within 6 Months">Within 6 Months</option>
-                            <option value="By 2026">By 2026</option>
-                            <option value="By 2027">By 2027</option>
-                            <option value="By 2028">By 2028</option>
-                            <option value="By 2029">By 2029</option>
-                            <option value="By 2030">By 2030</option>
-                          </select>
-                        </div>
-                      )}
-
-                      {/* Business Type (multi-select dropdown with checkboxes) */}
-                      <div className="step3-section">
-                        <label className="step3-label">Business Type</label>
-
-                        <div
-                          className="step3-input"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            cursor: "pointer",
-                            marginTop: "4px",
-                          }}
-                          onClick={() => setShowBusinessTypes((p) => !p)}
-                        >
-                          {businessTypes.length === 0
-                            ? "Select"
-                            : businessTypes.length === 1
-                              ? businessTypes[0]
-                              : `${businessTypes[0]} +${businessTypes.length - 1}`
-                          }
-                          <span className="step3-dropdown-icon">▼</span>
-                        </div>
-
-                        {showBusinessTypes && (
-                          <div
-                            className="step3-dropdown-checkbox-list"
-                            style={{
-                              border: "1px solid #d1d5db",
-                              borderRadius: "4px",
-                              padding: "12px",
-                              maxHeight: "170px",
-                              overflowY: "auto",
-                              marginTop: "6px"
-                            }}
-                          >
-                            {[
-                              "ATM",
-                              "Bakery",
-                              "Boutique",
-                              "Clinic",
-                              "Grocery Store",
-                              "Restaurant"
-                            ].map((type) => (
-                              <label
-                                key={type}
                                 style={{
                                   display: "flex",
-                                  alignItems: "center",
-                                  marginBottom: "10px",
-                                  gap: "8px"
+                                  gap: "10px",
+                                  marginTop: "16px",
+                                  position: "relative",
                                 }}
                               >
                                 <input
-                                  type="checkbox"
-                                  checked={businessTypes.includes(type)}
-                                  onChange={() => {
-                                    setBusinessTypes((prev) =>
-                                      prev.includes(type)
-                                        ? prev.filter((i) => i !== type)
-                                        : [...prev, type]
-                                    );
+                                  type="number"
+                                  placeholder="Built-up Area"
+                                  value={builtUpArea}
+                                  onChange={(e) => setBuiltUpArea(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    fontSize: "14px",
                                   }}
                                 />
-                                <span>{type}</span>
-                              </label>
-                            ))}
+                                <div
+                                  style={{
+                                    minWidth: "100px",
+                                    padding: "12px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    cursor: "pointer",
+                                    background: "#f9f9f9",
+                                  }}
+                                  onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                >
+                                  {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                </div>
+
+                                {showBuiltUpUnits && (
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "110%",
+                                      right: "0",
+                                      background: "#fff",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                      zIndex: 10,
+                                      width: "120px",
+                                    }}
+                                  >
+                                    {UNIT_OPTIONS.map((u) => (
+                                      <div
+                                        key={u}
+                                        onClick={() => {
+                                          setBuiltUpUnit(u);
+                                          setCarpetUnit(u); // sync
+                                          setShowBuiltUpUnits(false);
+                                        }}
+                                        style={{
+                                          padding: "10px",
+                                          cursor: "pointer",
+                                          background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                          color: builtUpUnit === u ? "#fff" : "#333",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        {u}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
+
+
+
+
+                          {/* Furnishing */}
+                          <div className="section mt-3">
+                            <label className="section-label">Furnishing</label>
+
+                            {/* Type Selection */}
+                            <div className="furnishing-options">
+                              {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
+                                <div
+                                  key={type}
+                                  onClick={() => setFurnishingType(type)}
+                                  className={`furnishing-chip ${furnishingType === type ? "active" : ""
+                                    }`}
+                                >
+                                  {type}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Furnished */}
+                            {furnishingType === "Furnished" && (
+                              <>
+                                <p
+                                  style={{
+                                    marginTop: "10px",
+                                    fontFamily: '"Josefin Sans", sans-serif',
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  Select furnishings for Furnished
+                                </p>
+                                <div className="furnishing-grid">
+                                  {Object.keys(furnishingCheckboxes).map((item) => (
+                                    <label key={item} className="furnishing-checkbox">
+                                      <input
+                                        type="checkbox"
+                                        checked={furnishingCheckboxes[item]}
+                                        onChange={() => toggleFurnishingCheckbox(item)}
+                                      />
+                                      {item}
+                                    </label>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+
+                            {/* Semi-furnished */}
+                            {furnishingType === "Semi-furnished" && (
+                              <>
+                                <p
+                                  style={{
+                                    marginTop: "10px",
+                                    fontFamily: '"Josefin Sans", sans-serif',
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  Select furnishings for Semi-furnished
+                                </p>
+                                <div className="furnishing-grid">
+                                  {Object.keys(semiFurnishedItems).map((item) => (
+                                    <label key={item} className="furnishing-checkbox">
+                                      <input
+                                        type="checkbox"
+                                        checked={semiFurnishedItems[item]}
+                                        onChange={() => toggleSemiItem(item)}
+                                      />
+                                      {item}
+                                    </label>
+                                  ))}
+                                </div>
+
+                                {/* Add Other Section */}
+                                {!showOtherInput ? (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm mt-2"
+                                    style={{
+                                      border: "1px solid #ED2027",
+                                      color: "#ED2027",
+                                      background: "transparent",
+                                      transition: "0.3s",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.background = "#ED2027";
+                                      e.target.style.color = "#fff";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.background = "transparent";
+                                      e.target.style.color = "#ED2027";
+                                    }}
+                                    onClick={() => setShowOtherInput(true)}
+                                  >
+                                    + Add Other
+                                  </button>
+                                ) : (
+                                  <div className="d-flex mt-2">
+                                    <input
+                                      type="text"
+                                      value={otherValue}
+                                      onChange={(e) => setOtherValue(e.target.value)}
+                                      placeholder="Enter furnishing"
+                                      className="form-control"
+                                    />
+                                    <button
+                                      type="button"
+                                      className="btn btn-success ms-2"
+                                      onClick={() => {
+                                        if (otherValue.trim() === "") return;
+                                        setSemiFurnishedItems((prev) => ({
+                                          ...prev,
+                                          [otherValue.trim()]: true, // ✅ auto checked
+                                        }));
+                                        setOtherValue("");
+                                        setShowOtherInput(false);
+                                      }}
+                                    >
+                                      Add
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn btn-danger ms-2"
+                                      onClick={() => {
+                                        setOtherValue("");
+                                        setShowOtherInput(false);
+                                      }}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+
+
+                          {/* Floor Details */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Floor Details
+                            </label>
+                            <div className="step3-floor-group">
+                              <input
+                                type="number"
+                                value={totalFloors}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setTotalFloors(v);
+                                  const nTotal = parseInt(v, 10);
+                                  const nProp = parseInt(propertyOnFloor, 10);
+                                  if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                    setPropertyOnFloor(String(nTotal));
+                                  }
+                                }}
+                                placeholder="Total Floors"
+                                className="step3-floor-input"
+                              />
+                              <select
+                                value={propertyOnFloor}
+                                onChange={(e) => setPropertyOnFloor(e.target.value)}
+                                className="step3-floor-select"
+                              >
+                                <option value="" hidden>Property on Floor</option>
+                                <option value="Basement">Basement</option>
+                                <option value="Lower Ground">Lower Ground</option>
+                                <option value="Ground">Ground</option>
+                                {(() => {
+                                  const n = parseInt(totalFloors, 10);
+                                  if (!Number.isNaN(n) && n > 0) {
+                                    return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
+                                      <option key={f} value={String(f)}>
+                                        {f}
+                                      </option>
+                                    ));
+                                  }
+                                  return null;
+                                })()}
+                              </select>
+                            </div>
+                          </div>
+
+
+
+                          {/* Age of property if Ready to Move */}
+
+                          <div className="step3-section">
+                            <label className="step3-label">Age of property</label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? "active" : ""
+                                    }`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Parking Facility */}
+                          <div className="step3-section">
+                            <label className="step3-label">Parking Facility</label>
+                            <div className="step3-button-group">
+                              {["Covered", "Open", "Both", "None"].map((option) => (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() => setParkingFacility(option)}
+                                  className={`step3-option-btn ${parkingFacility === option ? "active" : ""}`}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* ------------------- RENT DETAILS ------------------- */}
+                          {/* Available From */}
+                          <div className="step3-section">
+                            <label className="step3-label">Available from</label>
+                            <input
+                              type="date"
+                              value={availableFrom}
+                              onChange={(e) => setAvailableFrom(e.target.value)}
+                              className="step3-input"
+                            />
+                          </div>
+
+                          {/* Willing to rent out to */}
+                          <div className="step3-section">
+                            <label className="step3-label">Willing to rent out to</label>
+                            <div className="step3-button-group">
+                              {["Family", "Single men", "Single women"].map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setWillingTo(opt)}
+                                  className={`step3-option-btn ${willingTo === opt ? "active" : ""
+                                    }`}
+                                >
+                                  + {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+                          {/* ------------------- END OF RENT DETAILS ------------------- */}
+
+
+                        </>
+                      )}
+
+                      {/* Sell + Residential */}
+                      {listingType === "Sell" && propertyType === "Residential" && (
+                        <>
+
+                          <div className="step3-section">
+                            <label className="step3-label">Your apartment is a</label>
+                            <div className="step3-button-group">
+                              {["1 BHK", "2 BHK", "3 BHK", "Other"].map((bhk) => (
+                                <button
+                                  key={bhk}
+                                  type="button"
+                                  onClick={() => handleBhkSelect(bhk)}
+                                  className={`step3-option-btn ${apartmentBhk === bhk ? "active" : ""}`}
+                                >
+                                  {bhk}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+                          {/* Room Details */}
+                          <div className="step3-section">
+                            <h6 className="step3-subheader">
+                              Add Room Details
+                            </h6>
+
+                            {/* Bedrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">No. of Bedrooms</label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => {
+                                  const isDisabled = apartmentBhk !== "Other"; // disable unless Other
+                                  return (
+                                    <div
+                                      key={num}
+                                      onClick={() => !isDisabled && setBedrooms(num)}
+                                      className={`step3-number-btn ${bedrooms === num ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
+                                      style={{
+                                        opacity: isDisabled ? 0.5 : 1,
+                                        pointerEvents: isDisabled ? "none" : "auto",
+                                      }}
+                                    >
+                                      {num}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Bathrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bathrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => (
+                                  <div
+                                    key={num}
+                                    onClick={() => setBathrooms(num)}
+                                    className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
+                                  >
+                                    {num}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Balconies */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                Balconies
+                              </label>
+                              <div className="step3-button-group">
+                                {[0, 1, 2, 3, "More than 3"].map((val) => (
+                                  <div
+                                    key={val}
+                                    onClick={() => setBalconies(val)}
+                                    className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
+                                  >
+                                    {val}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Area Details */}
+                          <div
+                            className="mb-3"
+                          >
+                            {/* Header */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                                Add Area Details
+                              </label>
+
+                            </div>
+
+                            <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                              At least one area type is mandatory
+                            </p>
+
+                            {/* Carpet Area */}
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                marginBottom: "16px",
+                                position: "relative",
+                              }}
+                            >
+                              <input
+                                type="number"
+                                placeholder="Carpet Area"
+                                value={carpetArea}
+                                onChange={(e) => setCarpetArea(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: "12px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ccc",
+                                  fontSize: "14px",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  minWidth: "100px",
+                                  padding: "12px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  cursor: "pointer",
+                                  background: "#f9f9f9",
+                                }}
+                                onClick={() => setShowCarpetUnits((p) => !p)}
+                              >
+                                {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                              </div>
+
+                              {showCarpetUnits && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "110%",
+                                    right: "0",
+                                    background: "#fff",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                    zIndex: 10,
+                                    width: "120px",
+                                  }}
+                                >
+                                  {UNIT_OPTIONS.map((u) => (
+                                    <div
+                                      key={u}
+                                      onClick={() => {
+                                        setCarpetUnit(u);
+                                        setBuiltUpUnit(u); // sync
+                                        setShowCarpetUnits(false);
+                                      }}
+                                      style={{
+                                        padding: "10px",
+                                        cursor: "pointer",
+                                        background: carpetUnit === u ? "#ED2027" : "#fff",
+                                        color: carpetUnit === u ? "#fff" : "#333",
+                                        borderBottom: "1px solid #eee",
+                                      }}
+                                    >
+                                      {u}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Validation */}
+                            {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                              <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                                Carpet area must be smaller than built-up area
+                              </p>
+                            )}
+
+                            {/* Built-up Area */}
+                            {!showBuiltUpArea ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowBuiltUpArea(true)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px dashed #ED2027",
+                                  color: "#ED2027",
+                                  padding: "10px 14px",
+                                  borderRadius: "8px",
+                                  cursor: "pointer",
+                                  fontWeight: "500",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                + Add Built-up Area
+                              </button>
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  marginTop: "16px",
+                                  position: "relative",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  placeholder="Built-up Area"
+                                  value={builtUpArea}
+                                  onChange={(e) => setBuiltUpArea(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    fontSize: "14px",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    minWidth: "100px",
+                                    padding: "12px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    cursor: "pointer",
+                                    background: "#f9f9f9",
+                                  }}
+                                  onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                >
+                                  {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                </div>
+
+                                {showBuiltUpUnits && (
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "110%",
+                                      right: "0",
+                                      background: "#fff",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                      zIndex: 10,
+                                      width: "120px",
+                                    }}
+                                  >
+                                    {UNIT_OPTIONS.map((u) => (
+                                      <div
+                                        key={u}
+                                        onClick={() => {
+                                          setBuiltUpUnit(u);
+                                          setCarpetUnit(u); // sync
+                                          setShowBuiltUpUnits(false);
+                                        }}
+                                        style={{
+                                          padding: "10px",
+                                          cursor: "pointer",
+                                          background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                          color: builtUpUnit === u ? "#fff" : "#333",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        {u}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+
+                          {/* Furnishing */}
+                          <div className="section mt-3">
+                            <label className="section-label">Furnishing</label>
+
+                            {/* Type Selection */}
+                            <div className="furnishing-options">
+                              {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
+                                <div
+                                  key={type}
+                                  onClick={() => setFurnishingType(type)}
+                                  className={`furnishing-chip ${furnishingType === type ? "active" : ""
+                                    }`}
+                                >
+                                  {type}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Furnished */}
+                            {furnishingType === "Furnished" && (
+                              <>
+                                <p
+                                  style={{
+                                    marginTop: "10px",
+                                    fontFamily: '"Josefin Sans", sans-serif',
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  Select furnishings for Furnished
+                                </p>
+                                <div className="furnishing-grid">
+                                  {Object.keys(furnishingCheckboxes).map((item) => (
+                                    <label key={item} className="furnishing-checkbox">
+                                      <input
+                                        type="checkbox"
+                                        checked={furnishingCheckboxes[item]}
+                                        onChange={() => toggleFurnishingCheckbox(item)}
+                                      />
+                                      {item}
+                                    </label>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+
+                            {/* Semi-furnished */}
+                            {furnishingType === "Semi-furnished" && (
+                              <>
+                                <p
+                                  style={{
+                                    marginTop: "10px",
+                                    fontFamily: '"Josefin Sans", sans-serif',
+                                    fontWeight: "600",
+                                  }}
+                                >
+                                  Select furnishings for Semi-furnished
+                                </p>
+                                <div className="furnishing-grid">
+                                  {Object.keys(semiFurnishedItems).map((item) => (
+                                    <label key={item} className="furnishing-checkbox">
+                                      <input
+                                        type="checkbox"
+                                        checked={semiFurnishedItems[item]}
+                                        onChange={() => toggleSemiItem(item)}
+                                      />
+                                      {item}
+                                    </label>
+                                  ))}
+                                </div>
+
+                                {/* Add Other Section */}
+                                {!showOtherInput ? (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm mt-2"
+                                    style={{
+                                      border: "1px solid #ED2027",
+                                      color: "#ED2027",
+                                      background: "transparent",
+                                      transition: "0.3s",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.background = "#ED2027";
+                                      e.target.style.color = "#fff";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.background = "transparent";
+                                      e.target.style.color = "#ED2027";
+                                    }}
+                                    onClick={() => setShowOtherInput(true)}
+                                  >
+                                    + Add Other
+                                  </button>
+                                ) : (
+                                  <div className="d-flex mt-2">
+                                    <input
+                                      type="text"
+                                      value={otherValue}
+                                      onChange={(e) => setOtherValue(e.target.value)}
+                                      placeholder="Enter furnishing"
+                                      className="form-control"
+                                    />
+                                    <button
+                                      type="button"
+                                      className="btn btn-success ms-2"
+                                      onClick={() => {
+                                        if (otherValue.trim() === "") return;
+                                        setSemiFurnishedItems((prev) => ({
+                                          ...prev,
+                                          [otherValue.trim()]: true, // ✅ auto checked
+                                        }));
+                                        setOtherValue("");
+                                        setShowOtherInput(false);
+                                      }}
+                                    >
+                                      Add
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn btn-danger ms-2"
+                                      onClick={() => {
+                                        setOtherValue("");
+                                        setShowOtherInput(false);
+                                      }}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+
+
+                          {/* Floor Details */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Floor Details
+                            </label>
+                            <div className="step3-floor-group">
+                              <input
+                                type="number"
+                                value={totalFloors}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setTotalFloors(v);
+                                  const nTotal = parseInt(v, 10);
+                                  const nProp = parseInt(propertyOnFloor, 10);
+                                  if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                    setPropertyOnFloor(String(nTotal));
+                                  }
+                                }}
+                                placeholder="Total Floors"
+                                className="step3-floor-input"
+                              />
+                              <select
+                                value={propertyOnFloor}
+                                onChange={(e) => setPropertyOnFloor(e.target.value)}
+                                className="step3-floor-select"
+                              >
+                                <option value="" hidden>Property on Floor</option>
+                                <option value="Basement">Basement</option>
+                                <option value="Lower Ground">Lower Ground</option>
+                                <option value="Ground">Ground</option>
+                                {(() => {
+                                  const n = parseInt(totalFloors, 10);
+                                  if (!Number.isNaN(n) && n > 0) {
+                                    return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
+                                      <option key={f} value={String(f)}>
+                                        {f}
+                                      </option>
+                                    ));
+                                  }
+                                  return null;
+                                })()}
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Air Conditioning */}
+                          <div className="step3-section">
+                            <label className="step3-label">Air Conditioning</label>
+                            <div className="step3-button-group">
+                              {["Central", "Individual", "None"].map((option) => (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() => setAirConditioning(option)}
+                                  className={`step3-option-btn ${airConditioning === option ? "active" : ""
+                                    }`}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+                          {/* Parking Facility */}
+                          <div className="step3-section">
+                            <label className="step3-label">Parking Facility</label>
+                            <div className="step3-button-group">
+                              {["Covered", "Open", "Both", "None"].map((option) => (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() => setParkingFacility(option)}
+                                  className={`step3-option-btn ${parkingFacility === option ? "active" : ""}`}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+
+
+
+                          {/* Availability Status */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Availability Status
+                            </label>
+                            <div className="step3-button-group">
+                              {["Ready to Move", "Under Construction"].map((status) => (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={() => setAvailabilityStatus(status)}
+                                  className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                                >
+                                  {status}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Age of property if Ready to Move */}
+                          {availabilityStatus === "Ready to Move" && (
+                            <div className="step3-section">
+                              <label className="step3-label">
+                                Age of property
+                              </label>
+                              <div className="step3-button-group">
+                                {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                  <button
+                                    key={age}
+                                    type="button"
+                                    onClick={() => setAgeOfProperty(age)}
+                                    className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                  >
+                                    {age}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Possession By if Under Construction */}
+                          {availabilityStatus === "Under Construction" && (
+                            <div className="step3-section">
+                              <label className="step3-label">Possession By</label>
+                              <select
+                                value={possessionBy}
+                                onChange={(e) => setPossessionBy(e.target.value)}
+                                className="step3-input"
+                              >
+                                <option value="" hidden>Expected time</option>
+                                <option value="Within 3 Months">Within 3 Months</option>
+                                <option value="Within 6 Months">Within 6 Months</option>
+                                <option value="By 2026">By 2026</option>
+                                <option value="By 2027">By 2027</option>
+                                <option value="By 2028">By 2028</option>
+                                <option value="By 2029">By 2029</option>
+                                <option value="By 2030">By 2030</option>
+                              </select>
+                            </div>
+                          )}
+
+                          {/* Age of property */}
+
+                          {/* Ownership */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Ownership
+                            </label>
+                            <div className="step3-button-group">
+                              {["Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"].map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setSelectedOwnership(opt)}
+                                  className={`step3-option-btn ${selectedOwnership === opt ? 'active' : ''}`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+                        </>
+                      )}
 
                     </>
                   )}
 
-                {propertyType === "Commercial" &&
-                  subPropertyType === "Plot" &&
-                  (
-                    subPropertyQuestionOption === "Commercial Land/inst.Land" ||
-                    subPropertyQuestionOption === "Agriculture/Farm Land" ||
-                    subPropertyQuestionOption === "Industrial Lands/Plots"
-                  ) && (
+                  {subPropertyType.includes("Independent House / Villa") && (
                     <>
-                      {/* Plot Area Section */}
+
+                      {/* Sell + Residential */}
+                      {listingType === "Sell" && propertyType === "Residential" && (
+                        <>
+
+                          <div className="step3-section">
+                            <label className="step3-label">Your apartment is a</label>
+                            <div className="step3-button-group">
+                              {["1 BHK", "2 BHK", "3 BHK", "Other"].map((bhk) => (
+                                <button
+                                  key={bhk}
+                                  type="button"
+                                  onClick={() => handleBhkSelect(bhk)}
+                                  className={`step3-option-btn ${apartmentBhk === bhk ? "active" : ""}`}
+                                >
+                                  {bhk}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="step3-section">
+                            <h6 className="step3-subheader">
+                              Add Room Details
+                            </h6>
+
+                            {/* Bedrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">No. of Bedrooms</label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => {
+                                  const isDisabled = apartmentBhk !== "Other"; // disable unless Other
+                                  return (
+                                    <div
+                                      key={num}
+                                      onClick={() => !isDisabled && setBedrooms(num)}
+                                      className={`step3-number-btn ${bedrooms === num ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
+                                      style={{
+                                        opacity: isDisabled ? 0.5 : 1,
+                                        pointerEvents: isDisabled ? "none" : "auto",
+                                      }}
+                                    >
+                                      {num}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Bathrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bathrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => (
+                                  <div
+                                    key={num}
+                                    onClick={() => setBathrooms(num)}
+                                    className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
+                                  >
+                                    {num}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Balconies */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                Balconies
+                              </label>
+                              <div className="step3-button-group">
+                                {[0, 1, 2, 3, "More than 3"].map((val) => (
+                                  <div
+                                    key={val}
+                                    onClick={() => setBalconies(val)}
+                                    className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
+                                  >
+                                    {val}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* plotinput */}
+
+
+                          {/* Area Details */}
+                          <div
+                            className="mb-3"
+                          >
+                            {/* Header */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                                Add Area Details
+                              </label>
+
+                            </div>
+
+                            <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                              At least one area type is mandatory
+                            </p>
+
+                            {/* Carpet Area */}
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                marginBottom: "16px",
+                                position: "relative",
+                              }}
+                            >
+                              <input
+                                type="number"
+                                placeholder="Carpet Area"
+                                value={carpetArea}
+                                onChange={(e) => setCarpetArea(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: "12px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ccc",
+                                  fontSize: "14px",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  minWidth: "100px",
+                                  padding: "12px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  cursor: "pointer",
+                                  background: "#f9f9f9",
+                                }}
+                                onClick={() => setShowCarpetUnits((p) => !p)}
+                              >
+                                {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                              </div>
+
+                              {showCarpetUnits && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "110%",
+                                    right: "0",
+                                    background: "#fff",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                    zIndex: 10,
+                                    width: "120px",
+                                  }}
+                                >
+                                  {UNIT_OPTIONS.map((u) => (
+                                    <div
+                                      key={u}
+                                      onClick={() => {
+                                        setCarpetUnit(u);
+                                        setBuiltUpUnit(u); // sync
+                                        setShowCarpetUnits(false);
+                                      }}
+                                      style={{
+                                        padding: "10px",
+                                        cursor: "pointer",
+                                        background: carpetUnit === u ? "#ED2027" : "#fff",
+                                        color: carpetUnit === u ? "#fff" : "#333",
+                                        borderBottom: "1px solid #eee",
+                                      }}
+                                    >
+                                      {u}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Validation */}
+                            {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                              <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                                Carpet area must be smaller than built-up area
+                              </p>
+                            )}
+
+                            {/* Built-up Area */}
+                            {!showBuiltUpArea ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowBuiltUpArea(true)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px dashed #ED2027",
+                                  color: "#ED2027",
+                                  padding: "10px 14px",
+                                  borderRadius: "8px",
+                                  cursor: "pointer",
+                                  fontWeight: "500",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                + Add Built-up Area
+                              </button>
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  marginTop: "16px",
+                                  position: "relative",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  placeholder="Built-up Area"
+                                  value={builtUpArea}
+                                  onChange={(e) => setBuiltUpArea(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    fontSize: "14px",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    minWidth: "100px",
+                                    padding: "12px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    cursor: "pointer",
+                                    background: "#f9f9f9",
+                                  }}
+                                  onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                >
+                                  {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                </div>
+
+                                {showBuiltUpUnits && (
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "110%",
+                                      right: "0",
+                                      background: "#fff",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                      zIndex: 10,
+                                      width: "120px",
+                                    }}
+                                  >
+                                    {UNIT_OPTIONS.map((u) => (
+                                      <div
+                                        key={u}
+                                        onClick={() => {
+                                          setBuiltUpUnit(u);
+                                          setCarpetUnit(u); // sync
+                                          setShowBuiltUpUnits(false);
+                                        }}
+                                        style={{
+                                          padding: "10px",
+                                          cursor: "pointer",
+                                          background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                          color: builtUpUnit === u ? "#fff" : "#333",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        {u}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Furnishing */}
+                        yyyy
+
+                          {/* {floor deatils} */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Floor Details
+                            </label>
+                            <div className="step3-floor-group">
+                              <input
+                                type="number"
+                                value={totalFloors}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setTotalFloors(v);
+                                  const nTotal = parseInt(v, 10);
+                                  const nProp = parseInt(propertyOnFloor, 10);
+                                  if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                    setPropertyOnFloor(String(nTotal));
+                                  }
+                                }}
+                                placeholder="Total Floors"
+                                className="step3-floor-input"
+                              />
+
+                            </div>
+                          </div>
+
+                          {/* Air Conditioning */}
+                          <div className="step3-section">
+                            <label className="step3-label">Air Conditioning</label>
+                            <div className="step3-button-group">
+                              {["Central", "Individual", "None"].map((option) => (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() => setAirConditioning(option)}
+                                  className={`step3-option-btn ${airConditioning === option ? "active" : ""
+                                    }`}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Parking Facility */}
+                          <div className="step3-section">
+                            <label className="step3-label">Parking Facility</label>
+                            <div className="step3-button-group">
+                              {["Covered", "Open", "Both", "None"].map((option) => (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() => setParkingFacility(option)}
+                                  className={`step3-option-btn ${parkingFacility === option ? "active" : ""}`}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+                          {/* Availability Status */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Availability Status
+                            </label>
+                            <div className="step3-button-group">
+                              {["Ready to Move", "Under Construction"].map((status) => (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={() => setAvailabilityStatus(status)}
+                                  className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                                >
+                                  {status}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Age of property if Ready to Move */}
+                          {availabilityStatus === "Ready to Move" && (
+                            <div className="step3-section">
+                              <label className="step3-label">
+                                Age of property
+                              </label>
+                              <div className="step3-button-group">
+                                {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                  <button
+                                    key={age}
+                                    type="button"
+                                    onClick={() => setAgeOfProperty(age)}
+                                    className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                  >
+                                    {age}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Possession By if Under Construction */}
+                          {availabilityStatus === "Under Construction" && (
+                            <div className="step3-section">
+                              <label className="step3-label">Possession By</label>
+                              <select
+                                value={possessionBy}
+                                onChange={(e) => setPossessionBy(e.target.value)}
+                                className="step3-input"
+                              >
+                                <option value="" hidden>Expected time</option>
+                                <option value="Within 3 Months">Within 3 Months</option>
+                                <option value="Within 6 Months">Within 6 Months</option>
+                                <option value="By 2026">By 2026</option>
+                                <option value="By 2027">By 2027</option>
+                                <option value="By 2028">By 2028</option>
+                                <option value="By 2029">By 2029</option>
+                                <option value="By 2030">By 2030</option>
+                              </select>
+                            </div>
+                          )}
+
+
+
+                          {/* Ownership */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Ownership
+                            </label>
+                            <div className="step3-button-group">
+                              {["Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"].map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setSelectedOwnership(opt)}
+                                  className={`step3-option-btn ${selectedOwnership === opt ? 'active' : ''}`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                        </>
+                      )}
+
+                      {/* Rent + Residential */}
+                      {listingType === "Rent" && propertyType === "Residential" && (
+                        <>
+
+                          <div className="step3-section">
+                            <label className="step3-label">Your apartment is a</label>
+                            <div className="step3-button-group">
+                              {["1 BHK", "2 BHK", "3 BHK", "Other"].map((bhk) => (
+                                <button
+                                  key={bhk}
+                                  type="button"
+                                  onClick={() => handleBhkSelect(bhk)}
+                                  className={`step3-option-btn ${apartmentBhk === bhk ? "active" : ""}`}
+                                >
+                                  {bhk}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          {/* Room Details */}
+                          <div className="step3-section">
+                            <h6 className="step3-subheader">
+                              Add Room Details
+                            </h6>
+                            {/* Bedrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">No. of Bedrooms</label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => {
+                                  const isDisabled = apartmentBhk !== "Other"; // disable unless Other
+                                  return (
+                                    <div
+                                      key={num}
+                                      onClick={() => !isDisabled && setBedrooms(num)}
+                                      className={`step3-number-btn ${bedrooms === num ? "active" : ""} ${isDisabled ? "disabled" : ""}`}
+                                      style={{
+                                        opacity: isDisabled ? 0.5 : 1,
+                                        pointerEvents: isDisabled ? "none" : "auto",
+                                      }}
+                                    >
+                                      {num}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Bathrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bathrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => (
+                                  <div
+                                    key={num}
+                                    onClick={() => setBathrooms(num)}
+                                    className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
+                                  >
+                                    {num}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Balconies */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                Balconies
+                              </label>
+                              <div className="step3-button-group">
+                                {[0, 1, 2, 3, "More than 3"].map((val) => (
+                                  <div
+                                    key={val}
+                                    onClick={() => setBalconies(val)}
+                                    className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
+                                  >
+                                    {val}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Area Details */}
+                          <div
+                            className="mb-3"
+                          >
+                            {/* Header */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                                Add Area Details
+                              </label>
+
+                            </div>
+
+                            <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                              At least one area type is mandatory
+                            </p>
+
+                            {/* Carpet Area */}
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                marginBottom: "16px",
+                                position: "relative",
+                              }}
+                            >
+                              <input
+                                type="number"
+                                placeholder="Carpet Area"
+                                value={carpetArea}
+                                onChange={(e) => setCarpetArea(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: "12px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ccc",
+                                  fontSize: "14px",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  minWidth: "100px",
+                                  padding: "12px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  cursor: "pointer",
+                                  background: "#f9f9f9",
+                                }}
+                                onClick={() => setShowCarpetUnits((p) => !p)}
+                              >
+                                {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                              </div>
+
+                              {showCarpetUnits && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "110%",
+                                    right: "0",
+                                    background: "#fff",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                    zIndex: 10,
+                                    width: "120px",
+                                  }}
+                                >
+                                  {UNIT_OPTIONS.map((u) => (
+                                    <div
+                                      key={u}
+                                      onClick={() => {
+                                        setCarpetUnit(u);
+                                        setBuiltUpUnit(u); // sync
+                                        setShowCarpetUnits(false);
+                                      }}
+                                      style={{
+                                        padding: "10px",
+                                        cursor: "pointer",
+                                        background: carpetUnit === u ? "#ED2027" : "#fff",
+                                        color: carpetUnit === u ? "#fff" : "#333",
+                                        borderBottom: "1px solid #eee",
+                                      }}
+                                    >
+                                      {u}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Validation */}
+                            {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                              <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                                Carpet area must be smaller than built-up area
+                              </p>
+                            )}
+
+                            {/* Built-up Area */}
+                            {!showBuiltUpArea ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowBuiltUpArea(true)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px dashed #ED2027",
+                                  color: "#ED2027",
+                                  padding: "10px 14px",
+                                  borderRadius: "8px",
+                                  cursor: "pointer",
+                                  fontWeight: "500",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                + Add Built-up Area
+                              </button>
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  marginTop: "16px",
+                                  position: "relative",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  placeholder="Built-up Area"
+                                  value={builtUpArea}
+                                  onChange={(e) => setBuiltUpArea(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    fontSize: "14px",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    minWidth: "100px",
+                                    padding: "12px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    cursor: "pointer",
+                                    background: "#f9f9f9",
+                                  }}
+                                  onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                >
+                                  {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                </div>
+
+                                {showBuiltUpUnits && (
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "110%",
+                                      right: "0",
+                                      background: "#fff",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                      zIndex: 10,
+                                      width: "120px",
+                                    }}
+                                  >
+                                    {UNIT_OPTIONS.map((u) => (
+                                      <div
+                                        key={u}
+                                        onClick={() => {
+                                          setBuiltUpUnit(u);
+                                          setCarpetUnit(u); // sync
+                                          setShowBuiltUpUnits(false);
+                                        }}
+                                        style={{
+                                          padding: "10px",
+                                          cursor: "pointer",
+                                          background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                          color: builtUpUnit === u ? "#fff" : "#333",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        {u}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+
+
+                          {/* Furnishing */}
+                          <div className="section">
+                            <label className="section-label">Furnishing</label>
+                            <div className="furnishing-options">
+                              {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
+                                <div
+                                  key={type}
+                                  onClick={() => setFurnishingType(type)}
+                                  className={`furnishing-chip ${furnishingType === type ? "active" : ""
+                                    }`}
+                                >
+                                  {type}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Show only when Furnished or Semi-furnished */}
+                            {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
+                              <>
+
+                                <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
+                                  At least three furnishings are mandatory for furnished
+                                </p>
+
+
+                                <div className="furnishing-grid">
+
+
+                                  {Object.keys(furnishingCheckboxes).map((item) => (
+                                    <label key={item} className="furnishing-checkbox">
+                                      <input
+                                        type="checkbox"
+                                        checked={furnishingCheckboxes[item]}
+                                        onChange={() => toggleFurnishingCheckbox(item)}
+                                      />
+                                      {item}
+                                    </label>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
+
+
+                          {/* {floor deatils} */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Floor Details
+                            </label>
+                            <div className="step3-floor-group">
+                              <input
+                                type="number"
+                                value={totalFloors}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setTotalFloors(v);
+                                  const nTotal = parseInt(v, 10);
+                                  const nProp = parseInt(propertyOnFloor, 10);
+                                  if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                    setPropertyOnFloor(String(nTotal));
+                                  }
+                                }}
+                                placeholder="Total Floors"
+                                className="step3-floor-input"
+                              />
+
+                            </div>
+                          </div>
+
+                          {/* Age of property if Ready to Move */}
+
+                          <div className="step3-section">
+                            <label className="step3-label">Age of property</label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? "active" : ""
+                                    }`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* ------------------- RENT DETAILS ------------------- */}
+                          {/* Available From */}
+                          <div className="step3-section">
+                            <label className="step3-label">Available from</label>
+                            <input
+                              type="date"
+                              value={availableFrom}
+                              onChange={(e) => setAvailableFrom(e.target.value)}
+                              className="step3-input"
+                            />
+                          </div>
+
+                          {/* Willing to rent out to */}
+                          <div className="step3-section">
+                            <label className="step3-label">Willing to rent out to</label>
+                            <div className="step3-button-group">
+                              {["Family", "Single men", "Single women"].map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setWillingTo(opt)}
+                                  className={`step3-option-btn ${willingTo === opt ? "active" : ""
+                                    }`}
+                                >
+                                  + {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+
+
+
+
+                        </>
+                      )}
+
+                    </>
+                  )}
+
+                  {subPropertyType.includes("Plot / Land") && (
+                    <>
                       <div
                         className="mb-3"
 
@@ -7705,82 +4453,91 @@ const AddProperty = () => {
                         </div>
                       </div>
 
-                      {/* Property Dimensions */}
+
+                      {/* Property Dimensions (Optional) */}
                       <div className="step3-section">
                         <label className="step3-label">
-                          Property Dimensions <span className="step3-optional">(Optional)</span>
+                          Property Dimensions (Optional)
                         </label>
-                        <input
-                          type="number"
-                          placeholder="Length of plot (in Yard)"
-                          value={plotLength}
-                          onChange={(e) => setPlotLength(e.target.value)}
-                          className="step3-input"
-                          style={{ marginBottom: "10px" }}
-                        />
-                        <input
-                          type="number"
-                          placeholder="Breadth of plot (in Yard)"
-                          value={plotBreadth}
-                          onChange={(e) => setPlotBreadth(e.target.value)}
-                          className="step3-input"
-                        />
-                      </div>
 
-                      {/* Width of facing road */}
-                      <div className="step3-section">
-                        <label className="step3-label">Width of facing road </label>
                         <div className="step3-input-group">
                           <input
                             type="number"
-                            placeholder="Enter the width"
-                            value={roadWidth}
-                            onChange={(e) => setRoadWidth(e.target.value)}
+                            placeholder="Length of plot (in Ft.)"
+                            value={plotLength}
+                            onChange={(e) => setPlotLength(e.target.value)}
                             className="step3-input"
                           />
-                          <div
-                            className="step3-unit-selector"
-                            onClick={() => setShowRoadUnit((p) => !p)}
-                          >
-                            {roadUnit || "Select"} <span className="step3-dropdown-icon">▼</span>
-                          </div>
+                        </div>
 
-                          {showRoadUnit && (
-                            <div className="step3-unit-dropdown">
-                              {["Feet", "Meter"].map((u) => (
-                                <div
-                                  key={u}
-                                  onClick={() => {
-                                    setRoadUnit(u);
-                                    setShowRoadUnit(false);
-                                  }}
-                                  className="step3-unit-option"
-                                >
-                                  {u}
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                        <div className="step3-input-group">
+                          <input
+                            type="number"
+                            placeholder="Breadth of plot (in Ft.)"
+                            value={plotBreadth}
+                            onChange={(e) => setPlotBreadth(e.target.value)}
+                            className="step3-input"
+                          />
                         </div>
                       </div>
 
-                      {/* No. of open sides */}
+                      {/* Floors Allowed */}
                       <div className="step3-section">
-                        <label className="step3-label">No. of open sides</label>
-                        <div className="button-group">
-                          {["1", "2", "3", "3+"].map((opt) => (
+                        <label className="step3-label">
+                          Floors Allowed For Construction
+                        </label>
+                        <div className="step3-input-group">
+                          <input
+                            type="number"
+                            placeholder="No. of floors"
+                            value={floorsAllowed}
+                            onChange={(e) => setFloorsAllowed(e.target.value)}
+                            className="step3-input"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Boundary Wall */}
+                      <div className="step3-section">
+                        <label className="step3-label">
+                          Is there a boundary wall around the property?
+                        </label>
+                        <div className="step3-button-group">
+                          <button
+                            type="button"
+                            onClick={() => setHasBoundaryWall(true)}
+                            className={`step3-option-btn ${hasBoundaryWall ? 'active' : ''}`}
+                          >
+                            Yes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setHasBoundaryWall(false)}
+                            className={`step3-option-btn ${hasBoundaryWall === false ? 'active' : ''}`}
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Open Sides */}
+                      <div className="step3-section">
+                        <label className="step3-label">
+                          No. of open sides
+                        </label>
+                        <div className="step3-button-group">
+                          {[1, 2, 3, "3+"].map((num) => (
                             <button
-                              key={opt}
+                              key={num}
                               type="button"
-                              className={`subproperty-option ${openSides === opt ? "active" : ""}`}
-                              onClick={() => setOpenSides(opt)}
+                              onClick={() => setOpenSides(num)}
+                              className={`step3-option-btn ${openSides === num ? 'active' : ''}`}
                             >
-                              {opt}
+                              {num}
                             </button>
                           ))}
                         </div>
                       </div>
-
 
                       {/* Existing Construction */}
                       <div className="step3-section">
@@ -7831,35 +4588,6 @@ const AddProperty = () => {
                           </div>
                         </div>
                       )}
-
-
-                      {/* Property facing */}
-                      <div className="step3-section">
-                        <label className="step3-label">Property facing</label>
-                        <div className="button-group">
-                          {[
-                            "North",
-                            "South",
-                            "East",
-                            "West",
-                            "North-East",
-                            "North-West",
-                            "South-East",
-                            "South-West",
-                          ].map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              className={`subproperty-option ${propertyFacing === opt ? "active" : ""}`}
-                              onClick={() => setPropertyFacing(opt)}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-
                       {/* Possession By */}
                       <div className="step3-section">
                         <label className="step3-label">Possession By</label>
@@ -7879,315 +4607,18 @@ const AddProperty = () => {
 
                         </select>
                       </div>
-
-
-                    </>
-                  )}
-
-                {propertyType === "Commercial" &&
-                  subPropertyType === "Storage" &&
-                  (subPropertyQuestionOption === "Ware House" ||
-                    subPropertyQuestionOption === "Cold Storage") && (
-                    <>
-                      {/* Washrooms */}
-                      <div className="step3-section">
-                        <label className="step3-label">Washrooms</label>
-                        <div className="button-group">
-                          {["None", "Shared", "1", "2", "3", "4"].map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              className={`subproperty-option ${washroomBare === opt ? "active" : ""}`}
-                              onClick={() => setWashroomBare(opt)}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      {/* Area Details */}
-                      <div
-                        className="mb-3"
-                      >
-                        {/* Header */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            marginBottom: "8px",
-                          }}
-                        >
-                          <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                            Add Area Details
-                          </label>
-
-                        </div>
-
-                        <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                          At least one area type is mandatory
-                        </p>
-
-                        {/* Carpet Area */}
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "10px",
-                            marginBottom: "16px",
-                            position: "relative",
-                          }}
-                        >
-                          <input
-                            type="number"
-                            placeholder="Carpet Area"
-                            value={carpetArea}
-                            onChange={(e) => setCarpetArea(e.target.value)}
-                            style={{
-                              flex: 1,
-                              padding: "12px",
-                              borderRadius: "8px",
-                              border: "1px solid #ccc",
-                              fontSize: "14px",
-                            }}
-                          />
-                          <div
-                            style={{
-                              minWidth: "100px",
-                              padding: "12px",
-                              border: "1px solid #ccc",
-                              borderRadius: "8px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              cursor: "pointer",
-                              background: "#f9f9f9",
-                            }}
-                            onClick={() => setShowCarpetUnits((p) => !p)}
-                          >
-                            {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                          </div>
-
-                          {showCarpetUnits && (
-                            <div
-                              style={{
-                                position: "absolute",
-                                top: "110%",
-                                right: "0",
-                                background: "#fff",
-                                border: "1px solid #ddd",
-                                borderRadius: "8px",
-                                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                zIndex: 10,
-                                width: "120px",
-                              }}
-                            >
-                              {UNIT_OPTIONS.map((u) => (
-                                <div
-                                  key={u}
-                                  onClick={() => {
-                                    setCarpetUnit(u);
-                                    setBuiltUpUnit(u); // sync
-                                    setShowCarpetUnits(false);
-                                  }}
-                                  style={{
-                                    padding: "10px",
-                                    cursor: "pointer",
-                                    background: carpetUnit === u ? "#ED2027" : "#fff",
-                                    color: carpetUnit === u ? "#fff" : "#333",
-                                    borderBottom: "1px solid #eee",
-                                  }}
-                                >
-                                  {u}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Validation */}
-                        {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                          <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                            Carpet area must be smaller than built-up area
-                          </p>
-                        )}
-
-                        {/* Built-up Area */}
-                        {!showBuiltUpArea ? (
-                          <button
-                            type="button"
-                            onClick={() => setShowBuiltUpArea(true)}
-                            style={{
-                              background: "transparent",
-                              border: "1px dashed #ED2027",
-                              color: "#ED2027",
-                              padding: "10px 14px",
-                              borderRadius: "8px",
-                              cursor: "pointer",
-                              fontWeight: "500",
-                              marginTop: "10px",
-                            }}
-                          >
-                            + Add Built-up Area
-                          </button>
-                        ) : (
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginTop: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Built-up Area"
-                              value={builtUpArea}
-                              onChange={(e) => setBuiltUpArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowBuiltUpUnits((p) => !p)}
-                            >
-                              {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                            </div>
-
-                            {showBuiltUpUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
-                                }}
-                              >
-                                {UNIT_OPTIONS.map((u) => (
-                                  <div
-                                    key={u}
-                                    onClick={() => {
-                                      setBuiltUpUnit(u);
-                                      setCarpetUnit(u); // sync
-                                      setShowBuiltUpUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                      color: builtUpUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
-                                  >
-                                    {u}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Availability Status */}
+                      {/* ownership */}
                       <div className="step3-section">
                         <label className="step3-label">
-                          Availability Status
+                          Ownership
                         </label>
                         <div className="step3-button-group">
-                          {["Ready to Move", "Under Construction"].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => setAvailabilityStatus(status)}
-                              className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                            >
-                              {status}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Age of property if Ready to Move */}
-                      {availabilityStatus === "Ready to Move" && (
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Age of property
-                          </label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Possession By if Under Construction */}
-                      {availabilityStatus === "Under Construction" && (
-                        <div className="step3-section">
-                          <label className="step3-label">Possession By</label>
-                          <select
-                            value={possessionBy}
-                            onChange={(e) => setPossessionBy(e.target.value)}
-                            className="step3-input"
-                          >
-                            <option value="" hidden>Expected time</option>
-                            <option value="Within 3 Months">Within 3 Months</option>
-                            <option value="Within 6 Months">Within 6 Months</option>
-                            <option value="By 2026">By 2026</option>
-                            <option value="By 2027">By 2027</option>
-                            <option value="By 2028">By 2028</option>
-                            <option value="By 2029">By 2029</option>
-                            <option value="By 2030">By 2030</option>
-                          </select>
-                        </div>
-                      )}
-
-
-
-                    </>
-                  )}
-
-                {propertyType === "Commercial" &&
-                  subPropertyType === "Industry" &&
-                  (subPropertyQuestionOption === "Factory" ||
-                    subPropertyQuestionOption === "Manufacturing") && (
-                    <>
-                      {/* Washrooms */}
-                      <div className="step3-section">
-                        <label className="step3-label">Washrooms</label>
-                        <div className="button-group">
-                          {["None", "Shared", "1", "2", "3", "4"].map((opt) => (
+                          {["Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"].map((opt) => (
                             <button
                               key={opt}
                               type="button"
-                              className={`subproperty-option ${washroomBare === opt ? "active" : ""}`}
-                              onClick={() => setWashroomBare(opt)}
+                              onClick={() => setSelectedOwnership(opt)}
+                              className={`step3-option-btn ${selectedOwnership === opt ? 'active' : ''}`}
                             >
                               {opt}
                             </button>
@@ -8196,560 +4627,112 @@ const AddProperty = () => {
                       </div>
 
 
-                      {/* Availability Status */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          Availability Status
-                        </label>
-                        <div className="step3-button-group">
-                          {["Ready to Move", "Under Construction"].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => setAvailabilityStatus(status)}
-                              className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                            >
-                              {status}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Age of property if Ready to Move */}
-                      {availabilityStatus === "Ready to Move" && (
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Age of property
-                          </label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Possession By if Under Construction */}
-                      {availabilityStatus === "Under Construction" && (
-                        <div className="step3-section">
-                          <label className="step3-label">Possession By</label>
-                          <select
-                            value={possessionBy}
-                            onChange={(e) => setPossessionBy(e.target.value)}
-                            className="step3-input"
-                          >
-                            <option value="" hidden>Expected time</option>
-                            <option value="Within 3 Months">Within 3 Months</option>
-                            <option value="Within 6 Months">Within 6 Months</option>
-                            <option value="By 2026">By 2026</option>
-                            <option value="By 2027">By 2027</option>
-                            <option value="By 2028">By 2028</option>
-                            <option value="By 2029">By 2029</option>
-                            <option value="By 2030">By 2030</option>
-                          </select>
-                        </div>
-                      )}
-
-
-
                     </>
                   )}
 
+                  {subPropertyType === "1 RK / Studio Apartment" && (
 
-                {propertyType === "Commercial" &&
-                  subPropertyType === "Hospitality" &&
-                  (subPropertyQuestionOption === "Hotel / Resorts" ||
-                    subPropertyQuestionOption === "Guest-House / Banquet Hall") && (
                     <>
-                      {/* Add Room Details */}
-                      <div className="step3-section">
-                        <label className="step3-label">Add Room Details</label>
-                        <input
-                          type="number"
-                          placeholder="Enter the total no. of rooms"
-                          value={totalRooms}
-                          onChange={(e) => setTotalRooms(e.target.value)}
-                          className="step3-input"
-                          style={{ marginBottom: "12px" }}
-                        />
+                      {/* Sell + Residential */}
+                      {listingType === "Sell" && propertyType === "Residential" && (
+                        <>
+                          <div className="step3-section">
+                            <h6 className="step3-subheader">
+                              Add Room Details
+                            </h6>
 
-                        <label className="step3-label" style={{ marginTop: "8px" }}>No. of Washrooms</label>
-                        <div className="button-group">
-                          {["None", "Shared", "1", "2", "3", "4"].map((opt) => (
-                            <button
-                              key={opt}
-                              type="button"
-                              className={`subproperty-option ${hospitalityWash === opt ? "active" : ""}`}
-                              onClick={() => setHospitalityWash(opt)}
-                            >
-                              {opt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Availability Status */}
-                      <div className="step3-section">
-                        <label className="step3-label">
-                          Availability Status
-                        </label>
-                        <div className="step3-button-group">
-                          {["Ready to Move", "Under Construction"].map((status) => (
-                            <button
-                              key={status}
-                              type="button"
-                              onClick={() => setAvailabilityStatus(status)}
-                              className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
-                            >
-                              {status}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Age of property if Ready to Move */}
-                      {availabilityStatus === "Ready to Move" && (
-                        <div className="step3-section">
-                          <label className="step3-label">
-                            Age of property
-                          </label>
-                          <div className="step3-button-group">
-                            {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
-                              <button
-                                key={age}
-                                type="button"
-                                onClick={() => setAgeOfProperty(age)}
-                                className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
-                              >
-                                {age}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Possession By if Under Construction */}
-                      {availabilityStatus === "Under Construction" && (
-                        <div className="step3-section">
-                          <label className="step3-label">Possession By</label>
-                          <select
-                            value={possessionBy}
-                            onChange={(e) => setPossessionBy(e.target.value)}
-                            className="step3-input"
-                          >
-                            <option value="" hidden>Expected time</option>
-                            <option value="Within 3 Months">Within 3 Months</option>
-                            <option value="Within 6 Months">Within 6 Months</option>
-                            <option value="By 2026">By 2026</option>
-                            <option value="By 2027">By 2027</option>
-                            <option value="By 2028">By 2028</option>
-                            <option value="By 2029">By 2029</option>
-                            <option value="By 2030">By 2030</option>
-                          </select>
-                        </div>
-                      )}
-
-                      {/* Quality Rating */}
-                      <div className="step3-section">
-                        <label className="step3-label">Quality Rating</label>
-                        <div className="button-group">
-                          {["No Rating", "1 Star", "2 Star", "3 Star", "4 Star", "5 Star", "6 Star", "7 Star"].map((rate) => (
-                            <button
-                              key={rate}
-                              type="button"
-                              className={`subproperty-option ${qualityRating === rate ? "active" : ""}`}
-                              onClick={() => setQualityRating(rate)}
-                            >
-                              {rate}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-
-                    </>
-                  )}
-
-                {propertyType === "Commercial" &&
-                  (subPropertyType === "Others") && (
-                    <>
-                      {/* Area Details */}
-                      <div
-                        className="mb-3"
-                      >
-                        {/* Header */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            marginBottom: "8px",
-                          }}
-                        >
-                          <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                            Add Area Details
-                          </label>
-
-                        </div>
-
-                        <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                          At least one area type is mandatory
-                        </p>
-
-                        {/* Carpet Area */}
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "10px",
-                            marginBottom: "16px",
-                            position: "relative",
-                          }}
-                        >
-                          <input
-                            type="number"
-                            placeholder="Carpet Area"
-                            value={carpetArea}
-                            onChange={(e) => setCarpetArea(e.target.value)}
-                            style={{
-                              flex: 1,
-                              padding: "12px",
-                              borderRadius: "8px",
-                              border: "1px solid #ccc",
-                              fontSize: "14px",
-                            }}
-                          />
-                          <div
-                            style={{
-                              minWidth: "100px",
-                              padding: "12px",
-                              border: "1px solid #ccc",
-                              borderRadius: "8px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              cursor: "pointer",
-                              background: "#f9f9f9",
-                            }}
-                            onClick={() => setShowCarpetUnits((p) => !p)}
-                          >
-                            {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                          </div>
-
-                          {showCarpetUnits && (
-                            <div
-                              style={{
-                                position: "absolute",
-                                top: "110%",
-                                right: "0",
-                                background: "#fff",
-                                border: "1px solid #ddd",
-                                borderRadius: "8px",
-                                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                zIndex: 10,
-                                width: "120px",
-                              }}
-                            >
-                              {UNIT_OPTIONS.map((u) => (
-                                <div
-                                  key={u}
-                                  onClick={() => {
-                                    setCarpetUnit(u);
-                                    setBuiltUpUnit(u); // sync
-                                    setShowCarpetUnits(false);
-                                  }}
-                                  style={{
-                                    padding: "10px",
-                                    cursor: "pointer",
-                                    background: carpetUnit === u ? "#ED2027" : "#fff",
-                                    color: carpetUnit === u ? "#fff" : "#333",
-                                    borderBottom: "1px solid #eee",
-                                  }}
-                                >
-                                  {u}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Validation */}
-                        {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                          <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                            Carpet area must be smaller than built-up area
-                          </p>
-                        )}
-
-                        {/* Built-up Area */}
-                        {!showBuiltUpArea ? (
-                          <button
-                            type="button"
-                            onClick={() => setShowBuiltUpArea(true)}
-                            style={{
-                              background: "transparent",
-                              border: "1px dashed #ED2027",
-                              color: "#ED2027",
-                              padding: "10px 14px",
-                              borderRadius: "8px",
-                              cursor: "pointer",
-                              fontWeight: "500",
-                              marginTop: "10px",
-                            }}
-                          >
-                            + Add Built-up Area
-                          </button>
-                        ) : (
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginTop: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Built-up Area"
-                              value={builtUpArea}
-                              onChange={(e) => setBuiltUpArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowBuiltUpUnits((p) => !p)}
-                            >
-                              {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                            </div>
-
-                            {showBuiltUpUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
-                                }}
-                              >
-                                {UNIT_OPTIONS.map((u) => (
+                            {/* Bedrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bedrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1].map((num) => (
                                   <div
-                                    key={u}
-                                    onClick={() => {
-                                      setBuiltUpUnit(u);
-                                      setCarpetUnit(u); // sync
-                                      setShowBuiltUpUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                      color: builtUpUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
+                                    key={num}
+                                    onClick={() => setBedrooms(num)}
+                                    className={`step3-number-btn ${bedrooms === num ? 'active' : ''}`}
                                   >
-                                    {u}
+                                    {num}
                                   </div>
                                 ))}
                               </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Possession By */}
-                      <div className="step3-section">
-                        <label className="step3-label">Possession By</label>
-                        <select
-                          value={possessionBy}
-                          onChange={(e) => setPossessionBy(e.target.value)}
-                          className="step3-input"
-                        >
-                          <option value="" hidden>Expected time</option>
-                          <option value="Immediate">Immediate</option>
-                          <option value="Within 3 Months">Within 3 Months</option>
-                          <option value="Within 6 Months">Within 6 Months</option>
-                          <option value="By 2026">By 2026</option>
-                          <option value="By 2027">By 2027</option>
-                          <option value="By 2028">By 2028</option>
-                          <option value="By 2029">By 2029</option>
-
-                        </select>
-                      </div>
-
-
-                    </>
-                  )}
-
-
-
-                {(subPropertyType.includes("Flat / Apartment") || subPropertyType.includes("Independent House / Villa") || subPropertyType.includes("1 RK / Studio Apartment") || subPropertyType.includes("Farmhouse")) && (
-                  <>
-
-                    {listingType === "Joint Venture" && propertyType === "Residential" && (
-                      <>
-                        <div
-                          className="mb-3"
-                        >
-                          {/* Header */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                              Add Area Details
-                            </label>
-
-                          </div>
-
-                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                            At least one area type is mandatory
-                          </p>
-
-                          {/* Carpet Area */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginBottom: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Carpet Area"
-                              value={carpetArea}
-                              onChange={(e) => setCarpetArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowCarpetUnits((p) => !p)}
-                            >
-                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
                             </div>
 
-                            {showCarpetUnits && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
-                                }}
-                              >
-                                {UNIT_OPTIONS.map((u) => (
+                            {/* Bathrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bathrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1].map((num) => (
                                   <div
-                                    key={u}
-                                    onClick={() => {
-                                      setCarpetUnit(u);
-                                      setBuiltUpUnit(u); // sync
-                                      setShowCarpetUnits(false);
-                                    }}
-                                    style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: carpetUnit === u ? "#ED2027" : "#fff",
-                                      color: carpetUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
-                                    }}
+                                    key={num}
+                                    onClick={() => setBathrooms(num)}
+                                    className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
                                   >
-                                    {u}
+                                    {num}
                                   </div>
                                 ))}
                               </div>
-                            )}
+                            </div>
+
+                            {/* Balconies */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                Balconies
+                              </label>
+                              <div className="step3-button-group">
+                                {[0, 1, 2, 3, "More than 3"].map((val) => (
+                                  <div
+                                    key={val}
+                                    onClick={() => setBalconies(val)}
+                                    className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
+                                  >
+                                    {val}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           </div>
 
-                          {/* Validation */}
-                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                              Carpet area must be smaller than built-up area
+                          {/* Area Details */}
+                          <div
+                            className="mb-3"
+                          >
+                            {/* Header */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                                Add Area Details
+                              </label>
+
+                            </div>
+
+                            <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                              At least one area type is mandatory
                             </p>
-                          )}
 
-                          {/* Built-up Area */}
-                          {!showBuiltUpArea ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowBuiltUpArea(true)}
-                              style={{
-                                background: "transparent",
-                                border: "1px dashed #ED2027",
-                                color: "#ED2027",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "500",
-                                marginTop: "10px",
-                              }}
-                            >
-                              + Add Built-up Area
-                            </button>
-                          ) : (
+                            {/* Carpet Area */}
                             <div
                               style={{
                                 display: "flex",
                                 gap: "10px",
-                                marginTop: "16px",
+                                marginBottom: "16px",
                                 position: "relative",
                               }}
                             >
                               <input
                                 type="number"
-                                placeholder="Built-up Area"
-                                value={builtUpArea}
-                                onChange={(e) => setBuiltUpArea(e.target.value)}
+                                placeholder="Carpet Area"
+                                value={carpetArea}
+                                onChange={(e) => setCarpetArea(e.target.value)}
                                 style={{
                                   flex: 1,
                                   padding: "12px",
@@ -8770,12 +4753,12 @@ const AddProperty = () => {
                                   cursor: "pointer",
                                   background: "#f9f9f9",
                                 }}
-                                onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                onClick={() => setShowCarpetUnits((p) => !p)}
                               >
-                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
                               </div>
 
-                              {showBuiltUpUnits && (
+                              {showCarpetUnits && (
                                 <div
                                   style={{
                                     position: "absolute",
@@ -8793,15 +4776,15 @@ const AddProperty = () => {
                                     <div
                                       key={u}
                                       onClick={() => {
-                                        setBuiltUpUnit(u);
-                                        setCarpetUnit(u); // sync
-                                        setShowBuiltUpUnits(false);
+                                        setCarpetUnit(u);
+                                        setBuiltUpUnit(u); // sync
+                                        setShowCarpetUnits(false);
                                       }}
                                       style={{
                                         padding: "10px",
                                         cursor: "pointer",
-                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                        color: builtUpUnit === u ? "#fff" : "#333",
+                                        background: carpetUnit === u ? "#ED2027" : "#fff",
+                                        color: carpetUnit === u ? "#fff" : "#333",
                                         borderBottom: "1px solid #eee",
                                       }}
                                     >
@@ -8811,196 +4794,452 @@ const AddProperty = () => {
                                 </div>
                               )}
                             </div>
-                          )}
-                        </div>
 
-                        <div>
-                          <label className="step3-label">
-                            Joint Venture Percentage
-                          </label>
+                            {/* Validation */}
+                            {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                              <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                                Carpet area must be smaller than built-up area
+                              </p>
+                            )}
 
-                          <div style={{ gap: "15px", width: "400px" }}>
-                            {/* Owner Percentage Input */}
-                            <div>
-                              <label style={{ display: "block", marginBottom: "5px" }}>
-                                Owner Percentage
-                              </label>
-                              <input
-                                type="number"
-                                value={ownerPercentage}
-                                onChange={handleOwnerPercentageChange}
-                                placeholder="Enter owner %"
-                                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
-                              />
-                            </div>
-
-                            {/* Developer Percentage Input */}
-                            <div>
-                              <label style={{ display: "block", marginBottom: "5px", marginTop: "20px" }}>
-                                Developer Percentage
-                              </label>
-                              <input
-                                type="number"
-                                value={developerPercentage}
-                                onChange={handleDeveloperPercentageChange}
-                                placeholder="Enter developer %"
-                                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-
-
-
-                      </>
-                    )}
-
-
-                  </>
-                )}
-
-                {(subPropertyType.includes("Office") || subPropertyType.includes("Retail") || subPropertyType.includes("Industry") || subPropertyType.includes("Hospitality")) && (
-                  <>
-                    {listingType === "Joint Venture" && propertyType === "Commercial" && (
-                      <>
-                        <div
-                          className="mb-3"
-                        >
-                          {/* Header */}
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                              Add Area Details
-                            </label>
-
-                          </div>
-
-                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                            At least one area type is mandatory
-                          </p>
-
-                          {/* Carpet Area */}
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: "10px",
-                              marginBottom: "16px",
-                              position: "relative",
-                            }}
-                          >
-                            <input
-                              type="number"
-                              placeholder="Carpet Area"
-                              value={carpetArea}
-                              onChange={(e) => setCarpetArea(e.target.value)}
-                              style={{
-                                flex: 1,
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "14px",
-                              }}
-                            />
-                            <div
-                              style={{
-                                minWidth: "100px",
-                                padding: "12px",
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                cursor: "pointer",
-                                background: "#f9f9f9",
-                              }}
-                              onClick={() => setShowCarpetUnits((p) => !p)}
-                            >
-                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
-                            </div>
-
-                            {showCarpetUnits && (
-                              <div
+                            {/* Built-up Area */}
+                            {!showBuiltUpArea ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowBuiltUpArea(true)}
                                 style={{
-                                  position: "absolute",
-                                  top: "110%",
-                                  right: "0",
-                                  background: "#fff",
-                                  border: "1px solid #ddd",
+                                  background: "transparent",
+                                  border: "1px dashed #ED2027",
+                                  color: "#ED2027",
+                                  padding: "10px 14px",
                                   borderRadius: "8px",
-                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                                  zIndex: 10,
-                                  width: "120px",
+                                  cursor: "pointer",
+                                  fontWeight: "500",
+                                  marginTop: "10px",
                                 }}
                               >
-                                {UNIT_OPTIONS.map((u) => (
+                                + Add Built-up Area
+                              </button>
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  marginTop: "16px",
+                                  position: "relative",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  placeholder="Built-up Area"
+                                  value={builtUpArea}
+                                  onChange={(e) => setBuiltUpArea(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    fontSize: "14px",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    minWidth: "100px",
+                                    padding: "12px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    cursor: "pointer",
+                                    background: "#f9f9f9",
+                                  }}
+                                  onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                >
+                                  {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                </div>
+
+                                {showBuiltUpUnits && (
                                   <div
-                                    key={u}
-                                    onClick={() => {
-                                      setCarpetUnit(u);
-                                      setBuiltUpUnit(u); // sync
-                                      setShowCarpetUnits(false);
-                                    }}
                                     style={{
-                                      padding: "10px",
-                                      cursor: "pointer",
-                                      background: carpetUnit === u ? "#ED2027" : "#fff",
-                                      color: carpetUnit === u ? "#fff" : "#333",
-                                      borderBottom: "1px solid #eee",
+                                      position: "absolute",
+                                      top: "110%",
+                                      right: "0",
+                                      background: "#fff",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                      zIndex: 10,
+                                      width: "120px",
                                     }}
                                   >
-                                    {u}
+                                    {UNIT_OPTIONS.map((u) => (
+                                      <div
+                                        key={u}
+                                        onClick={() => {
+                                          setBuiltUpUnit(u);
+                                          setCarpetUnit(u); // sync
+                                          setShowBuiltUpUnits(false);
+                                        }}
+                                        style={{
+                                          padding: "10px",
+                                          cursor: "pointer",
+                                          background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                          color: builtUpUnit === u ? "#fff" : "#333",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        {u}
+                                      </div>
+                                    ))}
                                   </div>
-                                ))}
+                                )}
                               </div>
                             )}
                           </div>
 
-                          {/* Validation */}
-                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                              Carpet area must be smaller than built-up area
-                            </p>
+                          <div className="section">
+                            <label className="section-label">Other rooms (Optional)</label>
+                            <div className="room-options">
+                              {["Pooja Room", "Study Room", "Servant Room", "Store Room"].map((room) => (
+                                <div
+                                  key={room}
+                                  onClick={() =>
+                                    setOtherRooms((prev) =>
+                                      prev.includes(room)
+                                        ? prev.filter((r) => r !== room)
+                                        : [...prev, room]
+                                    )
+                                  }
+                                  className={`room-chip ${otherRooms.includes(room) ? "active" : ""}`}
+                                >
+                                  {room}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          {/* furnished */}
+                          <div className="section">
+                            <label className="section-label">Furnishing</label>
+                            <div className="furnishing-options">
+                              {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
+                                <div
+                                  key={type}
+                                  onClick={() => setFurnishingType(type)}
+                                  className={`furnishing-chip ${furnishingType === type ? "active" : ""
+                                    }`}
+                                >
+                                  {type}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Show only when Furnished or Semi-furnished */}
+                            {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
+                              <>
+
+                                <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
+                                  At least three furnishings are mandatory for furnished
+                                </p>
+
+
+                                <div className="furnishing-grid">
+
+
+                                  {Object.keys(furnishingCheckboxes).map((item) => (
+                                    <label key={item} className="furnishing-checkbox">
+                                      <input
+                                        type="checkbox"
+                                        checked={furnishingCheckboxes[item]}
+                                        onChange={() => toggleFurnishingCheckbox(item)}
+                                      />
+                                      {item}
+                                    </label>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          <div className="section">
+                            <label className="section-label">Reserved Parking (Optional)</label>
+                            <div className="parking-container">
+                              <div className="parking-item">
+                                <span className="parking-label">Covered Parking</span>
+                                <button
+                                  className={`count-btn ${hoveredButton === "covered-minus" ? "hovered" : ""
+                                    }`}
+                                  onClick={() => setCoveredParking(Math.max(0, coveredParking - 1))}
+                                  onMouseEnter={() => setHoveredButton("covered-minus")}
+                                  onMouseLeave={() => setHoveredButton(null)}
+                                >
+                                  –
+                                </button>
+                                <span className="count-value">{coveredParking}</span>
+                                <button
+                                  className={`count-btn ${hoveredButton === "covered-plus" ? "hovered" : ""
+                                    }`}
+                                  onClick={() => setCoveredParking(coveredParking + 1)}
+                                  onMouseEnter={() => setHoveredButton("covered-plus")}
+                                  onMouseLeave={() => setHoveredButton(null)}
+                                >
+                                  +
+                                </button>
+                              </div>
+
+                              <div className="parking-item">
+                                <span className="parking-label">Open Parking</span>
+                                <button
+                                  className={`count-btn ${hoveredButton === "open-minus" ? "hovered" : ""
+                                    }`}
+                                  onClick={() => setOpenParking(Math.max(0, openParking - 1))}
+                                  onMouseEnter={() => setHoveredButton("open-minus")}
+                                  onMouseLeave={() => setHoveredButton(null)}
+                                >
+                                  –
+                                </button>
+                                <span className="count-value">{openParking}</span>
+                                <button
+                                  className={`count-btn ${hoveredButton === "open-plus" ? "hovered" : ""
+                                    }`}
+                                  onClick={() => setOpenParking(openParking + 1)}
+                                  onMouseEnter={() => setHoveredButton("open-plus")}
+                                  onMouseLeave={() => setHoveredButton(null)}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          {/* floor */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Floor Details
+                            </label>
+                            <div className="step3-floor-group">
+                              <input
+                                type="number"
+                                value={totalFloors}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setTotalFloors(v);
+                                  const nTotal = parseInt(v, 10);
+                                  const nProp = parseInt(propertyOnFloor, 10);
+                                  if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                    setPropertyOnFloor(String(nTotal));
+                                  }
+                                }}
+                                placeholder="Total Floors"
+                                className="step3-floor-input"
+                              />
+                              <select
+                                value={propertyOnFloor}
+                                onChange={(e) => setPropertyOnFloor(e.target.value)}
+                                className="step3-floor-select"
+                              >
+                                <option value="" hidden>Property on Floor</option>
+                                <option value="Basement">Basement</option>
+                                <option value="Lower Ground">Lower Ground</option>
+                                <option value="Ground">Ground</option>
+                                {(() => {
+                                  const n = parseInt(totalFloors, 10);
+                                  if (!Number.isNaN(n) && n > 0) {
+                                    return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
+                                      <option key={f} value={String(f)}>
+                                        {f}
+                                      </option>
+                                    ));
+                                  }
+                                  return null;
+                                })()}
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Availability Status */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Availability Status
+                            </label>
+                            <div className="step3-button-group">
+                              {["Ready to Move", "Under Construction"].map((status) => (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={() => setAvailabilityStatus(status)}
+                                  className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                                >
+                                  {status}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Age of property if Ready to Move */}
+                          {availabilityStatus === "Ready to Move" && (
+                            <div className="step3-section">
+                              <label className="step3-label">
+                                Age of property
+                              </label>
+                              <div className="step3-button-group">
+                                {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                  <button
+                                    key={age}
+                                    type="button"
+                                    onClick={() => setAgeOfProperty(age)}
+                                    className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                  >
+                                    {age}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
                           )}
 
-                          {/* Built-up Area */}
-                          {!showBuiltUpArea ? (
-                            <button
-                              type="button"
-                              onClick={() => setShowBuiltUpArea(true)}
+                          {/* Possession By if Under Construction */}
+                          {availabilityStatus === "Under Construction" && (
+                            <div className="step3-section">
+                              <label className="step3-label">Possession By</label>
+                              <select
+                                value={possessionBy}
+                                onChange={(e) => setPossessionBy(e.target.value)}
+                                className="step3-input"
+                              >
+                                <option value="" hidden>Expected time</option>
+                                <option value="Within 3 Months">Within 3 Months</option>
+                                <option value="Within 6 Months">Within 6 Months</option>
+                                <option value="By 2026">By 2026</option>
+                                <option value="By 2027">By 2027</option>
+                                <option value="By 2028">By 2028</option>
+                                <option value="By 2029">By 2029</option>
+                                <option value="By 2030">By 2030</option>
+                              </select>
+                            </div>
+                          )}
+
+                          {/* Ownership */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Ownership
+                            </label>
+                            <div className="step3-button-group">
+                              {["Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"].map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setSelectedOwnership(opt)}
+                                  className={`step3-option-btn ${selectedOwnership === opt ? 'active' : ''}`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+                        </>
+                      )}
+                      {/* Rent + Residential */}
+                      {listingType === "Rent" && propertyType === "Residential" && (
+                        <>
+
+
+                          <div className="step3-section">
+                            <h6 className="step3-subheader">
+                              Add Room Details
+                            </h6>
+
+                            {/* Bedrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bedrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1].map((num) => (
+                                  <div
+                                    key={num}
+                                    onClick={() => setBedrooms(num)}
+                                    className={`step3-number-btn ${bedrooms === num ? 'active' : ''}`}
+                                  >
+                                    {num}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Bathrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bathrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1].map((num) => (
+                                  <div
+                                    key={num}
+                                    onClick={() => setBathrooms(num)}
+                                    className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
+                                  >
+                                    {num}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Balconies */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                Balconies
+                              </label>
+                              <div className="step3-button-group">
+                                {[0, 1, 2, 3, "More than 3"].map((val) => (
+                                  <div
+                                    key={val}
+                                    onClick={() => setBalconies(val)}
+                                    className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
+                                  >
+                                    {val}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Area Details */}
+                          <div
+                            className="mb-3"
+                          >
+                            {/* Header */}
+                            <div
                               style={{
-                                background: "transparent",
-                                border: "1px dashed #ED2027",
-                                color: "#ED2027",
-                                padding: "10px 14px",
-                                borderRadius: "8px",
-                                cursor: "pointer",
-                                fontWeight: "500",
-                                marginTop: "10px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
                               }}
                             >
-                              + Add Built-up Area
-                            </button>
-                          ) : (
+                              <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                                Add Area Details
+                              </label>
+
+                            </div>
+
+                            <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                              At least one area type is mandatory
+                            </p>
+
+                            {/* Carpet Area */}
                             <div
                               style={{
                                 display: "flex",
                                 gap: "10px",
-                                marginTop: "16px",
+                                marginBottom: "16px",
                                 position: "relative",
                               }}
                             >
                               <input
                                 type="number"
-                                placeholder="Built-up Area"
-                                value={builtUpArea}
-                                onChange={(e) => setBuiltUpArea(e.target.value)}
+                                placeholder="Carpet Area"
+                                value={carpetArea}
+                                onChange={(e) => setCarpetArea(e.target.value)}
                                 style={{
                                   flex: 1,
                                   padding: "12px",
@@ -9021,12 +5260,12 @@ const AddProperty = () => {
                                   cursor: "pointer",
                                   background: "#f9f9f9",
                                 }}
-                                onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                onClick={() => setShowCarpetUnits((p) => !p)}
                               >
-                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
                               </div>
 
-                              {showBuiltUpUnits && (
+                              {showCarpetUnits && (
                                 <div
                                   style={{
                                     position: "absolute",
@@ -9044,15 +5283,15 @@ const AddProperty = () => {
                                     <div
                                       key={u}
                                       onClick={() => {
-                                        setBuiltUpUnit(u);
-                                        setCarpetUnit(u); // sync
-                                        setShowBuiltUpUnits(false);
+                                        setCarpetUnit(u);
+                                        setBuiltUpUnit(u); // sync
+                                        setShowCarpetUnits(false);
                                       }}
                                       style={{
                                         padding: "10px",
                                         cursor: "pointer",
-                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                        color: builtUpUnit === u ? "#fff" : "#333",
+                                        background: carpetUnit === u ? "#ED2027" : "#fff",
+                                        color: carpetUnit === u ? "#fff" : "#333",
                                         borderBottom: "1px solid #eee",
                                       }}
                                     >
@@ -9062,191 +5301,3998 @@ const AddProperty = () => {
                                 </div>
                               )}
                             </div>
+
+                            {/* Validation */}
+                            {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                              <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                                Carpet area must be smaller than built-up area
+                              </p>
+                            )}
+
+                            {/* Built-up Area */}
+                            {!showBuiltUpArea ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowBuiltUpArea(true)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px dashed #ED2027",
+                                  color: "#ED2027",
+                                  padding: "10px 14px",
+                                  borderRadius: "8px",
+                                  cursor: "pointer",
+                                  fontWeight: "500",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                + Add Built-up Area
+                              </button>
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  marginTop: "16px",
+                                  position: "relative",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  placeholder="Built-up Area"
+                                  value={builtUpArea}
+                                  onChange={(e) => setBuiltUpArea(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    fontSize: "14px",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    minWidth: "100px",
+                                    padding: "12px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    cursor: "pointer",
+                                    background: "#f9f9f9",
+                                  }}
+                                  onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                >
+                                  {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                </div>
+
+                                {showBuiltUpUnits && (
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "110%",
+                                      right: "0",
+                                      background: "#fff",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                      zIndex: 10,
+                                      width: "120px",
+                                    }}
+                                  >
+                                    {UNIT_OPTIONS.map((u) => (
+                                      <div
+                                        key={u}
+                                        onClick={() => {
+                                          setBuiltUpUnit(u);
+                                          setCarpetUnit(u); // sync
+                                          setShowBuiltUpUnits(false);
+                                        }}
+                                        style={{
+                                          padding: "10px",
+                                          cursor: "pointer",
+                                          background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                          color: builtUpUnit === u ? "#fff" : "#333",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        {u}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+
+                          {/* furnished */}
+                          <div className="section">
+                            <label className="section-label">Furnishing</label>
+                            <div className="furnishing-options">
+                              {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
+                                <div
+                                  key={type}
+                                  onClick={() => setFurnishingType(type)}
+                                  className={`furnishing-chip ${furnishingType === type ? "active" : ""
+                                    }`}
+                                >
+                                  {type}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Show only when Furnished or Semi-furnished */}
+                            {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
+                              <>
+
+                                <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
+                                  At least three furnishings are mandatory for furnished
+                                </p>
+
+
+                                <div className="furnishing-grid">
+
+
+                                  {Object.keys(furnishingCheckboxes).map((item) => (
+                                    <label key={item} className="furnishing-checkbox">
+                                      <input
+                                        type="checkbox"
+                                        checked={furnishingCheckboxes[item]}
+                                        onChange={() => toggleFurnishingCheckbox(item)}
+                                      />
+                                      {item}
+                                    </label>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
+
+                          <div className="section">
+                            <label className="section-label">Reserved Parking (Optional)</label>
+                            <div className="parking-container">
+                              <div className="parking-item">
+                                <span className="parking-label">Covered Parking</span>
+                                <button
+                                  className={`count-btn ${hoveredButton === "covered-minus" ? "hovered" : ""
+                                    }`}
+                                  onClick={() => setCoveredParking(Math.max(0, coveredParking - 1))}
+                                  onMouseEnter={() => setHoveredButton("covered-minus")}
+                                  onMouseLeave={() => setHoveredButton(null)}
+                                >
+                                  –
+                                </button>
+                                <span className="count-value">{coveredParking}</span>
+                                <button
+                                  className={`count-btn ${hoveredButton === "covered-plus" ? "hovered" : ""
+                                    }`}
+                                  onClick={() => setCoveredParking(coveredParking + 1)}
+                                  onMouseEnter={() => setHoveredButton("covered-plus")}
+                                  onMouseLeave={() => setHoveredButton(null)}
+                                >
+                                  +
+                                </button>
+                              </div>
+
+                              <div className="parking-item">
+                                <span className="parking-label">Open Parking</span>
+                                <button
+                                  className={`count-btn ${hoveredButton === "open-minus" ? "hovered" : ""
+                                    }`}
+                                  onClick={() => setOpenParking(Math.max(0, openParking - 1))}
+                                  onMouseEnter={() => setHoveredButton("open-minus")}
+                                  onMouseLeave={() => setHoveredButton(null)}
+                                >
+                                  –
+                                </button>
+                                <span className="count-value">{openParking}</span>
+                                <button
+                                  className={`count-btn ${hoveredButton === "open-plus" ? "hovered" : ""
+                                    }`}
+                                  onClick={() => setOpenParking(openParking + 1)}
+                                  onMouseEnter={() => setHoveredButton("open-plus")}
+                                  onMouseLeave={() => setHoveredButton(null)}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+
+
+                          {/* floor */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Floor Details
+                            </label>
+                            <div className="step3-floor-group">
+                              <input
+                                type="number"
+                                value={totalFloors}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setTotalFloors(v);
+                                  const nTotal = parseInt(v, 10);
+                                  const nProp = parseInt(propertyOnFloor, 10);
+                                  if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                    setPropertyOnFloor(String(nTotal));
+                                  }
+                                }}
+                                placeholder="Total Floors"
+                                className="step3-floor-input"
+                              />
+                              <select
+                                value={propertyOnFloor}
+                                onChange={(e) => setPropertyOnFloor(e.target.value)}
+                                className="step3-floor-select"
+                              >
+                                <option value="" hidden>Property on Floor</option>
+                                <option value="Basement">Basement</option>
+                                <option value="Lower Ground">Lower Ground</option>
+                                <option value="Ground">Ground</option>
+                                {(() => {
+                                  const n = parseInt(totalFloors, 10);
+                                  if (!Number.isNaN(n) && n > 0) {
+                                    return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
+                                      <option key={f} value={String(f)}>
+                                        {f}
+                                      </option>
+                                    ));
+                                  }
+                                  return null;
+                                })()}
+                              </select>
+                            </div>
+                          </div>
+
+
+
+                          {/* Age of property if Ready to Move */}
+
+                          <div className="step3-section">
+                            <label className="step3-label">Age of property</label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? "active" : ""
+                                    }`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* ------------------- RENT DETAILS ------------------- */}
+                          {/* Available From */}
+                          <div className="step3-section">
+                            <label className="step3-label">Available from</label>
+                            <input
+                              type="date"
+                              value={availableFrom}
+                              onChange={(e) => setAvailableFrom(e.target.value)}
+                              className="step3-input"
+                            />
+                          </div>
+
+                          {/* Willing to rent out to */}
+                          <div className="step3-section">
+                            <label className="step3-label">Willing to rent out to</label>
+                            <div className="step3-button-group">
+                              {["Family", "Single men", "Single women"].map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setWillingTo(opt)}
+                                  className={`step3-option-btn ${willingTo === opt ? "active" : ""
+                                    }`}
+                                >
+                                  + {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+                        </>
+                      )}
+                    </>
+                  )}
+
+
+                  {subPropertyType.includes("Farmhouse") && (
+                    <>
+                      {/* Sell + Residential */}
+                      {listingType === "Sell" && propertyType === "Residential" && (
+                        <>
+                          <div className="step3-section">
+                            <h6 className="step3-subheader">
+                              Add Room Details
+                            </h6>
+
+                            {/* Bedrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bedrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => (
+                                  <div
+                                    key={num}
+                                    onClick={() => setBedrooms(num)}
+                                    className={`step3-number-btn ${bedrooms === num ? 'active' : ''}`}
+                                  >
+                                    {num}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Bathrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bathrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => (
+                                  <div
+                                    key={num}
+                                    onClick={() => setBathrooms(num)}
+                                    className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
+                                  >
+                                    {num}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Balconies */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                Balconies
+                              </label>
+                              <div className="step3-button-group">
+                                {[0, 1, 2, 3, "More than 3"].map((val) => (
+                                  <div
+                                    key={val}
+                                    onClick={() => setBalconies(val)}
+                                    className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
+                                  >
+                                    {val}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          {/* Area Details */}
+                          <div
+                            className="mb-3"
+                          >
+                            {/* Header */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                                Add Area Details
+                              </label>
+
+                            </div>
+
+                            <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                              At least one area type is mandatory
+                            </p>
+
+                            {/* Carpet Area */}
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                marginBottom: "16px",
+                                position: "relative",
+                              }}
+                            >
+                              <input
+                                type="number"
+                                placeholder="Carpet Area"
+                                value={carpetArea}
+                                onChange={(e) => setCarpetArea(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: "12px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ccc",
+                                  fontSize: "14px",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  minWidth: "100px",
+                                  padding: "12px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  cursor: "pointer",
+                                  background: "#f9f9f9",
+                                }}
+                                onClick={() => setShowCarpetUnits((p) => !p)}
+                              >
+                                {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                              </div>
+
+                              {showCarpetUnits && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "110%",
+                                    right: "0",
+                                    background: "#fff",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                    zIndex: 10,
+                                    width: "120px",
+                                  }}
+                                >
+                                  {UNIT_OPTIONS.map((u) => (
+                                    <div
+                                      key={u}
+                                      onClick={() => {
+                                        setCarpetUnit(u);
+                                        setBuiltUpUnit(u); // sync
+                                        setShowCarpetUnits(false);
+                                      }}
+                                      style={{
+                                        padding: "10px",
+                                        cursor: "pointer",
+                                        background: carpetUnit === u ? "#ED2027" : "#fff",
+                                        color: carpetUnit === u ? "#fff" : "#333",
+                                        borderBottom: "1px solid #eee",
+                                      }}
+                                    >
+                                      {u}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Validation */}
+                            {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                              <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                                Carpet area must be smaller than built-up area
+                              </p>
+                            )}
+
+                            {/* Built-up Area */}
+                            {!showBuiltUpArea ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowBuiltUpArea(true)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px dashed #ED2027",
+                                  color: "#ED2027",
+                                  padding: "10px 14px",
+                                  borderRadius: "8px",
+                                  cursor: "pointer",
+                                  fontWeight: "500",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                + Add Built-up Area
+                              </button>
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  marginTop: "16px",
+                                  position: "relative",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  placeholder="Built-up Area"
+                                  value={builtUpArea}
+                                  onChange={(e) => setBuiltUpArea(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    fontSize: "14px",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    minWidth: "100px",
+                                    padding: "12px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    cursor: "pointer",
+                                    background: "#f9f9f9",
+                                  }}
+                                  onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                >
+                                  {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                </div>
+
+                                {showBuiltUpUnits && (
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "110%",
+                                      right: "0",
+                                      background: "#fff",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                      zIndex: 10,
+                                      width: "120px",
+                                    }}
+                                  >
+                                    {UNIT_OPTIONS.map((u) => (
+                                      <div
+                                        key={u}
+                                        onClick={() => {
+                                          setBuiltUpUnit(u);
+                                          setCarpetUnit(u); // sync
+                                          setShowBuiltUpUnits(false);
+                                        }}
+                                        style={{
+                                          padding: "10px",
+                                          cursor: "pointer",
+                                          background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                          color: builtUpUnit === u ? "#fff" : "#333",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        {u}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+
+                          {/* {floor deatils} */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Floor Details
+                            </label>
+                            <div className="step3-floor-group">
+                              <input
+                                type="number"
+                                value={totalFloors}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setTotalFloors(v);
+                                  const nTotal = parseInt(v, 10);
+                                  const nProp = parseInt(propertyOnFloor, 10);
+                                  if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                    setPropertyOnFloor(String(nTotal));
+                                  }
+                                }}
+                                placeholder="Total Floors"
+                                className="step3-floor-input"
+                              />
+
+                            </div>
+                          </div>
+
+
+                          {/* Availability Status */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Availability Status
+                            </label>
+                            <div className="step3-button-group">
+                              {["Ready to Move", "Under Construction"].map((status) => (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  onClick={() => setAvailabilityStatus(status)}
+                                  className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                                >
+                                  {status}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Age of property if Ready to Move */}
+                          {availabilityStatus === "Ready to Move" && (
+                            <div className="step3-section">
+                              <label className="step3-label">
+                                Age of property
+                              </label>
+                              <div className="step3-button-group">
+                                {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                  <button
+                                    key={age}
+                                    type="button"
+                                    onClick={() => setAgeOfProperty(age)}
+                                    className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                  >
+                                    {age}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
                           )}
+
+                          {/* Possession By if Under Construction */}
+                          {availabilityStatus === "Under Construction" && (
+                            <div className="step3-section">
+                              <label className="step3-label">Possession By</label>
+                              <select
+                                value={possessionBy}
+                                onChange={(e) => setPossessionBy(e.target.value)}
+                                className="step3-input"
+                              >
+                                <option value="" hidden>Expected time</option>
+                                <option value="Within 3 Months">Within 3 Months</option>
+                                <option value="Within 6 Months">Within 6 Months</option>
+                                <option value="By 2026">By 2026</option>
+                                <option value="By 2027">By 2027</option>
+                                <option value="By 2028">By 2028</option>
+                                <option value="By 2029">By 2029</option>
+                                <option value="By 2030">By 2030</option>
+                              </select>
+                            </div>
+                          )}
+
+                          {/* Ownership */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Ownership
+                            </label>
+                            <div className="step3-button-group">
+                              {["Freehold", "Leasehold", "Co-operative Society", "Power of Attorney"].map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setSelectedOwnership(opt)}
+                                  className={`step3-option-btn ${selectedOwnership === opt ? 'active' : ''}`}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+                          {/*  pooja Others rooms */}
+                          <div className="section">
+                            <label className="section-label">Other rooms (Optional)</label>
+                            <div className="room-options">
+                              {["Pooja Room", "Study Room", "Servant Room", "Store Room"].map((room) => (
+                                <div
+                                  key={room}
+                                  onClick={() =>
+                                    setOtherRooms((prev) =>
+                                      prev.includes(room)
+                                        ? prev.filter((r) => r !== room)
+                                        : [...prev, room]
+                                    )
+                                  }
+                                  className={`room-chip ${otherRooms.includes(room) ? "active" : ""}`}
+                                >
+                                  {room}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Furnishing */}
+                          <div className="section">
+                            <label className="section-label">Furnishing</label>
+                            <div className="furnishing-options">
+                              {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
+                                <div
+                                  key={type}
+                                  onClick={() => setFurnishingType(type)}
+                                  className={`furnishing-chip ${furnishingType === type ? "active" : ""
+                                    }`}
+                                >
+                                  {type}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Show only when Furnished or Semi-furnished */}
+                            {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
+                              <>
+
+                                <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
+                                  At least three furnishings are mandatory for furnished
+                                </p>
+
+
+                                <div className="furnishing-grid">
+                                  {Object.keys(furnishings).map((item) => (
+                                    <div key={item} className="furnishing-item">
+                                      <button
+                                        onClick={() => handleFurnishingCount(item, -1)}
+                                        onMouseEnter={() => setHoveredButton(`${item}-minus`)}
+                                        onMouseLeave={() => setHoveredButton(null)}
+                                        className={`count-btn ${hoveredButton === `${item}-minus` ? "hovered" : ""
+                                          }`}
+                                      >
+                                        –
+                                      </button>
+                                      <span className="count-value">{furnishings[item]}</span>
+                                      <button
+                                        onClick={() => handleFurnishingCount(item, 1)}
+                                        onMouseEnter={() => setHoveredButton(`${item}-plus`)}
+                                        onMouseLeave={() => setHoveredButton(null)}
+                                        className={`count-btn ${hoveredButton === `${item}-plus` ? "hovered" : ""
+                                          }`}
+                                      >
+                                        +
+                                      </button>
+                                      <span className="furnishing-name">{item}</span>
+                                    </div>
+                                  ))}
+
+                                  {Object.keys(furnishingCheckboxes).map((item) => (
+                                    <label key={item} className="furnishing-checkbox">
+                                      <input
+                                        type="checkbox"
+                                        checked={furnishingCheckboxes[item]}
+                                        onChange={() => toggleFurnishingCheckbox(item)}
+                                      />
+                                      {item}
+                                    </label>
+                                  ))}
+                                </div>
+
+
+
+
+
+
+
+
+
+
+
+                              </>
+                            )}
+                          </div>
+
+                        </>
+                      )}
+
+                      {/* Rent + Residential */}
+                      {listingType === "Rent" && propertyType === "Residential" && (
+                        <>
+                          <div className="step3-section">
+                            <h6 className="step3-subheader">
+                              Add Room Details
+                            </h6>
+
+                            {/* Bedrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bedrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => (
+                                  <div
+                                    key={num}
+                                    onClick={() => setBedrooms(num)}
+                                    className={`step3-number-btn ${bedrooms === num ? 'active' : ''}`}
+                                  >
+                                    {num}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Bathrooms */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                No. of Bathrooms
+                              </label>
+                              <div className="step3-button-group">
+                                {[1, 2, 3, 4, 5].map((num) => (
+                                  <div
+                                    key={num}
+                                    onClick={() => setBathrooms(num)}
+                                    className={`step3-number-btn ${bathrooms === num ? 'active' : ''}`}
+                                  >
+                                    {num}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Balconies */}
+                            <div className="step3-subsection">
+                              <label className="step3-label">
+                                Balconies
+                              </label>
+                              <div className="step3-button-group">
+                                {[0, 1, 2, 3, "More than 3"].map((val) => (
+                                  <div
+                                    key={val}
+                                    onClick={() => setBalconies(val)}
+                                    className={`step3-option-btn ${balconies === val ? 'active' : ''}`}
+                                  >
+                                    {val}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          {/* Area Details */}
+                          <div
+                            className="mb-3"
+                          >
+                            {/* Header */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                                Add Area Details
+                              </label>
+
+                            </div>
+
+                            <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                              At least one area type is mandatory
+                            </p>
+
+                            {/* Carpet Area */}
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                marginBottom: "16px",
+                                position: "relative",
+                              }}
+                            >
+                              <input
+                                type="number"
+                                placeholder="Carpet Area"
+                                value={carpetArea}
+                                onChange={(e) => setCarpetArea(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: "12px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ccc",
+                                  fontSize: "14px",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  minWidth: "100px",
+                                  padding: "12px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  cursor: "pointer",
+                                  background: "#f9f9f9",
+                                }}
+                                onClick={() => setShowCarpetUnits((p) => !p)}
+                              >
+                                {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                              </div>
+
+                              {showCarpetUnits && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "110%",
+                                    right: "0",
+                                    background: "#fff",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                    zIndex: 10,
+                                    width: "120px",
+                                  }}
+                                >
+                                  {UNIT_OPTIONS.map((u) => (
+                                    <div
+                                      key={u}
+                                      onClick={() => {
+                                        setCarpetUnit(u);
+                                        setBuiltUpUnit(u); // sync
+                                        setShowCarpetUnits(false);
+                                      }}
+                                      style={{
+                                        padding: "10px",
+                                        cursor: "pointer",
+                                        background: carpetUnit === u ? "#ED2027" : "#fff",
+                                        color: carpetUnit === u ? "#fff" : "#333",
+                                        borderBottom: "1px solid #eee",
+                                      }}
+                                    >
+                                      {u}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Validation */}
+                            {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                              <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                                Carpet area must be smaller than built-up area
+                              </p>
+                            )}
+
+                            {/* Built-up Area */}
+                            {!showBuiltUpArea ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowBuiltUpArea(true)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px dashed #ED2027",
+                                  color: "#ED2027",
+                                  padding: "10px 14px",
+                                  borderRadius: "8px",
+                                  cursor: "pointer",
+                                  fontWeight: "500",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                + Add Built-up Area
+                              </button>
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  marginTop: "16px",
+                                  position: "relative",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  placeholder="Built-up Area"
+                                  value={builtUpArea}
+                                  onChange={(e) => setBuiltUpArea(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    fontSize: "14px",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    minWidth: "100px",
+                                    padding: "12px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    cursor: "pointer",
+                                    background: "#f9f9f9",
+                                  }}
+                                  onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                >
+                                  {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                </div>
+
+                                {showBuiltUpUnits && (
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "110%",
+                                      right: "0",
+                                      background: "#fff",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                      zIndex: 10,
+                                      width: "120px",
+                                    }}
+                                  >
+                                    {UNIT_OPTIONS.map((u) => (
+                                      <div
+                                        key={u}
+                                        onClick={() => {
+                                          setBuiltUpUnit(u);
+                                          setCarpetUnit(u); // sync
+                                          setShowBuiltUpUnits(false);
+                                        }}
+                                        style={{
+                                          padding: "10px",
+                                          cursor: "pointer",
+                                          background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                          color: builtUpUnit === u ? "#fff" : "#333",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        {u}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="section">
+                            <label className="section-label">Furnishing</label>
+                            <div className="furnishing-options">
+                              {["Furnished", "Semi-furnished", "Un-furnished"].map((type) => (
+                                <div
+                                  key={type}
+                                  onClick={() => setFurnishingType(type)}
+                                  className={`furnishing-chip ${furnishingType === type ? "active" : ""
+                                    }`}
+                                >
+                                  {type}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Show only when Furnished or Semi-furnished */}
+                            {(furnishingType === "Furnished" || furnishingType === "Semi-furnished") && (
+                              <>
+
+                                <p style={{ marginTop: "10px", fontFamily: '"Josefin Sans", sans-serif', fontWeight: "600" }}>
+                                  At least three furnishings are mandatory for furnished
+                                </p>
+
+
+                                <div className="furnishing-grid">
+                                  {Object.keys(furnishings).map((item) => (
+                                    <div key={item} className="furnishing-item">
+                                      <button
+                                        onClick={() => handleFurnishingCount(item, -1)}
+                                        onMouseEnter={() => setHoveredButton(`${item}-minus`)}
+                                        onMouseLeave={() => setHoveredButton(null)}
+                                        className={`count-btn ${hoveredButton === `${item}-minus` ? "hovered" : ""
+                                          }`}
+                                      >
+                                        –
+                                      </button>
+                                      <span className="count-value">{furnishings[item]}</span>
+                                      <button
+                                        onClick={() => handleFurnishingCount(item, 1)}
+                                        onMouseEnter={() => setHoveredButton(`${item}-plus`)}
+                                        onMouseLeave={() => setHoveredButton(null)}
+                                        className={`count-btn ${hoveredButton === `${item}-plus` ? "hovered" : ""
+                                          }`}
+                                      >
+                                        +
+                                      </button>
+                                      <span className="furnishing-name">{item}</span>
+                                    </div>
+                                  ))}
+
+                                  {Object.keys(furnishingCheckboxes).map((item) => (
+                                    <label key={item} className="furnishing-checkbox">
+                                      <input
+                                        type="checkbox"
+                                        checked={furnishingCheckboxes[item]}
+                                        onChange={() => toggleFurnishingCheckbox(item)}
+                                      />
+                                      {item}
+                                    </label>
+                                  ))}
+                                </div>
+
+                              </>
+                            )}
+                          </div>
+
+
+                          {/* {floor deatils} */}
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Floor Details
+                            </label>
+                            <div className="step3-floor-group">
+                              <input
+                                type="number"
+                                value={totalFloors}
+                                onChange={(e) => {
+                                  const v = e.target.value;
+                                  setTotalFloors(v);
+                                  const nTotal = parseInt(v, 10);
+                                  const nProp = parseInt(propertyOnFloor, 10);
+                                  if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                    setPropertyOnFloor(String(nTotal));
+                                  }
+                                }}
+                                placeholder="Total Floors"
+                                className="step3-floor-input"
+                              />
+
+                            </div>
+                          </div>
+
+
+
+                          {/* Age of property if Ready to Move */}
+
+                          <div className="step3-section">
+                            <label className="step3-label">Age of property</label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? "active" : ""
+                                    }`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* ------------------- RENT DETAILS ------------------- */}
+                          {/* Available From */}
+                          <div className="step3-section">
+                            <label className="step3-label">Available from</label>
+                            <input
+                              type="date"
+                              value={availableFrom}
+                              onChange={(e) => setAvailableFrom(e.target.value)}
+                              className="step3-input"
+                            />
+                          </div>
+
+                          {/* Willing to rent out to */}
+                          <div className="step3-section">
+                            <label className="step3-label">Willing to rent out to</label>
+                            <div className="step3-button-group">
+                              {["Family", "Single men", "Single women"].map((opt) => (
+                                <button
+                                  key={opt}
+                                  type="button"
+                                  onClick={() => setWillingTo(opt)}
+                                  className={`step3-option-btn ${willingTo === opt ? "active" : ""
+                                    }`}
+                                >
+                                  + {opt}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+
+
+
+
+
+
+                        </>
+                      )}
+
+                    </>
+                  )}
+
+
+
+
+
+
+
+                  {propertyType === "Commercial" &&
+                    subPropertyType === "Office" &&
+                    subPropertyQuestionOption === "Ready to move office space" && (
+                      <>
+
+
+
+                        {/* Describe your office setup */}
+                        <div className="step3-section">
+                          <label className="step3-label">Describe your office setup</label>
+                          <div className="step3-input-row">
+                            <input
+                              type="number"
+                              placeholder="Min. no. of Seats"
+                              value={minSeats}
+                              onChange={(e) => setMinSeats(e.target.value)}
+                              className="step3-input"
+                            />
+                            <input
+                              type="number"
+                              placeholder="Max. no. of Seats (optional)"
+                              value={maxSeats}
+                              onChange={(e) => setMaxSeats(e.target.value)}
+                              className="step3-input"
+                            />
+                          </div>
+                          <input
+                            type="number"
+                            placeholder="No. of Cabins"
+                            value={noOfCabins}
+                            onChange={(e) => setNoOfCabins(e.target.value)}
+                            className="step3-input"
+                          />
                         </div>
 
+                        {/* No. of meeting rooms */}
+                        <div className="step3-section">
+                          <label className="step3-label">No. of Meeting Rooms</label>
+                          <input
+                            type="number"
+                            placeholder="No. of Meeting Rooms"
+                            value={noOfMeetingRooms}
+                            onChange={(e) => setNoOfMeetingRooms(e.target.value)}
+                            className="step3-input"
+                          />
+                        </div>
 
-                        <div>
-                          <label className="step3-label">
-                            Joint Venture Percentage
-                          </label>
-
-                          <div style={{ gap: "15px", width: "400px" }}>
-                            {/* Owner Percentage Input */}
-                            <div>
-                              <label style={{ display: "block", marginBottom: "5px" }}>
-                                Owner Percentage
-                              </label>
-                              <input
-                                type="number"
-                                value={ownerPercentage}
-                                onChange={handleOwnerPercentageChange}
-                                placeholder="Enter owner %"
-                                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
-                              />
-                            </div>
-
-                            {/* Developer Percentage Input */}
-                            <div>
-                              <label style={{ display: "block", marginBottom: "5px", marginTop: "20px" }}>
-                                Developer Percentage
-                              </label>
-                              <input
-                                type="number"
-                                value={developerPercentage}
-                                onChange={handleDeveloperPercentageChange}
-                                placeholder="Enter developer %"
-                                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
-                              />
-                            </div>
+                        {/* Washrooms */}
+                        <div className="step3-section">
+                          <label className="step3-label">Washrooms</label>
+                          <div className="button-group">
+                            <button
+                              type="button"
+                              onClick={() => setWashroom("Available")}
+                              className={`subproperty-option ${washroom === "Available" ? "active" : ""
+                                }`}
+                            >
+                              Available
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setWashroom("Not Available")}
+                              className={`subproperty-option ${washroom === "Not Available" ? "active" : ""
+                                }`}
+                            >
+                              Not - Available
+                            </button>
                           </div>
                         </div>
 
-                      </>
-                    )}
-                  </>
-                )}
-
-
-                {listingType === "Joint Venture" && propertyType === "Layout/Land development" && (
-                  <>
-                    <div
-                      className="mb-3"
-                    >
-                      {/* Header */}
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          marginBottom: "8px",
-                        }}
-                      >
-                        <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
-                          Add Area Details
-                        </label>
-
-                      </div>
-
-                      <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
-                        At least one area type is mandatory
-                      </p>
-
-                      {/* Carpet Area */}
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "10px",
-                          marginBottom: "16px",
-                          position: "relative",
-                        }}
-                      >
-                        <input
-                          type="number"
-                          placeholder="Carpet Area"
-                          value={carpetArea}
-                          onChange={(e) => setCarpetArea(e.target.value)}
-                          style={{
-                            flex: 1,
-                            padding: "12px",
-                            borderRadius: "8px",
-                            border: "1px solid #ccc",
-                            fontSize: "14px",
-                          }}
-                        />
-                        <div
-                          style={{
-                            minWidth: "100px",
-                            padding: "12px",
-                            border: "1px solid #ccc",
-                            borderRadius: "8px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            cursor: "pointer",
-                            background: "#f9f9f9",
-                          }}
-                          onClick={() => setShowCarpetUnits((p) => !p)}
-                        >
-                          {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                        {/* Conference Room */}
+                        <div className="step3-section">
+                          <label className="step3-label">Conference Room</label>
+                          <div className="button-group">
+                            <button
+                              type="button"
+                              onClick={() => setConferenceRoom("Available")}
+                              className={`subproperty-option ${conferenceRoom === "Available" ? "active" : ""
+                                }`}
+                            >
+                              Available
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConferenceRoom("Not Available")}
+                              className={`subproperty-option ${conferenceRoom === "Not Available" ? "active" : ""
+                                }`}
+                            >
+                              Not - Available
+                            </button>
+                          </div>
                         </div>
 
-                        {showCarpetUnits && (
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: "110%",
-                              right: "0",
-                              background: "#fff",
-                              border: "1px solid #ddd",
-                              borderRadius: "8px",
-                              boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                              zIndex: 10,
-                              width: "120px",
-                            }}
+                        {/* Reception Area */}
+                        <div className="step3-section">
+                          <label className="step3-label">Reception Area</label>
+                          <div className="button-group">
+                            <button
+                              type="button"
+                              onClick={() => setReceptionArea("Available")}
+                              className={`subproperty-option ${receptionArea === "Available" ? "active" : ""
+                                }`}
+                            >
+                              Available
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setReceptionArea("Not Available")}
+                              className={`subproperty-option ${receptionArea === "Not Available" ? "active" : ""
+                                }`}
+                            >
+                              Not - Available
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Pantry Type */}
+                        <div className="step3-section">
+                          <label className="step3-label">Pantry Type</label>
+                          <div className="button-group">
+                            <button
+                              type="button"
+                              onClick={() => setPantryType("Private")}
+                              className={`subproperty-option ${pantryType === "Private" ? "active" : ""
+                                }`}
+                            >
+                              Private
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPantryType("Shared")}
+                              className={`subproperty-option ${pantryType === "Shared" ? "active" : ""
+                                }`}
+                            >
+                              Shared
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPantryType("Not Available")}
+                              className={`subproperty-option ${pantryType === "Not Available" ? "active" : ""
+                                }`}
+                            >
+                              Not - Available
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Facilities Available */}
+                        <div className="step3-section">
+                          <label className="step3-label">Please select the facilities available</label>
+
+                          {/* Furnishing */}
+                          <div className="step3-facility-row" style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
+                            <span style={{ minWidth: "200px" }}>Furnishing</span>
+                            <label style={{ marginRight: "15px" }}>
+                              <input
+                                type="radio"
+                                name="furnishing"
+                                checked={furnishing === "Available"}
+                                onChange={() => setFurnishing("Available")}
+                              />{" "}
+                              Available
+                            </label>
+                            <label>
+                              <input
+                                type="radio"
+                                name="furnishing"
+                                checked={furnishing === "Not Available"}
+                                onChange={() => setFurnishing("Not Available")}
+                              />{" "}
+                              Not Available
+                            </label>
+                          </div>
+
+                          {/* Air Conditioning */}
+                          <div className="step3-facility-row" style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
+                            <span style={{ minWidth: "200px" }}>Central Air Conditioning</span>
+                            <label style={{ marginRight: "15px" }}>
+                              <input
+                                type="radio"
+                                name="airConditioning"
+                                checked={airConditioning === "Available"}
+                                onChange={() => setAirConditioning("Available")}
+                              />{" "}
+                              Available
+                            </label>
+                            <label>
+                              <input
+                                type="radio"
+                                name="airConditioning"
+                                checked={airConditioning === "Not Available"}
+                                onChange={() => setAirConditioning("Not Available")}
+                              />{" "}
+                              Not Available
+                            </label>
+                          </div>
+
+                          {/* Oxygen Duct */}
+                          <div className="step3-facility-row" style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
+                            <span style={{ minWidth: "200px" }}>Oxygen Duct</span>
+                            <label style={{ marginRight: "15px" }}>
+                              <input
+                                type="radio"
+                                name="oxygen"
+                                checked={oxygen === "Available"}
+                                onChange={() => setOxygen("Available")}
+                              />{" "}
+                              Available
+                            </label>
+                            <label>
+                              <input
+                                type="radio"
+                                name="oxygen"
+                                checked={oxygen === "Not Available"}
+                                onChange={() => setOxygen("Not Available")}
+                              />{" "}
+                              Not Available
+                            </label>
+                          </div>
+
+                          {/* UPS */}
+                          <div className="step3-facility-row" style={{ display: "flex", alignItems: "center" }}>
+                            <span style={{ minWidth: "200px" }}>UPS</span>
+                            <label style={{ marginRight: "15px" }}>
+                              <input
+                                type="radio"
+                                name="ups"
+                                checked={ups === "Available"}
+                                onChange={() => setUps("Available")}
+                              />{" "}
+                              Available
+                            </label>
+                            <label>
+                              <input
+                                type="radio"
+                                name="ups"
+                                checked={ups === "Not Available"}
+                                onChange={() => setUps("Not Available")}
+                              />{" "}
+                              Not Available
+                            </label>
+                          </div>
+                        </div>
+
+
+
+                        {/* 🔥 Fire Safety Measures Include */}
+                        <div className="step3-section">
+                          <label className="step3-label">Fire safety measures include</label>
+                          <div className="button-group">
+                            {["Fire Extinguisher", "Fire Sensors", "Sprinklers", "Fire Hose"].map((item) => (
+                              <button
+                                type="button"
+                                key={item}
+                                onClick={() =>
+                                  setFireSafety((prev) =>
+                                    prev.includes(item)
+                                      ? prev.filter((i) => i !== item)
+                                      : [...prev, item]
+                                  )
+                                }
+                                className={`subproperty-option ${fireSafety.includes(item) ? "active" : ""
+                                  }`}
+                              >
+                                {item}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Floor deatils */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Floor Details
+                          </label>
+                          <div className="step3-floor-group">
+                            <input
+                              type="number"
+                              value={totalFloors}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                setTotalFloors(v);
+                                const nTotal = parseInt(v, 10);
+                                const nProp = parseInt(propertyOnFloor, 10);
+                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                  setPropertyOnFloor(String(nTotal));
+                                }
+                              }}
+                              placeholder="Total Floors"
+                              className="step3-floor-input"
+                            />
+                            <select
+                              value={propertyOnFloor}
+                              onChange={(e) => setPropertyOnFloor(e.target.value)}
+                              className="step3-floor-select"
+                            >
+                              <option value="" hidden>Property on Floor</option>
+                              <option value="Basement">Basement</option>
+                              <option value="Lower Ground">Lower Ground</option>
+                              <option value="Ground">Ground</option>
+                              {(() => {
+                                const n = parseInt(totalFloors, 10);
+                                if (!Number.isNaN(n) && n > 0) {
+                                  return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
+                                    <option key={f} value={String(f)}>
+                                      {f}
+                                    </option>
+                                  ));
+                                }
+                                return null;
+                              })()}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* 🧱 Number of Staircases */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            No. of Staircases <span className="step3-optional">(Optional)</span>
+                          </label>
+                          <div className="button-group">
+                            {[1, 2, 3, 4].map((num) => (
+                              <button
+                                key={num}
+                                type="button"
+                                onClick={() => setStaircases(num)}
+                                className={`subproperty-option ${staircases === num ? "active" : ""
+                                  }`}
+                              >
+                                {num}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 🛗 Lifts */}
+                        <div className="step3-section">
+                          <label className="step3-label">Lifts</label>
+                          <div className="button-group">
+                            <button
+                              type="button"
+                              onClick={() => setLifts("Available")}
+                              className={`subproperty-option ${lifts === "Available" ? "active" : ""
+                                }`}
+                            >
+                              Available
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setLifts("Not Available")}
+                              className={`subproperty-option ${lifts === "Not Available" ? "active" : ""
+                                }`}
+                            >
+                              Not - Available
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 🚗 Parking */}
+                        <div className="step3-section">
+                          <label className="step3-label">Parking</label>
+                          <div className="button-group">
+                            <button
+                              type="button"
+                              onClick={() => setParking("Available")}
+                              className={`subproperty-option ${parking === "Available" ? "active" : ""
+                                }`}
+                            >
+                              Available
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setParking("Not Available")}
+                              className={`subproperty-option ${parking === "Not Available" ? "active" : ""
+                                }`}
+                            >
+                              Not - Available
+                            </button>
+                          </div>
+                        </div>
+
+
+                        {/* Availability Status */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Availability Status
+                          </label>
+                          <div className="step3-button-group">
+                            {["Ready to Move", "Under Construction"].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => setAvailabilityStatus(status)}
+                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Age of property if Ready to Move */}
+                        {availabilityStatus === "Ready to Move" && (
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Age of property
+                            </label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Possession By if Under Construction */}
+                        {availabilityStatus === "Under Construction" && (
+                          <div className="step3-section">
+                            <label className="step3-label">Possession By</label>
+                            <select
+                              value={possessionBy}
+                              onChange={(e) => setPossessionBy(e.target.value)}
+                              className="step3-input"
+                            >
+                              <option value="" hidden>Expected time</option>
+                              <option value="Within 3 Months">Within 3 Months</option>
+                              <option value="Within 6 Months">Within 6 Months</option>
+                              <option value="By 2026">By 2026</option>
+                              <option value="By 2027">By 2027</option>
+                              <option value="By 2028">By 2028</option>
+                              <option value="By 2029">By 2029</option>
+                              <option value="By 2030">By 2030</option>
+                            </select>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+
+                  {propertyType === "Commercial" &&
+                    subPropertyType === "Office" &&
+                    subPropertyQuestionOption === "Bare shell office space" && (
+                      <>
+
+                        {/* buit and carpet  Details */}
+
+
+
+                        {/* Construction status of walls */}
+                        <div className="step3-section">
+                          <label className="step3-label">Construction status of walls</label>
+                          <div className="button-group">
+                            {["No walls", "Brick walls", "Cemented walls", "Plastered walls"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${wallStatus === opt ? "active" : ""}`}
+                                onClick={() => setWallStatus(opt)}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Doors constructed */}
+                        <div className="step3-section">
+                          <label className="step3-label">Are doors constructed</label>
+                          <div className="button-group">
+                            {["Yes", "No"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${doorsConstructed === opt ? "active" : ""}`}
+                                onClick={() => setDoorsConstructed(opt)}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Washrooms */}
+                        <div className="step3-section">
+                          <label className="step3-label">Washrooms</label>
+                          <div className="button-group">
+                            {["Available", "Not built yet"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${washroomBare === opt ? "active" : ""}`}
+                                onClick={() => setWashroomBare(opt)}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+
+                        {/* Pantry Type */}
+                        <div className="step3-section">
+                          <label className="step3-label">Pantry Type</label>
+                          <div className="button-group">
+                            <button
+                              type="button"
+                              onClick={() => setPantryType("Shared Pantry")}
+                              className={`subproperty-option ${pantryType === "Shared Pantry" ? "active" : ""
+                                }`}
+                            >
+                              Shared Pantry
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setPantryType("No Shared Pantry")}
+                              className={`subproperty-option ${pantryType === "No Shared Pantry" ? "active" : ""
+                                }`}
+                            >
+                              No Shared Pantry
+                            </button>
+                          </div>
+                        </div>
+
+
+                        {/* Flooring  */}
+                        <div className="step3-section">
+                          <label className="step3-label">Type of flooring</label>
+                          <select
+                            className="step3-input"
+                            value={flooringType}
+                            onChange={(e) => setFlooringType(e.target.value)}
                           >
-                            {UNIT_OPTIONS.map((u) => (
-                              <div
-                                key={u}
+                            <option value="">Select</option>
+                            <option value="Marble">Marble</option>
+                            <option value="Concrete">Concrete</option>
+                            <option value="Polished concrete">Polished concrete</option>
+                            <option value="Granite">Granite</option>
+                            <option value="Ceramic">Ceramic</option>
+                          </select>
+                        </div>
+
+                        {/* Central Air Conditioning (3 options) */}
+                        <div className="step3-section">
+                          <label className="step3-label">Please select the facilities available</label>
+
+
+                          <div style={{ display: "flex", alignItems: "center", marginBottom: "12px" }}>
+                            <span style={{ minWidth: "200px" }}>Central Air Conditioning</span>
+
+                            <label style={{ marginRight: "15px" }}>
+                              <input
+                                type="radio"
+                                name="airConditioning"
+                                checked={airConditioning === "Duct Only"}
+                                onChange={() => setAirConditioning("Duct Only")}
+                              />{" "}
+                              Duct Only
+                            </label>
+
+                            <label style={{ marginRight: "15px" }}>
+                              <input
+                                type="radio"
+                                name="airConditioning"
+                                checked={airConditioning === "Available"}
+                                onChange={() => setAirConditioning("Available")}
+                              />{" "}
+                              Available
+                            </label>
+
+                            <label style={{ marginRight: "15px" }}>
+                              <input
+                                type="radio"
+                                name="airConditioning"
+                                checked={airConditioning === "Not Available"}
+                                onChange={() => setAirConditioning("Not Available")}
+                              />{" "}
+                              Not Available
+                            </label>
+
+
+                          </div>
+
+                          {/* Oxygen Duct (2 options) */}
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <span style={{ minWidth: "200px" }}>Oxygen Duct</span>
+
+                            <label style={{ marginRight: "22px" }}>
+                              <input
+                                type="radio"
+                                name="oxygen"
+                                checked={oxygen === "Available"}
+                                onChange={() => setOxygen("Available")}
+                              />{" "}
+                              Available
+                            </label>
+
+                            <label>
+                              <input
+                                type="radio"
+                                name="oxygen"
+                                checked={oxygen === "Not Available"}
+                                onChange={() => setOxygen("Not Available")}
+                              />{" "}
+                              Not Available
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* 🔥 Fire Safety Measures Include */}
+                        <div className="step3-section">
+                          <label className="step3-label">Fire safety measures include</label>
+                          <div className="button-group">
+                            {["Fire Extinguisher", "Fire Sensors", "Sprinklers", "Fire Hose"].map((item) => (
+                              <button
+                                type="button"
+                                key={item}
+                                onClick={() =>
+                                  setFireSafety((prev) =>
+                                    prev.includes(item)
+                                      ? prev.filter((i) => i !== item)
+                                      : [...prev, item]
+                                  )
+                                }
+                                className={`subproperty-option ${fireSafety.includes(item) ? "active" : ""
+                                  }`}
+                              >
+                                {item}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+
+                        {/* Floor deatils */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Floor Details
+                          </label>
+                          <div className="step3-floor-group">
+                            <input
+                              type="number"
+                              value={totalFloors}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                setTotalFloors(v);
+                                const nTotal = parseInt(v, 10);
+                                const nProp = parseInt(propertyOnFloor, 10);
+                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                  setPropertyOnFloor(String(nTotal));
+                                }
+                              }}
+                              placeholder="Total Floors"
+                              className="step3-floor-input"
+                            />
+                            <select
+                              value={propertyOnFloor}
+                              onChange={(e) => setPropertyOnFloor(e.target.value)}
+                              className="step3-floor-select"
+                            >
+                              <option value="" hidden>Property on Floor</option>
+                              <option value="Basement">Basement</option>
+                              <option value="Lower Ground">Lower Ground</option>
+                              <option value="Ground">Ground</option>
+                              {(() => {
+                                const n = parseInt(totalFloors, 10);
+                                if (!Number.isNaN(n) && n > 0) {
+                                  return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
+                                    <option key={f} value={String(f)}>
+                                      {f}
+                                    </option>
+                                  ));
+                                }
+                                return null;
+                              })()}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* 🧱 Number of Staircases */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            No. of Staircases <span className="step3-optional">(Optional)</span>
+                          </label>
+                          <div className="button-group">
+                            {[1, 2, 3, 4].map((num) => (
+                              <button
+                                key={num}
+                                type="button"
+                                onClick={() => setStaircases(num)}
+                                className={`subproperty-option ${staircases === num ? "active" : ""
+                                  }`}
+                              >
+                                {num}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 🛗 Lifts */}
+                        <div className="step3-section">
+                          <label className="step3-label">Lifts</label>
+                          <div className="button-group">
+                            <button
+                              type="button"
+                              onClick={() => setLifts("Available")}
+                              className={`subproperty-option ${lifts === "Available" ? "active" : ""
+                                }`}
+                            >
+                              Available
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setLifts("Not Available")}
+                              className={`subproperty-option ${lifts === "Not Available" ? "active" : ""
+                                }`}
+                            >
+                              Not - Available
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 🚗 Parking */}
+                        <div className="step3-section">
+                          <label className="step3-label">Parking</label>
+                          <div className="button-group">
+                            <button
+                              type="button"
+                              onClick={() => setParking("Available")}
+                              className={`subproperty-option ${parking === "Available" ? "active" : ""
+                                }`}
+                            >
+                              Available
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setParking("Not Available")}
+                              className={`subproperty-option ${parking === "Not Available" ? "active" : ""
+                                }`}
+                            >
+                              Not - Available
+                            </button>
+                          </div>
+                        </div>
+
+
+                        {/* Availability Status */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Availability Status
+                          </label>
+                          <div className="step3-button-group">
+                            {["Ready to Move", "Under Construction"].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => setAvailabilityStatus(status)}
+                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Age of property if Ready to Move */}
+                        {availabilityStatus === "Ready to Move" && (
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Age of property
+                            </label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Possession By if Under Construction */}
+                        {availabilityStatus === "Under Construction" && (
+                          <div className="step3-section">
+                            <label className="step3-label">Possession By</label>
+                            <select
+                              value={possessionBy}
+                              onChange={(e) => setPossessionBy(e.target.value)}
+                              className="step3-input"
+                            >
+                              <option value="" hidden>Expected time</option>
+                              <option value="Within 3 Months">Within 3 Months</option>
+                              <option value="Within 6 Months">Within 6 Months</option>
+                              <option value="By 2026">By 2026</option>
+                              <option value="By 2027">By 2027</option>
+                              <option value="By 2028">By 2028</option>
+                              <option value="By 2029">By 2029</option>
+                              <option value="By 2030">By 2030</option>
+                            </select>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+
+                  {propertyType === "Commercial" &&
+                    subPropertyType === "Office" &&
+                    subPropertyQuestionOption === "Co-working office space" && (
+                      <>
+
+                        {/* Washrooms */}
+                        <div className="step3-section">
+                          <label className="step3-label">Washrooms</label>
+                          <div className="button-group">
+                            {["None", "Shared", "1", "2", "3", "4"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${washroomBare === opt ? "active" : ""}`}
+                                onClick={() => setWashroomBare(opt)}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+
+
+                        {/* Availability Status */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Availability Status
+                          </label>
+                          <div className="step3-button-group">
+                            {["Ready to Move", "Under Construction"].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => setAvailabilityStatus(status)}
+                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Age of property if Ready to Move */}
+                        {availabilityStatus === "Ready to Move" && (
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Age of property
+                            </label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Possession By if Under Construction */}
+                        {availabilityStatus === "Under Construction" && (
+                          <div className="step3-section">
+                            <label className="step3-label">Possession By</label>
+                            <select
+                              value={possessionBy}
+                              onChange={(e) => setPossessionBy(e.target.value)}
+                              className="step3-input"
+                            >
+                              <option value="" hidden>Expected time</option>
+                              <option value="Within 3 Months">Within 3 Months</option>
+                              <option value="Within 6 Months">Within 6 Months</option>
+                              <option value="By 2026">By 2026</option>
+                              <option value="By 2027">By 2027</option>
+                              <option value="By 2028">By 2028</option>
+                              <option value="By 2029">By 2029</option>
+                              <option value="By 2030">By 2030</option>
+                            </select>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                  {propertyType === "Commercial" &&
+                    subPropertyType === "Retail" &&
+                    (subPropertyQuestionOption === "Commercial Shops" ||
+                      subPropertyQuestionOption === "Commercial Showrooms") && (
+                      <>
+
+
+                        {/* Shop Facade Size */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Shop facade size <span className="step3-optional">(Optional)</span>
+                          </label>
+                          <p className="step3-subtext">Shop - front related details</p>
+
+                          {/* Entrance width */}
+                          <div className="step3-input-group">
+                            <input
+                              type="number"
+                              placeholder="Entrance width"
+                              value={entranceWidth}
+                              onChange={(e) => setEntranceWidth(e.target.value)}
+                              className="step3-input"
+                            />
+                            <div
+                              className="step3-unit-selector"
+                              onClick={() => setShowEntranceUnit((p) => !p)}
+                            >
+                              {entranceUnit || "ft."} <span className="step3-dropdown-icon">▼</span>
+                            </div>
+                            {showEntranceUnit && (
+                              <div className="step3-unit-dropdown">
+                                {["ft.", "mtr."].map((u) => (
+                                  <div
+                                    key={u}
+                                    onClick={() => {
+                                      setEntranceUnit(u);
+                                      setShowEntranceUnit(false);
+                                    }}
+                                    className="step3-unit-option"
+                                  >
+                                    {u}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Ceiling Height */}
+                          <div className="step3-input-group">
+                            <input
+                              type="number"
+                              placeholder="Ceiling Height"
+                              value={ceilingHeight}
+                              onChange={(e) => setCeilingHeight(e.target.value)}
+                              className="step3-input"
+                            />
+                            <div
+                              className="step3-unit-selector"
+                              onClick={() => setShowCeilingUnit((p) => !p)}
+                            >
+                              {ceilingUnit || "ft."} <span className="step3-dropdown-icon">▼</span>
+                            </div>
+                            {showCeilingUnit && (
+                              <div className="step3-unit-dropdown">
+                                {["ft.", "mtr."].map((u) => (
+                                  <div
+                                    key={u}
+                                    onClick={() => {
+                                      setCeilingUnit(u);
+                                      setShowCeilingUnit(false);
+                                    }}
+                                    className="step3-unit-option"
+                                  >
+                                    {u}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Washroom details */}
+                        <div className="step3-section">
+                          <label className="step3-label">Washroom details</label>
+                          <div className="button-group">
+                            {["Private washrooms", "Public washrooms", "Not Available"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${retailWashroom.includes(opt) ? "active" : ""}`}
                                 onClick={() => {
-                                  setCarpetUnit(u);
-                                  setBuiltUpUnit(u); // sync
-                                  setShowCarpetUnits(false);
-                                }}
-                                style={{
-                                  padding: "10px",
-                                  cursor: "pointer",
-                                  background: carpetUnit === u ? "#ED2027" : "#fff",
-                                  color: carpetUnit === u ? "#fff" : "#333",
-                                  borderBottom: "1px solid #eee",
+                                  if (opt === "Not Available") {
+                                    // If "Not Available" clicked -> clear all other options and select only this
+                                    setRetailWashroom(["Not Available"]);
+                                  } else {
+                                    setRetailWashroom((prev) => {
+                                      // if "Not Available" is already selected -> remove it
+                                      let updated = prev.filter((i) => i !== "Not Available");
+
+                                      // then toggle the selected option
+                                      if (updated.includes(opt)) {
+                                        return updated.filter((i) => i !== opt);
+                                      } else {
+                                        return [...updated, opt];
+                                      }
+                                    });
+                                  }
                                 }}
                               >
-                                {u}
-                              </div>
+                                {opt}
+                              </button>
                             ))}
                           </div>
-                        )}
-                      </div>
+                        </div>
 
-                      {/* Validation */}
-                      {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
-                        <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
-                          Carpet area must be smaller than built-up area
-                        </p>
+                        {/* Floor Details */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Floor Details
+                          </label>
+                          <div className="step3-floor-group">
+                            <input
+                              type="number"
+                              value={totalFloors}
+                              onChange={(e) => {
+                                const v = e.target.value;
+                                setTotalFloors(v);
+                                const nTotal = parseInt(v, 10);
+                                const nProp = parseInt(propertyOnFloor, 10);
+                                if (!Number.isNaN(nTotal) && !Number.isNaN(nProp) && nProp > nTotal) {
+                                  setPropertyOnFloor(String(nTotal));
+                                }
+                              }}
+                              placeholder="Total Floors"
+                              className="step3-floor-input"
+                            />
+                            <select
+                              value={propertyOnFloor}
+                              onChange={(e) => setPropertyOnFloor(e.target.value)}
+                              className="step3-floor-select"
+                            >
+                              <option value="" hidden>Property on Floor</option>
+                              <option value="Basement">Basement</option>
+                              <option value="Lower Ground">Lower Ground</option>
+                              <option value="Ground">Ground</option>
+                              {(() => {
+                                const n = parseInt(totalFloors, 10);
+                                if (!Number.isNaN(n) && n > 0) {
+                                  return Array.from({ length: n }, (_, i) => i + 1).map((f) => (
+                                    <option key={f} value={String(f)}>
+                                      {f}
+                                    </option>
+                                  ));
+                                }
+                                return null;
+                              })()}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Located Near */}
+                        <div className="step3-section">
+                          <label className="step3-label">Located Near <span className="step3-optional">(Optional)</span></label>
+                          <div className="button-group">
+                            {["Entrance", "Elevator", "Stairs"].map((option) => (
+                              <button
+                                key={option}
+                                type="button"
+                                className={`subproperty-option ${locatedNear.includes(option) ? "active" : ""}`}
+                                onClick={() => {
+                                  setLocatedNear((prev) =>
+                                    prev.includes(option)
+                                      ? prev.filter((i) => i !== option)
+                                      : [...prev, option]
+                                  );
+                                }}
+                              >
+                                {option}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Parking Type */}
+                        <div className="step3-section">
+                          <label className="step3-label">Parking Type</label>
+                          <div className="button-group">
+                            {["Private Parking", "Public Parking", "Multilevel Parking", "Not Available"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${parkingTypeRetail.includes(opt) ? "active" : ""}`}
+                                onClick={() => {
+                                  if (opt === "Not Available") {
+                                    setParkingTypeRetail(["Not Available"]);
+                                  } else {
+                                    setParkingTypeRetail((prev) => {
+                                      let updated = prev.filter((i) => i !== "Not Available");
+                                      if (updated.includes(opt)) {
+                                        return updated.filter((i) => i !== opt);
+                                      } else {
+                                        return [...updated, opt];
+                                      }
+                                    });
+                                  }
+                                }}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+
+                        {/* Availability Status */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Availability Status
+                          </label>
+                          <div className="step3-button-group">
+                            {["Ready to Move", "Under Construction"].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => setAvailabilityStatus(status)}
+                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Age of property if Ready to Move */}
+                        {availabilityStatus === "Ready to Move" && (
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Age of property
+                            </label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Possession By if Under Construction */}
+                        {availabilityStatus === "Under Construction" && (
+                          <div className="step3-section">
+                            <label className="step3-label">Possession By</label>
+                            <select
+                              value={possessionBy}
+                              onChange={(e) => setPossessionBy(e.target.value)}
+                              className="step3-input"
+                            >
+                              <option value="" hidden>Expected time</option>
+                              <option value="Within 3 Months">Within 3 Months</option>
+                              <option value="Within 6 Months">Within 6 Months</option>
+                              <option value="By 2026">By 2026</option>
+                              <option value="By 2027">By 2027</option>
+                              <option value="By 2028">By 2028</option>
+                              <option value="By 2029">By 2029</option>
+                              <option value="By 2030">By 2030</option>
+                            </select>
+                          </div>
+                        )}
+
+                        {/* Business Type (multi-select dropdown with checkboxes) */}
+                        <div className="step3-section">
+                          <label className="step3-label">Business Type</label>
+
+                          <div
+                            className="step3-input"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              cursor: "pointer",
+                              marginTop: "4px",
+                            }}
+                            onClick={() => setShowBusinessTypes((p) => !p)}
+                          >
+                            {businessTypes.length === 0
+                              ? "Select"
+                              : businessTypes.length === 1
+                                ? businessTypes[0]
+                                : `${businessTypes[0]} +${businessTypes.length - 1}`
+                            }
+                            <span className="step3-dropdown-icon">▼</span>
+                          </div>
+
+                          {showBusinessTypes && (
+                            <div
+                              className="step3-dropdown-checkbox-list"
+                              style={{
+                                border: "1px solid #d1d5db",
+                                borderRadius: "4px",
+                                padding: "12px",
+                                maxHeight: "170px",
+                                overflowY: "auto",
+                                marginTop: "6px"
+                              }}
+                            >
+                              {[
+                                "ATM",
+                                "Bakery",
+                                "Boutique",
+                                "Clinic",
+                                "Grocery Store",
+                                "Restaurant"
+                              ].map((type) => (
+                                <label
+                                  key={type}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    marginBottom: "10px",
+                                    gap: "8px"
+                                  }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={businessTypes.includes(type)}
+                                    onChange={() => {
+                                      setBusinessTypes((prev) =>
+                                        prev.includes(type)
+                                          ? prev.filter((i) => i !== type)
+                                          : [...prev, type]
+                                      );
+                                    }}
+                                  />
+                                  <span>{type}</span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                      </>
+                    )}
+
+                  {propertyType === "Commercial" &&
+                    subPropertyType === "Plot" &&
+                    (
+                      subPropertyQuestionOption === "Commercial Land/inst.Land" ||
+                      subPropertyQuestionOption === "Agriculture/Farm Land" ||
+                      subPropertyQuestionOption === "Industrial Lands/Plots"
+                    ) && (
+                      <>
+                        {/* Plot Area Section */}
+                        <div
+                          className="mb-3"
+
+                        >
+                          <label
+                            style={{
+                              display: "block",
+                              fontSize: "16px",
+                              fontWeight: 600,
+                              marginBottom: "6px",
+                              color: "#333",
+                            }}
+                          >
+                            Add Area Details
+                          </label>
+
+                          <p
+                            style={{
+                              fontSize: "13px",
+                              color: "#777",
+                              marginBottom: "14px",
+                            }}
+                          >
+                            Please enter the plot size
+                          </p>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "10px",
+                            }}
+                          >
+                            {/* Input box */}
+                            <input
+                              type="number"
+                              placeholder="Plot Area"
+                              value={plotArea}
+                              onChange={(e) => setPlotArea(e.target.value)}
+                              style={{
+                                flex: 1,
+                                padding: "10px 14px",
+                                borderRadius: "8px",
+                                border: "1px solid #ccc",
+                                fontSize: "15px",
+                                color: "#333",
+                                outline: "none",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                                transition: "all 0.2s ease",
+                              }}
+                              onFocus={(e) => (e.target.style.border = "1px solid #4a90e2")}
+                              onBlur={(e) => (e.target.style.border = "1px solid #ccc")}
+                            />
+
+                            {/* Select dropdown */}
+                            <select
+                              value={plotAreaUnit}
+                              onChange={(e) => setPlotAreaUnit(e.target.value)}
+                              style={{
+                                padding: "10px 14px",
+                                borderRadius: "8px",
+                                border: "1px solid #ccc",
+                                fontSize: "15px",
+                                color: "#333",
+                                backgroundColor: "#fff",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                                outline: "none",
+                                cursor: "pointer",
+                                transition: "all 0.2s ease",
+                                height: "48px"
+                              }}
+                              onFocus={(e) => (e.target.style.border = "1px solid #4a90e2")}
+                              onBlur={(e) => (e.target.style.border = "1px solid #ccc")}
+                            >
+                              <option value="sqft">Sq.ft</option>
+                              <option value="sqyards">Sq.yards</option>
+                              <option value="sqm">Sq.m</option>
+                              <option value="acres">Acres</option>
+                              <option value="Marla">Marla</option>
+                              <option value="Cents">Cents</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Property Dimensions */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Property Dimensions <span className="step3-optional">(Optional)</span>
+                          </label>
+                          <input
+                            type="number"
+                            placeholder="Length of plot (in Yard)"
+                            value={plotLength}
+                            onChange={(e) => setPlotLength(e.target.value)}
+                            className="step3-input"
+                            style={{ marginBottom: "10px" }}
+                          />
+                          <input
+                            type="number"
+                            placeholder="Breadth of plot (in Yard)"
+                            value={plotBreadth}
+                            onChange={(e) => setPlotBreadth(e.target.value)}
+                            className="step3-input"
+                          />
+                        </div>
+
+                        {/* Width of facing road */}
+                        <div className="step3-section">
+                          <label className="step3-label">Width of facing road </label>
+                          <div className="step3-input-group">
+                            <input
+                              type="number"
+                              placeholder="Enter the width"
+                              value={roadWidth}
+                              onChange={(e) => setRoadWidth(e.target.value)}
+                              className="step3-input"
+                            />
+                            <div
+                              className="step3-unit-selector"
+                              onClick={() => setShowRoadUnit((p) => !p)}
+                            >
+                              {roadUnit || "Select"} <span className="step3-dropdown-icon">▼</span>
+                            </div>
+
+                            {showRoadUnit && (
+                              <div className="step3-unit-dropdown">
+                                {["Feet", "Meter"].map((u) => (
+                                  <div
+                                    key={u}
+                                    onClick={() => {
+                                      setRoadUnit(u);
+                                      setShowRoadUnit(false);
+                                    }}
+                                    className="step3-unit-option"
+                                  >
+                                    {u}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* No. of open sides */}
+                        <div className="step3-section">
+                          <label className="step3-label">No. of open sides</label>
+                          <div className="button-group">
+                            {["1", "2", "3", "3+"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${openSides === opt ? "active" : ""}`}
+                                onClick={() => setOpenSides(opt)}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+
+                        {/* Existing Construction */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Any construction done on this property?
+                          </label>
+                          <div className="step3-button-group">
+                            <button
+                              type="button"
+                              onClick={() => setHasConstruction(true)}
+                              className={`step3-option-btn ${hasConstruction ? 'active' : ''}`}
+                            >
+                              Yes
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setHasConstruction(false)}
+                              className={`step3-option-btn ${hasConstruction === false ? 'active' : ''}`}
+                            >
+                              No
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Construction Type (if hasConstruction is true) */}
+                        {hasConstruction && (
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              What type of construction has been done?
+                            </label>
+                            <div className="step3-button-group">
+                              {['Shed', 'Rooms', 'Washroom', 'Other'].map((type) => (
+                                <button
+                                  key={type}
+                                  type="button"
+                                  onClick={() => {
+                                    if (constructionTypes.includes(type)) {
+                                      setConstructionTypes(constructionTypes.filter(t => t !== type));
+                                    } else {
+                                      setConstructionTypes([...constructionTypes, type]);
+                                    }
+                                  }}
+                                  className={`step3-option-btn ${constructionTypes.includes(type) ? 'active' : ''}`}
+                                >
+                                  {type}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+
+                        {/* Property facing */}
+                        <div className="step3-section">
+                          <label className="step3-label">Property facing</label>
+                          <div className="button-group">
+                            {[
+                              "North",
+                              "South",
+                              "East",
+                              "West",
+                              "North-East",
+                              "North-West",
+                              "South-East",
+                              "South-West",
+                            ].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${propertyFacing === opt ? "active" : ""}`}
+                                onClick={() => setPropertyFacing(opt)}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+
+                        {/* Possession By */}
+                        <div className="step3-section">
+                          <label className="step3-label">Possession By</label>
+                          <select
+                            value={possessionBy}
+                            onChange={(e) => setPossessionBy(e.target.value)}
+                            className="step3-input"
+                          >
+                            <option value="" hidden>Expected time</option>
+                            <option value="Immediate">Immediate</option>
+                            <option value="Within 3 Months">Within 3 Months</option>
+                            <option value="Within 6 Months">Within 6 Months</option>
+                            <option value="By 2026">By 2026</option>
+                            <option value="By 2027">By 2027</option>
+                            <option value="By 2028">By 2028</option>
+                            <option value="By 2029">By 2029</option>
+
+                          </select>
+                        </div>
+
+
+                      </>
+                    )}
+
+                  {propertyType === "Commercial" &&
+                    subPropertyType === "Storage" &&
+                    (subPropertyQuestionOption === "Ware House" ||
+                      subPropertyQuestionOption === "Cold Storage") && (
+                      <>
+                        {/* Washrooms */}
+                        <div className="step3-section">
+                          <label className="step3-label">Washrooms</label>
+                          <div className="button-group">
+                            {["None", "Shared", "1", "2", "3", "4"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${washroomBare === opt ? "active" : ""}`}
+                                onClick={() => setWashroomBare(opt)}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {/* Area Details */}
+                        <div
+                          className="mb-3"
+                        >
+                          {/* Header */}
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              marginBottom: "8px",
+                            }}
+                          >
+                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                              Add Area Details
+                            </label>
+
+                          </div>
+
+                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                            At least one area type is mandatory
+                          </p>
+
+                          {/* Carpet Area */}
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "10px",
+                              marginBottom: "16px",
+                              position: "relative",
+                            }}
+                          >
+                            <input
+                              type="number"
+                              placeholder="Carpet Area"
+                              value={carpetArea}
+                              onChange={(e) => setCarpetArea(e.target.value)}
+                              style={{
+                                flex: 1,
+                                padding: "12px",
+                                borderRadius: "8px",
+                                border: "1px solid #ccc",
+                                fontSize: "14px",
+                              }}
+                            />
+                            <div
+                              style={{
+                                minWidth: "100px",
+                                padding: "12px",
+                                border: "1px solid #ccc",
+                                borderRadius: "8px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                cursor: "pointer",
+                                background: "#f9f9f9",
+                              }}
+                              onClick={() => setShowCarpetUnits((p) => !p)}
+                            >
+                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                            </div>
+
+                            {showCarpetUnits && (
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: "110%",
+                                  right: "0",
+                                  background: "#fff",
+                                  border: "1px solid #ddd",
+                                  borderRadius: "8px",
+                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                  zIndex: 10,
+                                  width: "120px",
+                                }}
+                              >
+                                {UNIT_OPTIONS.map((u) => (
+                                  <div
+                                    key={u}
+                                    onClick={() => {
+                                      setCarpetUnit(u);
+                                      setBuiltUpUnit(u); // sync
+                                      setShowCarpetUnits(false);
+                                    }}
+                                    style={{
+                                      padding: "10px",
+                                      cursor: "pointer",
+                                      background: carpetUnit === u ? "#ED2027" : "#fff",
+                                      color: carpetUnit === u ? "#fff" : "#333",
+                                      borderBottom: "1px solid #eee",
+                                    }}
+                                  >
+                                    {u}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Validation */}
+                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                              Carpet area must be smaller than built-up area
+                            </p>
+                          )}
+
+                          {/* Built-up Area */}
+                          {!showBuiltUpArea ? (
+                            <button
+                              type="button"
+                              onClick={() => setShowBuiltUpArea(true)}
+                              style={{
+                                background: "transparent",
+                                border: "1px dashed #ED2027",
+                                color: "#ED2027",
+                                padding: "10px 14px",
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                fontWeight: "500",
+                                marginTop: "10px",
+                              }}
+                            >
+                              + Add Built-up Area
+                            </button>
+                          ) : (
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                marginTop: "16px",
+                                position: "relative",
+                              }}
+                            >
+                              <input
+                                type="number"
+                                placeholder="Built-up Area"
+                                value={builtUpArea}
+                                onChange={(e) => setBuiltUpArea(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: "12px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ccc",
+                                  fontSize: "14px",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  minWidth: "100px",
+                                  padding: "12px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  cursor: "pointer",
+                                  background: "#f9f9f9",
+                                }}
+                                onClick={() => setShowBuiltUpUnits((p) => !p)}
+                              >
+                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                              </div>
+
+                              {showBuiltUpUnits && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "110%",
+                                    right: "0",
+                                    background: "#fff",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                    zIndex: 10,
+                                    width: "120px",
+                                  }}
+                                >
+                                  {UNIT_OPTIONS.map((u) => (
+                                    <div
+                                      key={u}
+                                      onClick={() => {
+                                        setBuiltUpUnit(u);
+                                        setCarpetUnit(u); // sync
+                                        setShowBuiltUpUnits(false);
+                                      }}
+                                      style={{
+                                        padding: "10px",
+                                        cursor: "pointer",
+                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                        color: builtUpUnit === u ? "#fff" : "#333",
+                                        borderBottom: "1px solid #eee",
+                                      }}
+                                    >
+                                      {u}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Availability Status */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Availability Status
+                          </label>
+                          <div className="step3-button-group">
+                            {["Ready to Move", "Under Construction"].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => setAvailabilityStatus(status)}
+                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Age of property if Ready to Move */}
+                        {availabilityStatus === "Ready to Move" && (
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Age of property
+                            </label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Possession By if Under Construction */}
+                        {availabilityStatus === "Under Construction" && (
+                          <div className="step3-section">
+                            <label className="step3-label">Possession By</label>
+                            <select
+                              value={possessionBy}
+                              onChange={(e) => setPossessionBy(e.target.value)}
+                              className="step3-input"
+                            >
+                              <option value="" hidden>Expected time</option>
+                              <option value="Within 3 Months">Within 3 Months</option>
+                              <option value="Within 6 Months">Within 6 Months</option>
+                              <option value="By 2026">By 2026</option>
+                              <option value="By 2027">By 2027</option>
+                              <option value="By 2028">By 2028</option>
+                              <option value="By 2029">By 2029</option>
+                              <option value="By 2030">By 2030</option>
+                            </select>
+                          </div>
+                        )}
+
+
+
+                      </>
+                    )}
+
+                  {propertyType === "Commercial" &&
+                    subPropertyType === "Industry" &&
+                    (subPropertyQuestionOption === "Factory" ||
+                      subPropertyQuestionOption === "Manufacturing") && (
+                      <>
+                        {/* Washrooms */}
+                        <div className="step3-section">
+                          <label className="step3-label">Washrooms</label>
+                          <div className="button-group">
+                            {["None", "Shared", "1", "2", "3", "4"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${washroomBare === opt ? "active" : ""}`}
+                                onClick={() => setWashroomBare(opt)}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+
+                        {/* Availability Status */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Availability Status
+                          </label>
+                          <div className="step3-button-group">
+                            {["Ready to Move", "Under Construction"].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => setAvailabilityStatus(status)}
+                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Age of property if Ready to Move */}
+                        {availabilityStatus === "Ready to Move" && (
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Age of property
+                            </label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Possession By if Under Construction */}
+                        {availabilityStatus === "Under Construction" && (
+                          <div className="step3-section">
+                            <label className="step3-label">Possession By</label>
+                            <select
+                              value={possessionBy}
+                              onChange={(e) => setPossessionBy(e.target.value)}
+                              className="step3-input"
+                            >
+                              <option value="" hidden>Expected time</option>
+                              <option value="Within 3 Months">Within 3 Months</option>
+                              <option value="Within 6 Months">Within 6 Months</option>
+                              <option value="By 2026">By 2026</option>
+                              <option value="By 2027">By 2027</option>
+                              <option value="By 2028">By 2028</option>
+                              <option value="By 2029">By 2029</option>
+                              <option value="By 2030">By 2030</option>
+                            </select>
+                          </div>
+                        )}
+
+
+
+                      </>
+                    )}
+
+
+                  {propertyType === "Commercial" &&
+                    subPropertyType === "Hospitality" &&
+                    (subPropertyQuestionOption === "Hotel / Resorts" ||
+                      subPropertyQuestionOption === "Guest-House / Banquet Hall") && (
+                      <>
+                        {/* Add Room Details */}
+                        <div className="step3-section">
+                          <label className="step3-label">Add Room Details</label>
+                          <input
+                            type="number"
+                            placeholder="Enter the total no. of rooms"
+                            value={totalRooms}
+                            onChange={(e) => setTotalRooms(e.target.value)}
+                            className="step3-input"
+                            style={{ marginBottom: "12px" }}
+                          />
+
+                          <label className="step3-label" style={{ marginTop: "8px" }}>No. of Washrooms</label>
+                          <div className="button-group">
+                            {["None", "Shared", "1", "2", "3", "4"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                className={`subproperty-option ${hospitalityWash === opt ? "active" : ""}`}
+                                onClick={() => setHospitalityWash(opt)}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Availability Status */}
+                        <div className="step3-section">
+                          <label className="step3-label">
+                            Availability Status
+                          </label>
+                          <div className="step3-button-group">
+                            {["Ready to Move", "Under Construction"].map((status) => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => setAvailabilityStatus(status)}
+                                className={`step3-option-btn ${availabilityStatus === status ? 'active' : ''}`}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Age of property if Ready to Move */}
+                        {availabilityStatus === "Ready to Move" && (
+                          <div className="step3-section">
+                            <label className="step3-label">
+                              Age of property
+                            </label>
+                            <div className="step3-button-group">
+                              {["0-1 years", "1-5 years", "5-10 years", "10+ years"].map((age) => (
+                                <button
+                                  key={age}
+                                  type="button"
+                                  onClick={() => setAgeOfProperty(age)}
+                                  className={`step3-option-btn ${ageOfProperty === age ? 'active' : ''}`}
+                                >
+                                  {age}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Possession By if Under Construction */}
+                        {availabilityStatus === "Under Construction" && (
+                          <div className="step3-section">
+                            <label className="step3-label">Possession By</label>
+                            <select
+                              value={possessionBy}
+                              onChange={(e) => setPossessionBy(e.target.value)}
+                              className="step3-input"
+                            >
+                              <option value="" hidden>Expected time</option>
+                              <option value="Within 3 Months">Within 3 Months</option>
+                              <option value="Within 6 Months">Within 6 Months</option>
+                              <option value="By 2026">By 2026</option>
+                              <option value="By 2027">By 2027</option>
+                              <option value="By 2028">By 2028</option>
+                              <option value="By 2029">By 2029</option>
+                              <option value="By 2030">By 2030</option>
+                            </select>
+                          </div>
+                        )}
+
+                        {/* Quality Rating */}
+                        <div className="step3-section">
+                          <label className="step3-label">Quality Rating</label>
+                          <div className="button-group">
+                            {["No Rating", "1 Star", "2 Star", "3 Star", "4 Star", "5 Star", "6 Star", "7 Star"].map((rate) => (
+                              <button
+                                key={rate}
+                                type="button"
+                                className={`subproperty-option ${qualityRating === rate ? "active" : ""}`}
+                                onClick={() => setQualityRating(rate)}
+                              >
+                                {rate}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+
+                      </>
+                    )}
+
+                  {propertyType === "Commercial" &&
+                    (subPropertyType === "Others") && (
+                      <>
+                        {/* Area Details */}
+                        <div
+                          className="mb-3"
+                        >
+                          {/* Header */}
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              marginBottom: "8px",
+                            }}
+                          >
+                            <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                              Add Area Details
+                            </label>
+
+                          </div>
+
+                          <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                            At least one area type is mandatory
+                          </p>
+
+                          {/* Carpet Area */}
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "10px",
+                              marginBottom: "16px",
+                              position: "relative",
+                            }}
+                          >
+                            <input
+                              type="number"
+                              placeholder="Carpet Area"
+                              value={carpetArea}
+                              onChange={(e) => setCarpetArea(e.target.value)}
+                              style={{
+                                flex: 1,
+                                padding: "12px",
+                                borderRadius: "8px",
+                                border: "1px solid #ccc",
+                                fontSize: "14px",
+                              }}
+                            />
+                            <div
+                              style={{
+                                minWidth: "100px",
+                                padding: "12px",
+                                border: "1px solid #ccc",
+                                borderRadius: "8px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                cursor: "pointer",
+                                background: "#f9f9f9",
+                              }}
+                              onClick={() => setShowCarpetUnits((p) => !p)}
+                            >
+                              {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                            </div>
+
+                            {showCarpetUnits && (
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: "110%",
+                                  right: "0",
+                                  background: "#fff",
+                                  border: "1px solid #ddd",
+                                  borderRadius: "8px",
+                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                  zIndex: 10,
+                                  width: "120px",
+                                }}
+                              >
+                                {UNIT_OPTIONS.map((u) => (
+                                  <div
+                                    key={u}
+                                    onClick={() => {
+                                      setCarpetUnit(u);
+                                      setBuiltUpUnit(u); // sync
+                                      setShowCarpetUnits(false);
+                                    }}
+                                    style={{
+                                      padding: "10px",
+                                      cursor: "pointer",
+                                      background: carpetUnit === u ? "#ED2027" : "#fff",
+                                      color: carpetUnit === u ? "#fff" : "#333",
+                                      borderBottom: "1px solid #eee",
+                                    }}
+                                  >
+                                    {u}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Validation */}
+                          {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                            <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                              Carpet area must be smaller than built-up area
+                            </p>
+                          )}
+
+                          {/* Built-up Area */}
+                          {!showBuiltUpArea ? (
+                            <button
+                              type="button"
+                              onClick={() => setShowBuiltUpArea(true)}
+                              style={{
+                                background: "transparent",
+                                border: "1px dashed #ED2027",
+                                color: "#ED2027",
+                                padding: "10px 14px",
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                fontWeight: "500",
+                                marginTop: "10px",
+                              }}
+                            >
+                              + Add Built-up Area
+                            </button>
+                          ) : (
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                marginTop: "16px",
+                                position: "relative",
+                              }}
+                            >
+                              <input
+                                type="number"
+                                placeholder="Built-up Area"
+                                value={builtUpArea}
+                                onChange={(e) => setBuiltUpArea(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: "12px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ccc",
+                                  fontSize: "14px",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  minWidth: "100px",
+                                  padding: "12px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  cursor: "pointer",
+                                  background: "#f9f9f9",
+                                }}
+                                onClick={() => setShowBuiltUpUnits((p) => !p)}
+                              >
+                                {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                              </div>
+
+                              {showBuiltUpUnits && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "110%",
+                                    right: "0",
+                                    background: "#fff",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                    zIndex: 10,
+                                    width: "120px",
+                                  }}
+                                >
+                                  {UNIT_OPTIONS.map((u) => (
+                                    <div
+                                      key={u}
+                                      onClick={() => {
+                                        setBuiltUpUnit(u);
+                                        setCarpetUnit(u); // sync
+                                        setShowBuiltUpUnits(false);
+                                      }}
+                                      style={{
+                                        padding: "10px",
+                                        cursor: "pointer",
+                                        background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                        color: builtUpUnit === u ? "#fff" : "#333",
+                                        borderBottom: "1px solid #eee",
+                                      }}
+                                    >
+                                      {u}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Possession By */}
+                        <div className="step3-section">
+                          <label className="step3-label">Possession By</label>
+                          <select
+                            value={possessionBy}
+                            onChange={(e) => setPossessionBy(e.target.value)}
+                            className="step3-input"
+                          >
+                            <option value="" hidden>Expected time</option>
+                            <option value="Immediate">Immediate</option>
+                            <option value="Within 3 Months">Within 3 Months</option>
+                            <option value="Within 6 Months">Within 6 Months</option>
+                            <option value="By 2026">By 2026</option>
+                            <option value="By 2027">By 2027</option>
+                            <option value="By 2028">By 2028</option>
+                            <option value="By 2029">By 2029</option>
+
+                          </select>
+                        </div>
+
+
+                      </>
+                    )}
+
+
+
+                  {(subPropertyType.includes("Flat / Apartment") || subPropertyType.includes("Independent House / Villa") || subPropertyType.includes("1 RK / Studio Apartment") || subPropertyType.includes("Farmhouse")) && (
+                    <>
+
+                      {listingType === "Joint Venture" && propertyType === "Residential" && (
+                        <>
+                          <div
+                            className="mb-3"
+                          >
+                            {/* Header */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                                Add Area Details
+                              </label>
+
+                            </div>
+
+                            <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                              At least one area type is mandatory
+                            </p>
+
+                            {/* Carpet Area */}
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                marginBottom: "16px",
+                                position: "relative",
+                              }}
+                            >
+                              <input
+                                type="number"
+                                placeholder="Carpet Area"
+                                value={carpetArea}
+                                onChange={(e) => setCarpetArea(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: "12px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ccc",
+                                  fontSize: "14px",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  minWidth: "100px",
+                                  padding: "12px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  cursor: "pointer",
+                                  background: "#f9f9f9",
+                                }}
+                                onClick={() => setShowCarpetUnits((p) => !p)}
+                              >
+                                {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                              </div>
+
+                              {showCarpetUnits && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "110%",
+                                    right: "0",
+                                    background: "#fff",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                    zIndex: 10,
+                                    width: "120px",
+                                  }}
+                                >
+                                  {UNIT_OPTIONS.map((u) => (
+                                    <div
+                                      key={u}
+                                      onClick={() => {
+                                        setCarpetUnit(u);
+                                        setBuiltUpUnit(u); // sync
+                                        setShowCarpetUnits(false);
+                                      }}
+                                      style={{
+                                        padding: "10px",
+                                        cursor: "pointer",
+                                        background: carpetUnit === u ? "#ED2027" : "#fff",
+                                        color: carpetUnit === u ? "#fff" : "#333",
+                                        borderBottom: "1px solid #eee",
+                                      }}
+                                    >
+                                      {u}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Validation */}
+                            {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                              <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                                Carpet area must be smaller than built-up area
+                              </p>
+                            )}
+
+                            {/* Built-up Area */}
+                            {!showBuiltUpArea ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowBuiltUpArea(true)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px dashed #ED2027",
+                                  color: "#ED2027",
+                                  padding: "10px 14px",
+                                  borderRadius: "8px",
+                                  cursor: "pointer",
+                                  fontWeight: "500",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                + Add Built-up Area
+                              </button>
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  marginTop: "16px",
+                                  position: "relative",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  placeholder="Built-up Area"
+                                  value={builtUpArea}
+                                  onChange={(e) => setBuiltUpArea(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    fontSize: "14px",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    minWidth: "100px",
+                                    padding: "12px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    cursor: "pointer",
+                                    background: "#f9f9f9",
+                                  }}
+                                  onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                >
+                                  {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                </div>
+
+                                {showBuiltUpUnits && (
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "110%",
+                                      right: "0",
+                                      background: "#fff",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                      zIndex: 10,
+                                      width: "120px",
+                                    }}
+                                  >
+                                    {UNIT_OPTIONS.map((u) => (
+                                      <div
+                                        key={u}
+                                        onClick={() => {
+                                          setBuiltUpUnit(u);
+                                          setCarpetUnit(u); // sync
+                                          setShowBuiltUpUnits(false);
+                                        }}
+                                        style={{
+                                          padding: "10px",
+                                          cursor: "pointer",
+                                          background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                          color: builtUpUnit === u ? "#fff" : "#333",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        {u}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <label className="step3-label">
+                              Joint Venture Percentage
+                            </label>
+
+                            <div style={{ gap: "15px", width: "400px" }}>
+                              {/* Owner Percentage Input */}
+                              <div>
+                                <label style={{ display: "block", marginBottom: "5px" }}>
+                                  Owner Percentage
+                                </label>
+                                <input
+                                  type="number"
+                                  value={ownerPercentage}
+                                  onChange={handleOwnerPercentageChange}
+                                  placeholder="Enter owner %"
+                                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                                />
+                              </div>
+
+                              {/* Developer Percentage Input */}
+                              <div>
+                                <label style={{ display: "block", marginBottom: "5px", marginTop: "20px" }}>
+                                  Developer Percentage
+                                </label>
+                                <input
+                                  type="number"
+                                  value={developerPercentage}
+                                  onChange={handleDeveloperPercentageChange}
+                                  placeholder="Enter developer %"
+                                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+
+
+
+                        </>
                       )}
 
-                      {/* Built-up Area */}
-                      {!showBuiltUpArea ? (
-                        <button
-                          type="button"
-                          onClick={() => setShowBuiltUpArea(true)}
+
+                    </>
+                  )}
+
+                  {(subPropertyType.includes("Office") || subPropertyType.includes("Retail") || subPropertyType.includes("Industry") || subPropertyType.includes("Hospitality")) && (
+                    <>
+                      {listingType === "Joint Venture" && propertyType === "Commercial" && (
+                        <>
+                          <div
+                            className="mb-3"
+                          >
+                            {/* Header */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                                Add Area Details
+                              </label>
+
+                            </div>
+
+                            <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                              At least one area type is mandatory
+                            </p>
+
+                            {/* Carpet Area */}
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                marginBottom: "16px",
+                                position: "relative",
+                              }}
+                            >
+                              <input
+                                type="number"
+                                placeholder="Carpet Area"
+                                value={carpetArea}
+                                onChange={(e) => setCarpetArea(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: "12px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ccc",
+                                  fontSize: "14px",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  minWidth: "100px",
+                                  padding: "12px",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "8px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  cursor: "pointer",
+                                  background: "#f9f9f9",
+                                }}
+                                onClick={() => setShowCarpetUnits((p) => !p)}
+                              >
+                                {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                              </div>
+
+                              {showCarpetUnits && (
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    top: "110%",
+                                    right: "0",
+                                    background: "#fff",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                    zIndex: 10,
+                                    width: "120px",
+                                  }}
+                                >
+                                  {UNIT_OPTIONS.map((u) => (
+                                    <div
+                                      key={u}
+                                      onClick={() => {
+                                        setCarpetUnit(u);
+                                        setBuiltUpUnit(u); // sync
+                                        setShowCarpetUnits(false);
+                                      }}
+                                      style={{
+                                        padding: "10px",
+                                        cursor: "pointer",
+                                        background: carpetUnit === u ? "#ED2027" : "#fff",
+                                        color: carpetUnit === u ? "#fff" : "#333",
+                                        borderBottom: "1px solid #eee",
+                                      }}
+                                    >
+                                      {u}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Validation */}
+                            {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                              <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                                Carpet area must be smaller than built-up area
+                              </p>
+                            )}
+
+                            {/* Built-up Area */}
+                            {!showBuiltUpArea ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowBuiltUpArea(true)}
+                                style={{
+                                  background: "transparent",
+                                  border: "1px dashed #ED2027",
+                                  color: "#ED2027",
+                                  padding: "10px 14px",
+                                  borderRadius: "8px",
+                                  cursor: "pointer",
+                                  fontWeight: "500",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                + Add Built-up Area
+                              </button>
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  marginTop: "16px",
+                                  position: "relative",
+                                }}
+                              >
+                                <input
+                                  type="number"
+                                  placeholder="Built-up Area"
+                                  value={builtUpArea}
+                                  onChange={(e) => setBuiltUpArea(e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: "12px",
+                                    borderRadius: "8px",
+                                    border: "1px solid #ccc",
+                                    fontSize: "14px",
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    minWidth: "100px",
+                                    padding: "12px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    cursor: "pointer",
+                                    background: "#f9f9f9",
+                                  }}
+                                  onClick={() => setShowBuiltUpUnits((p) => !p)}
+                                >
+                                  {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                                </div>
+
+                                {showBuiltUpUnits && (
+                                  <div
+                                    style={{
+                                      position: "absolute",
+                                      top: "110%",
+                                      right: "0",
+                                      background: "#fff",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                      zIndex: 10,
+                                      width: "120px",
+                                    }}
+                                  >
+                                    {UNIT_OPTIONS.map((u) => (
+                                      <div
+                                        key={u}
+                                        onClick={() => {
+                                          setBuiltUpUnit(u);
+                                          setCarpetUnit(u); // sync
+                                          setShowBuiltUpUnits(false);
+                                        }}
+                                        style={{
+                                          padding: "10px",
+                                          cursor: "pointer",
+                                          background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                          color: builtUpUnit === u ? "#fff" : "#333",
+                                          borderBottom: "1px solid #eee",
+                                        }}
+                                      >
+                                        {u}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+
+                          <div>
+                            <label className="step3-label">
+                              Joint Venture Percentage
+                            </label>
+
+                            <div style={{ gap: "15px", width: "400px" }}>
+                              {/* Owner Percentage Input */}
+                              <div>
+                                <label style={{ display: "block", marginBottom: "5px" }}>
+                                  Owner Percentage
+                                </label>
+                                <input
+                                  type="number"
+                                  value={ownerPercentage}
+                                  onChange={handleOwnerPercentageChange}
+                                  placeholder="Enter owner %"
+                                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                                />
+                              </div>
+
+                              {/* Developer Percentage Input */}
+                              <div>
+                                <label style={{ display: "block", marginBottom: "5px", marginTop: "20px" }}>
+                                  Developer Percentage
+                                </label>
+                                <input
+                                  type="number"
+                                  value={developerPercentage}
+                                  onChange={handleDeveloperPercentageChange}
+                                  placeholder="Enter developer %"
+                                  style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                        </>
+                      )}
+                    </>
+                  )}
+
+
+                  {listingType === "Joint Venture" && propertyType === "Layout/Land development" && (
+                    <>
+                      <div
+                        className="mb-3"
+                      >
+                        {/* Header */}
+                        <div
                           style={{
-                            background: "transparent",
-                            border: "1px dashed #ED2027",
-                            color: "#ED2027",
-                            padding: "10px 14px",
-                            borderRadius: "8px",
-                            cursor: "pointer",
-                            fontWeight: "500",
-                            marginTop: "10px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            marginBottom: "8px",
                           }}
                         >
-                          + Add Built-up Area
-                        </button>
-                      ) : (
+                          <label style={{ fontSize: "16px", fontWeight: 600, color: "#333" }}>
+                            Add Area Details
+                          </label>
+
+                        </div>
+
+                        <p style={{ fontSize: "13px", color: "#888", marginBottom: "16px" }}>
+                          At least one area type is mandatory
+                        </p>
+
+                        {/* Carpet Area */}
                         <div
                           style={{
                             display: "flex",
                             gap: "10px",
-                            marginTop: "16px",
+                            marginBottom: "16px",
                             position: "relative",
                           }}
                         >
                           <input
                             type="number"
-                            placeholder="Built-up Area"
-                            value={builtUpArea}
-                            onChange={(e) => setBuiltUpArea(e.target.value)}
+                            placeholder="Carpet Area"
+                            value={carpetArea}
+                            onChange={(e) => setCarpetArea(e.target.value)}
                             style={{
                               flex: 1,
                               padding: "12px",
@@ -9267,12 +9313,12 @@ const AddProperty = () => {
                               cursor: "pointer",
                               background: "#f9f9f9",
                             }}
-                            onClick={() => setShowBuiltUpUnits((p) => !p)}
+                            onClick={() => setShowCarpetUnits((p) => !p)}
                           >
-                            {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                            {carpetUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
                           </div>
 
-                          {showBuiltUpUnits && (
+                          {showCarpetUnits && (
                             <div
                               style={{
                                 position: "absolute",
@@ -9290,15 +9336,15 @@ const AddProperty = () => {
                                 <div
                                   key={u}
                                   onClick={() => {
-                                    setBuiltUpUnit(u);
-                                    setCarpetUnit(u); // sync
-                                    setShowBuiltUpUnits(false);
+                                    setCarpetUnit(u);
+                                    setBuiltUpUnit(u); // sync
+                                    setShowCarpetUnits(false);
                                   }}
                                   style={{
                                     padding: "10px",
                                     cursor: "pointer",
-                                    background: builtUpUnit === u ? "#ED2027" : "#fff",
-                                    color: builtUpUnit === u ? "#fff" : "#333",
+                                    background: carpetUnit === u ? "#ED2027" : "#fff",
+                                    color: carpetUnit === u ? "#fff" : "#333",
                                     borderBottom: "1px solid #eee",
                                   }}
                                 >
@@ -9308,72 +9354,190 @@ const AddProperty = () => {
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
+
+                        {/* Validation */}
+                        {carpetArea && builtUpArea && Number(carpetArea) >= Number(builtUpArea) && (
+                          <p style={{ color: "red", fontSize: "13px", marginBottom: "12px" }}>
+                            Carpet area must be smaller than built-up area
+                          </p>
+                        )}
+
+                        {/* Built-up Area */}
+                        {!showBuiltUpArea ? (
+                          <button
+                            type="button"
+                            onClick={() => setShowBuiltUpArea(true)}
+                            style={{
+                              background: "transparent",
+                              border: "1px dashed #ED2027",
+                              color: "#ED2027",
+                              padding: "10px 14px",
+                              borderRadius: "8px",
+                              cursor: "pointer",
+                              fontWeight: "500",
+                              marginTop: "10px",
+                            }}
+                          >
+                            + Add Built-up Area
+                          </button>
+                        ) : (
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "10px",
+                              marginTop: "16px",
+                              position: "relative",
+                            }}
+                          >
+                            <input
+                              type="number"
+                              placeholder="Built-up Area"
+                              value={builtUpArea}
+                              onChange={(e) => setBuiltUpArea(e.target.value)}
+                              style={{
+                                flex: 1,
+                                padding: "12px",
+                                borderRadius: "8px",
+                                border: "1px solid #ccc",
+                                fontSize: "14px",
+                              }}
+                            />
+                            <div
+                              style={{
+                                minWidth: "100px",
+                                padding: "12px",
+                                border: "1px solid #ccc",
+                                borderRadius: "8px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                cursor: "pointer",
+                                background: "#f9f9f9",
+                              }}
+                              onClick={() => setShowBuiltUpUnits((p) => !p)}
+                            >
+                              {builtUpUnit || "Unit"} <span style={{ fontSize: "12px" }}>▼</span>
+                            </div>
+
+                            {showBuiltUpUnits && (
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  top: "110%",
+                                  right: "0",
+                                  background: "#fff",
+                                  border: "1px solid #ddd",
+                                  borderRadius: "8px",
+                                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                                  zIndex: 10,
+                                  width: "120px",
+                                }}
+                              >
+                                {UNIT_OPTIONS.map((u) => (
+                                  <div
+                                    key={u}
+                                    onClick={() => {
+                                      setBuiltUpUnit(u);
+                                      setCarpetUnit(u); // sync
+                                      setShowBuiltUpUnits(false);
+                                    }}
+                                    style={{
+                                      padding: "10px",
+                                      cursor: "pointer",
+                                      background: builtUpUnit === u ? "#ED2027" : "#fff",
+                                      color: builtUpUnit === u ? "#fff" : "#333",
+                                      borderBottom: "1px solid #eee",
+                                    }}
+                                  >
+                                    {u}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
 
 
-                    <div>
-                      <label className="step3-label">
-                        Joint Venture Percentage
-                      </label>
+                      <div>
+                        <label className="step3-label">
+                          Joint Venture Percentage
+                        </label>
 
-                      <div style={{ gap: "15px", width: "400px" }}>
-                        {/* Owner Percentage Input */}
-                        <div>
-                          <label style={{ display: "block", marginBottom: "5px" }}>
-                            Owner Percentage
-                          </label>
-                          <input
-                            type="number"
-                            value={ownerPercentage}
-                            onChange={handleOwnerPercentageChange}
-                            placeholder="Enter owner %"
-                            style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
-                          />
-                        </div>
+                        <div style={{ gap: "15px", width: "400px" }}>
+                          {/* Owner Percentage Input */}
+                          <div>
+                            <label style={{ display: "block", marginBottom: "5px" }}>
+                              Owner Percentage
+                            </label>
+                            <input
+                              type="number"
+                              value={ownerPercentage}
+                              onChange={handleOwnerPercentageChange}
+                              placeholder="Enter owner %"
+                              style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                            />
+                          </div>
 
-                        {/* Developer Percentage Input */}
-                        <div>
-                          <label style={{ display: "block", marginBottom: "5px", marginTop: "20px" }}>
-                            Developer Percentage
-                          </label>
-                          <input
-                            type="number"
-                            value={developerPercentage}
-                            onChange={handleDeveloperPercentageChange}
-                            placeholder="Enter developer %"
-                            style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
-                          />
+                          {/* Developer Percentage Input */}
+                          <div>
+                            <label style={{ display: "block", marginBottom: "5px", marginTop: "20px" }}>
+                              Developer Percentage
+                            </label>
+                            <input
+                              type="number"
+                              value={developerPercentage}
+                              onChange={handleDeveloperPercentageChange}
+                              placeholder="Enter developer %"
+                              style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                  </>
-                )}
+                    </>
+                  )}
 
-                <div className="step3-continue-container" style={{ display: "flex", justifyContent: "space-between" }}>
-                  <button
-                    onClick={() => setCurrentStep(4)}
-                    className="step3-continue-btn"
-                  >
-                    Continue
-                  </button>
+                  <div className="step3-continue-container" style={{ display: "flex", justifyContent: "space-between" }}>
+                    <button
+                      onClick={() => setCurrentStep(4)}
+                      disabled={!canContinue}
+                      className="step3-continue-btn"
+                      style={{
+                        borderRadius: "6px",
+                        border: "none",
+                        backgroundColor: canContinue ? "red" : "grey",
+                        color: "white",
+                        cursor: canContinue ? "pointer" : "not-allowed",
+                        padding: "10px 20px",
+                        fontWeight: "600",
+                        fontSize: "16px",
+                        textAlign: "center",
+                        minWidth: "120px",
+                        display: "inline-block",
+                      }}
+                    >
+                      Continue
+                    </button>
 
-                  <button
-                    className="back-btn"
-                    onClick={handleBack}
-                    style={{
-                      padding: "10px 20px",
-                      border: "1px solid #ccc",
-                      borderRadius: "6px",
-                      background: "#f8f8f8",
-                      cursor: "pointer",
-                      fontSize: "14px",
 
-                    }}
-                  >
-                    Back
-                  </button>
+                    <button
+                      className="back-btn"
+                      onClick={handleBack}
+                      style={{
+                        padding: "10px 20px",
+                        border: "1px solid #ccc",
+                        borderRadius: "6px",
+                        background: "#f8f8f8",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        marginLeft: "20px",
+
+                      }}
+                    >
+                      Back
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

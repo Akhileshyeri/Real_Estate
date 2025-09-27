@@ -649,14 +649,14 @@ const MyProfile = () => {
 
 
 
-                                                        {/* {!isMobileView && (
+                                                         {!isMobileView && (
                                                             <p
                                                                 className="name"
                                                                 style={{ cursor: "pointer", display: "inline-block", marginLeft: "8px" }}
                                                             >
                                                                 {name} <span className="icon icon-arr-down"></span>
                                                             </p>
-                                                        )} */}
+                                                        )} 
 
 
                                                         {/* Dropdown */}

@@ -200,7 +200,14 @@
 .widget-box-2,
 .widget-box-3 {
   flex: 1; /* make them expand equally */
+  
 }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
 
 
 

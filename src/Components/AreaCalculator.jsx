@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Header from './Header';
-import wefwfwfer from './Footer';
+
+import Footer from './Footer';
 
 const AreaConverter = () => {
   const [fromValue, setFromValue] = useState('');
@@ -25,12 +26,12 @@ const AreaConverter = () => {
   const handleFromValueChange = (e) => {
     const value = e.target.value;
     setFromValue(value);
-    
+
     if (value === '') {
       setToValue('');
       return;
     }
-    
+
     const numValue = parseFloat(value);
     if (!isNaN(numValue)) {
       // Convert from fromUnit to square meters, then to toUnit
@@ -43,9 +44,9 @@ const AreaConverter = () => {
   const handleFromUnitChange = (e) => {
     const newFromUnit = e.target.value;
     setFromUnit(newFromUnit);
-    
+
     if (fromValue === '') return;
-    
+
     const numValue = parseFloat(fromValue);
     if (!isNaN(numValue)) {
       const valueInSquareMeters = numValue / conversionFactors[newFromUnit];
@@ -57,9 +58,9 @@ const AreaConverter = () => {
   const handleToUnitChange = (e) => {
     const newToUnit = e.target.value;
     setToUnit(newToUnit);
-    
+
     if (fromValue === '') return;
-    
+
     const numValue = parseFloat(fromValue);
     if (!isNaN(numValue)) {
       const valueInSquareMeters = numValue / conversionFactors[fromUnit];
@@ -71,7 +72,7 @@ const AreaConverter = () => {
   const swapUnits = () => {
     setFromUnit(toUnit);
     setToUnit(fromUnit);
-    
+
     if (fromValue !== '') {
       setFromValue(toValue);
       setToValue(fromValue);
@@ -80,96 +81,96 @@ const AreaConverter = () => {
 
   return (
     <div style={styles.container}>
-        <Header />
+      <Header />
       {/* Header Section */}
-    
+
 
       {/* Converter Section */}
-        <section className="flat-section">
+      <section className="flat-section">
         <div className="container">
-      <section style={styles.converterSection}>
-        <div style={styles.converterContainer}>
-          <div style={styles.header}>
-            <h1 style={styles.converterTitle}>Area Converter</h1>
-            <p style={styles.subtitle}>Enter the value and select desired unit</p>
-          </div>
-
-          {/* State Information */}
-         
-
-          {/* Converter Form */}
-          <div style={styles.converterForm}>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>From</label>
-              <div style={styles.inputContainer}>
-                <input
-                  type="number"
-                  value={fromValue}
-                  onChange={handleFromValueChange}
-                  placeholder="Enter value"
-                  style={styles.input}
-                />
-                <select
-                  value={fromUnit}
-                  onChange={handleFromUnitChange}
-                  style={styles.select}
-                >
-                  <option value="square-meter">Square Meter</option>
-                  <option value="square-feet">Square Feet</option>
-                  <option value="square-inch">Square Inch</option>
-                  <option value="square-kilometer">Square Kilometer</option>
-                  <option value="hectare">Hectare</option>
-                  <option value="acre">Acre</option>
-                  <option value="square-mile">Square Mile</option>
-                  <option value="bigha">Bigha</option>
-                  <option value="cent">Cent</option>
-                  <option value="gunta">Gunta</option>
-                </select>
+          <section style={styles.converterSection}>
+            <div style={styles.converterContainer}>
+              <div style={styles.header}>
+                <h1 style={styles.converterTitle}>Area Converter</h1>
+                <p style={styles.subtitle}>Enter the value and select desired unit</p>
               </div>
-            </div>
 
-            <button onClick={swapUnits} style={styles.swapButton}>
-              ⇄ Swap
-            </button>
+              {/* State Information */}
 
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>To</label>
-              <div style={styles.inputContainer}>
-                <input
-                  type="text"
-                  value={toValue}
-                  readOnly
-                  style={styles.input}
-                />
-                <select
-                  value={toUnit}
-                  onChange={handleToUnitChange}
-                  style={styles.select}
-                >
-                  <option value="square-meter">Square Meter</option>
-                  <option value="square-feet">Square Feet</option>
-                  <option value="square-inch">Square Inch</option>
-                  <option value="square-kilometer">Square Kilometer</option>
-                  <option value="hectare">Hectare</option>
-                  <option value="acre">Acre</option>
-                  <option value="square-mile">Square Mile</option>
-                  <option value="bigha">Bigha</option>
-                  <option value="cent">Cent</option>
-                  <option value="gunta">Gunta</option>
-                </select>
+
+              {/* Converter Form */}
+              <div style={styles.converterForm}>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>From</label>
+                  <div style={styles.inputContainer}>
+                    <input
+                      type="number"
+                      value={fromValue}
+                      onChange={handleFromValueChange}
+                      placeholder="Enter value"
+                      style={styles.input}
+                    />
+                    <select
+                      value={fromUnit}
+                      onChange={handleFromUnitChange}
+                      style={styles.select}
+                    >
+                      <option value="square-meter">Square Meter</option>
+                      <option value="square-feet">Square Feet</option>
+                      <option value="square-inch">Square Inch</option>
+                      <option value="square-kilometer">Square Kilometer</option>
+                      <option value="hectare">Hectare</option>
+                      <option value="acre">Acre</option>
+                      <option value="square-mile">Square Mile</option>
+                      <option value="bigha">Bigha</option>
+                      <option value="cent">Cent</option>
+                      <option value="gunta">Gunta</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button onClick={swapUnits} style={styles.swapButton}>
+                  ⇄ Swap
+                </button>
+
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>To</label>
+                  <div style={styles.inputContainer}>
+                    <input
+                      type="text"
+                      value={toValue}
+                      readOnly
+                      style={styles.input}
+                    />
+                    <select
+                      value={toUnit}
+                      onChange={handleToUnitChange}
+                      style={styles.select}
+                    >
+                      <option value="square-meter">Square Meter</option>
+                      <option value="square-feet">Square Feet</option>
+                      <option value="square-inch">Square Inch</option>
+                      <option value="square-kilometer">Square Kilometer</option>
+                      <option value="hectare">Hectare</option>
+                      <option value="acre">Acre</option>
+                      <option value="square-mile">Square Mile</option>
+                      <option value="bigha">Bigha</option>
+                      <option value="cent">Cent</option>
+                      <option value="gunta">Gunta</option>
+                    </select>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <p style={styles.disclaimer}>
-            *This tool is for informational purposes only
-          </p>
+              <p style={styles.disclaimer}>
+                *This tool is for informational purposes only
+              </p>
+            </div>
+          </section>
         </div>
       </section>
-      </div>
-      </section>
 
-        <Footer />
+      <Footer />
     </div>
   );
 };

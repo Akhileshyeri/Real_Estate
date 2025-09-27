@@ -251,17 +251,22 @@
   }
 }
 
-@media (max-width: 480px) {
-  body {
-    padding: 20px 10px;
-  }
+@media (max-width: 991px) {
+    .mobile-logo img {
+        height: 26px;
+        width: auto;
+    }
+}
 
+/* 📱 Mobile only */
+@media (max-width: 768px) {
   .card-container {
-    flex-direction: column;
-    gap: 16px;
+    display: flex;
+    flex-wrap: wrap;
   }
 
-  .card {
-    width: 100%;
+  .card-container .card {
+    width: 170px;   /* each card takes 50% of row */
+    box-sizing: border-box;
   }
 }
