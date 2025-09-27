@@ -3114,6 +3114,7 @@ label {
   display: flex;
   gap: 20px;
   flex-grow: 1;
+ 
 }
 .wd-find-select .inner-group .form-style {
   width: 100%;
